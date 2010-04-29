@@ -3,8 +3,12 @@
 \usepackage{fullpage}
 \usepackage{amsmath}
 \usepackage{amssymb} 
-\usepackage{natbib}
+\usepackage{amsthm}
+\usepackage[round]{natbib}
 \usepackage{url}
+\usepackage{enumerate}
+
+\newtheorem{prop}{Proposition}
 
 \title{EC 782 Assignment \#7 \\ The Effect of Increased Medicalization on Female Genital Mutilation as a Signal of ``Quality''}
 \author{Karim Nagib}
@@ -13,25 +17,72 @@
 
 \maketitle
 
+  \begin{abstract}
+    Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper, following the argument that FGM is an investment by parents to signal quality in the marriage market, and making the assumption that it is an unobservable quality in Egypt, investigates the possibility that its increased medicalization might reduce the effectiveness of its signal.  The argument being that traditional circumcisers played the role of ``certifier'' of quality while professional health providers do not.
+  \end{abstract}
+
 \section{Introduction}
 
-Female genital mutilations (FGM) \footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. However, I opted to use the term used by the World Health Organization.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from as young as infancy to 15, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after\cite{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt\cite{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \cite{whofs241}.
+Female genital mutilation (FGM) \footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. However, I opted to mostly use the term used by the World Health Organization---mutilation---but sometimes refer to it as circumcision.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from as young as infancy to 15, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \citep{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt \citep{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \citep{whofs241}.
 
-The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth.  No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \cite{whofs241}. It has been compared to foot-binding in being a traditional practice harmful to society with no benefits, as well as being ethically indefensible due to its permanent physical and psychological damage \cite{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \cite{whofs241}. In addition to health-related or ethical objections to FGM, it has been found in a study conducted by the WHO on the financial cost of FGM in six African countries, that the obstetric complications caused by it to be \$ 3.7 million (PPP) \cite{Bishai2010}.
+The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth.  No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \citep{whofs241}. It has been compared to foot-binding in being a traditional practice harmful to society with no benefits, as well as being ethically indefensible due to its permanent physical and psychological damage \citep{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \citep{whofs241}. In addition to health-related or ethical objections to FGM, it has been found in a study conducted by the WHO on the financial cost of FGM in six African countries, that the obstetric complications caused by it to be \$ 3.7 million (PPP) \citep{Bishai2010}.
 
-Typically, the procedure of FGM was done by a traditional circumciser, but that role is quickly being taken over by professional health providers, such as doctors or nurses.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \cite{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics, and proper sanitation and care at the hands of professional health provider \cite{Shell-Duncan2001}. 
+Typically, the procedure of FGM was done by a traditional circumciser, but that role is quickly being taken over by professional health providers, such as doctors or nurses.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics, and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}. 
 
-This paper investigates the possibility that medicalization might inadvertently have another side-effect on the practice of FGM.  It follows the argument that FGM is an investment for marriage; it is a form of ritualistic marking signaling the higher ``quality'' of potential wives in the marriage market. Thus, the question this paper is addressing is whether medicalization contributes to the breakdown of the traditional mechanism by which FGM is signaled in the marriage market.  In the context investigated, Egypt, it is argued that circumcision is effectively an unobservable and unverifiable characteristic that must rely on ceremony or a reliable ``certifier''.  As the procedure is increasingly done by health professionals in health clinics, and no longer by traditional circumcisers\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers} in the child's or a relative's home, the process by which information about FGM is conveyed in society is weakened as health providers are less effective at play the role of FGM ``certifier'' or are simply unwilling to do so. In other words, medicalization, by breaking the traditional information network, may introduce friction to the marriage market that would reduce the incentive to invest in FGM---arguably a desirable ``underinvestment''.
+This paper investigates the possibility that medicalization might inadvertently have another side-effect on the practice of FGM.  It follows the argument that FGM is an investment for marriage; it is a form of ritualistic marking signaling the higher ``quality'' of potential wives in the marriage market. Thus, the question this paper is addressing is whether medicalization contributes to the breakdown of the traditional mechanism by which FGM is signaled in the marriage market.  In the context investigated, Egypt, it is argued that circumcision is effectively an unobservable and unverifiable characteristic that must rely on ceremony or a reliable ``certifier'' (the reasoning motivating this is taken up in section \ref{sec:fgmegypt}).  As the procedure is increasingly done by health professionals in health clinics, and no longer by traditional circumcisers\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers} in the child's or a relative's home, the process by which information about FGM is conveyed in society is weakened as health providers are less effective at play the role of FGM ``certifier'' or are simply unwilling to do so. In other words, medicalization, by breaking the traditional information network, may introduce friction to the marriage market that would reduce the incentive to invest in FGM---arguably a desirable ``underinvestment''.
 
-This paper follows Becker's classical work on marriage markets \cite{Becker1981}.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's work on the persistence of FGM as an equilibrium in society. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to ensure marriageability \cite{Chesnokova2007}. The paper also follows the literature on pre-marital investment \cite{Burdett2001, Peters2002}.  However, this work is more in terms of the undesirability of any investment in FGM.  
+This paper follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to ensure marriageability . The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}.  However, this work is more in terms of the undesirability of any investment in FGM. 
 
-Finally, this work being focused on the signaling aspect of FGM, it is related to Rai's work on the signaling of parents to prospective suitors for their daughters by disciplining or confining them \cite{Raia}. 
+Finally, this work being focused on the signaling aspect of FGM, it is related to Rai's \citeyearpar{Raia} work on the signaling of parents to prospective suitors for their daughters by disciplining or confining them. 
 
-\section{Female Genital Mutilation in Egypt}
+\section{Female Genital Mutilation in Egypt}\label{sec:fgmegypt}
+
+According to the Egypt Demographic and Health Survey (EDHS) of 2008, 91\% of women between the age of 15 and 49 have been circumcised.  However, there is an observed decline; 80\% of women below the age of 25 are circumcised as opposed to 94--96\% for those above 25, and in Egypt it is very rare for women to be circumcised after the age of 15 \citep{El-Zanat, El-Gibaly2002} (Further summary statistics details will be covered in section \ref{sec:data}).  
 
 \section{Model}
 
-\bibliographystyle{named}
+The model used in this paper, to reflect the empirical data, is based on that used by \citet{Chesnokova2007} (adopted from \citet{Fernandez2005}).  My purpose is to show that when the FGM signal is distorted the only equilibrium is to have no circumcision at all.  It considers circumcision as a premarital investment decision for preparation for the marriage market.  This is followed by two stages of matching of a husband and wife.  At each stage individuals are matched and have to decided whether to accept or reject, to go to the next stage where couples are assortatively matched.
+
+There are two types of individuals: males and female.  Males can be either of two types: Rich ($R$-type) or Poor($P$-type).  Females are either circumcised ($C$-type) or uncircumcised ($U$-type). The number of males and females are assumed to be equal (normalized to 1).  Entering the first stage of the game, the measure of Rich males is $r_1$ (exogenously given and assumed to be greater than zero), and the measure of circumcised females is  $c_1$. The remaining unmatched individuals that go on to the second matching stage are of measures $r_2$ and $c_2$ (also with normalization to 1). At stage 0 of the game, the FGM decision is made at a cost $\gamma > 0$, due to the illegality of the procedure and hence the risk of prosecution, and also the pain inflicted on the child, followed by stages 1 and 2, the matching stages.
+
+The payoffs to a woman of marrying an $R$-type and a $P$-type are $R$ and $P$, respectively, where $R > P > 0$. It is assumed that marrying an $P$-type is always better than remaining unmarried. The payoffs of a man marrying a $C$-type and a $U$-type are $C$ and $U$, respectively, where $C > U > 0$. Again, it is assumed that marrying an uncircumcised woman is always better than remaining unmarried. Furthermore, it is assumed that there is no discount rate between the two matching stages.
+
+\cite{Chesnokova2007} consider the case where in every matched pair both individuals are perfectly informed about each other's type.  They show that both zero and nonzero levels of circumcision could be reached in equilibrium.  They define $b = \gamma/(R - P)$, the cost-benefit ratio of FGM. If $\gamma \leq R - P$ and $r_1 < b$, the equilibrium level of circumcision is either $c_1^* = 0$ or $c_1^* = r(R-P)/\gamma$, and if $\gamma > R - P$ or $r_1 \geq b$, $c_1^* = 0$ is the only equilibrium level.
+
+In this paper, it is assumed that there is imperfect information about the type of a woman due to the distorted FGM signal.  What is known is the measure of circumcised women in both stages of the game.  This leads to the conclusion:
+
+\begin{prop}
+  If there is imperfect information in the marriage game, whereby male agents do not know the type of their matched females, but female agents know the type of their matched male; the measure of the types in all stages are known to all ($c_1$, $r_1$, $c_2$ and $r_2$); and FGM has a cost of $\gamma > 0$, the only equilibrium would be to choose $c_1^* = 0$.
+\end{prop}
+\begin{proof}
+  Consider first the second (last) stage of the game.  Since male agents cannot distinguish between female agents, and female agents have no way of signaling their type, couples will be randomly matched.  A male agent's expected utility would be $c_2 C + (1-c_2)U $, and a $C$-type female agent's expected utility would be $r_2 R + (1 - r_2) P - \gamma$ while a $U$-type would get $r_2 R + (1 - r_2) P$.
+
+  Now considering the second stage, each male agent type would find himself in an information set with a probability of being matched with a $C$-type of $c_1$ and with a $U$-type of $1-c_1$. Let the information set of the $R$-type be referred to as $I_R$ and that of the $P$-type as $I_P$.
+
+  In $I_R$, since the female agent (of either type) knows the male agent's type, she will always accept. The $R$-type male agent would accept if $c_1 C + (1 - c_1)U \geq c_2C + (1-c_2)U$, i.e. $c_1 \geq c_2$.  He could use a mixed strategy of accepting with probability $\phi_R \in [0,1]$ if the first expression holds with equality.
+
+  In $I_P$, both types of female agent would accept if $P \geq r_2R + (1-r_2)P$, which, since $R > P$, can only hold with equality when $r_2 = 0$ (all $R$-types accept their partner), at which case she would use a mixed strategy, accepting with probability $\theta_P \in [0,1]$. The $P$-type agent would then accept if $\theta_P[c_1C + (1-c_1)U] + (1-\theta_P)[c_2C + (1-c_2)U] \geq c_2C + (1-c_2)U$, and if this condition holds with equality, he would use a mixed strategy of accepting with probability $\phi_P \in [0,1]$.
+
+  It can then be shown that the only equilibrium in the second stage is where
+    \begin{enumerate}[i.]
+      \item $c_1 = c_2$
+      \item The $R$-type accepts his partner with probability 1, and his female partner of either type would accept with probability 1
+      \item $r_2 = 0$
+      \item The female agent under the $I_P$ information set would accept with probability $\theta_P \in [0,1]$, and the $P$-type male agent would accept with probability 
+        \[\phi_P = \left\{
+            \begin{array}{rl}
+              1 & \text{if } \theta_P > 0 \\
+              \in[0,1] & \text{if } \theta_P = 0\\
+            \end{array} \right.\]
+    \end{enumerate}
+
+  At the premarital investment stage, if the $C$-type is chosen, her expected utility would be $r_1(R-\gamma) + (1-r_1)(P-\gamma)$, while if $U$-type is chosen, she would get $r_1R + (1-r_1)P$. Therefore, the only game equilibrium would be to always choose the $U$-type.
+
+\end{proof}
+
+\section{Data}\label{sec:data}
+
+\bibliographystyle{plainnat}
 \bibliography{$HOME/Documents/library}
 
-\end{document}
+\end{document} 
