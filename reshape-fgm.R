@@ -42,7 +42,8 @@ get.fgm.data <- function(ir.file, br.file) {
   rm(br)
 
   fgm.data$birth.year <- factor(fgm.data$b2)
-  fgm.data <- subset(fgm.data, select = c(cluster:hh.id, birth.year, sdno))
+  fgm.data <- subset(fgm.data, select = c(cluster:hh.id, birth.year, sdno)) 
+  fgm.data <- subset(fgm.data, select = c(-phase)) #excluding phase for now
   fgm.data <- fgm.data[ order(fgm.data$hh.id, fgm.data$birth.year), ]
 
   fgm.data <- do.call(rbind, by(fgm.data, fgm.data$hh.id, cleanup.by.hh))
@@ -52,7 +53,12 @@ get.fgm.data <- function(ir.file, br.file) {
 
   fgm.data$has.or.intends.circum <- ifelse(fgm.data$circum == 1 | fgm.data$intends.circum == 1, 1, 0)
   fgm.data$med.circum <- ifelse(fgm.data$circum == 1 & (fgm.data$who.circum %in% c(1, 2)), 1, 0)
-  fgm.data$year.circum <- factor(with(fgm.data, ifelse(circum == 1 & age.circum <= 19, as.numeric(levels(birth.year)[birth.year]) + age.circum, NA)))
+  fgm.data$year.circum <- factor(with(fgm.data, ifelse(circum == 1 & age.circum <= 19, as.numeric(levels(birth.year)[birth.year]) + age.circum, NA)), ordered = TRUE)
+
+  fgm.data$timeperiod.circum <- factor(with(fgm.data, ifelse(year.circum > "2007", 0,
+                                                             ifelse(year.circum >= "1997", 1, 
+                                                                    ifelse(year.circum < "1997", 2, NA)))),
+                                       labels = c("After 2007", "1997-2007", "Before 1997"))
 
   return(fgm.data)
 }
