@@ -1,0 +1,9 @@
+.RData
+.Rhistory
+*.swp
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.log
+*.pdf

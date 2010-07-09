@@ -42,7 +42,9 @@ get.fgm.data <- function(ir.file, br.file) {
   rm(br)
 
   fgm.data$birth.year <- factor(fgm.data$b2)
-  fgm.data <- subset(fgm.data, select = c(cluster:hh.id, birth.year, sdno)) 
+  names(fgm.data)[names(fgm.data) == 'v437'] <- 'weight'
+  names(fgm.data)[names(fgm.data) == 'v438'] <- 'height'
+  fgm.data <- subset(fgm.data, select = c(cluster:hh.id, birth.year, weight, height, sdno)) 
   fgm.data <- subset(fgm.data, select = c(-phase)) #excluding phase for now
   fgm.data <- fgm.data[ order(fgm.data$hh.id, fgm.data$birth.year), ]
 
@@ -59,6 +61,9 @@ get.fgm.data <- function(ir.file, br.file) {
                                                              ifelse(year.circum >= "1997", 1, 
                                                                     ifelse(year.circum < "1997", 2, NA)))),
                                        labels = c("After 2007", "1997-2007", "Before 1997"))
+
+  fgm.data$order.fac <- factor(with(fgm.data, as.numeric(levels(order)[order])), levels = 1:7)
+  fgm.data$married <- ifelse(fgm.data$mar.status == 1, 1, 0)
 
   return(fgm.data)
 }
