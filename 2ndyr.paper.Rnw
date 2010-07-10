@@ -7,12 +7,13 @@
 \usepackage[round]{natbib}
 \usepackage{url}
 \usepackage{enumerate}
+\usepackage[utf8x]{inputenc}
 
 \renewcommand{\baselinestretch}{2}
 
 \newtheorem{prop}{Proposition}
 
-\title{The Effect of Medicalization on Female Genital Mutilation}
+\title{The Effect of Medicalization on\\Female Genital Mutilation}
 \author{Karim Nagib}
 
 \begin{document}
@@ -89,6 +90,22 @@ In this paper, it is assumed that there is imperfect information about the type 
 For the empirical section of this paper I will rely on the Egyptian DHS data for the year 2008.  Aside from including standard household survey variables (wealth, education, income, etc.), the data contains FGM status for the interviewed women and for their daughters, by whom was the procedure done, intentions to circumcise uncircumcised daughters, and attitudes towards circumcision. Additionally, GPS data for the surveyed households is available.
 
 \section{Descriptive Results}
+
+
+
+In an initial statistical inquiry, it was found that there is a significant and negative correlation between a household's past decision to opt for medicalized FGM and the present decision to choose FGM at all.  In other words, a linear probability model, pooled OLS regression of the form
+\[fgm_{ij} = \alpha + \beta \cdot fgm_{i,j-1} + \delta \cdot fgm_{i,j-1} \times med_{i,j-1} + \gamma \cdot x_i + \varepsilon_{ij}\]
+was run, where $i$ identifies the household and $j$ identifies a daughter's order of birth. $fgm_{ij}$ is an indicator of whether household $i$ decided to circumcise daughter $j$; $med_{ij}$ is an indicator of whether they chose medicalization; and $x_i$ are other household covariates: region, urban/rural indicators, religion, the head of household's sex, and wealth level.  This is an interesting yet inconclusive result---there is no clear identification of the cause of such a result.  Also, we are unable to say anything about the magnitude of these estimates; ideally we would like to run a fixed effect regression, but that would result in inconsistent estimates \citep{Angrist2008}.  
+
+<<echo=FALSE>>=
+library(plm)
+load("fgm.data.08.RData")
+@
+
+<<>>=
+summary(res.yesno <- plm(circum.yesno ~ lag(circum.yesno, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
+                         data = fgm.data.08, index = c("hh.id", "order"), model = "pooling"))
+@
 
 
 

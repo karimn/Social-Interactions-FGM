@@ -42,8 +42,8 @@ get.fgm.data <- function(ir.file, br.file) {
   rm(br)
 
   fgm.data$birth.year <- factor(fgm.data$b2)
-  names(fgm.data)[names(fgm.data) == 'v437'] <- 'weight'
-  names(fgm.data)[names(fgm.data) == 'v438'] <- 'height'
+  #names(fgm.data)[names(fgm.data) == 'v437'] <- 'weight'
+  #names(fgm.data)[names(fgm.data) == 'v438'] <- 'height'
   fgm.data <- subset(fgm.data, select = c(cluster:hh.id, birth.year, weight, height, sdno)) 
   fgm.data <- subset(fgm.data, select = c(-phase)) #excluding phase for now
   fgm.data <- fgm.data[ order(fgm.data$hh.id, fgm.data$birth.year), ]
@@ -64,6 +64,8 @@ get.fgm.data <- function(ir.file, br.file) {
 
   fgm.data$order.fac <- factor(with(fgm.data, as.numeric(levels(order)[order])), levels = 1:7)
   fgm.data$married <- ifelse(fgm.data$mar.status == 1, 1, 0)
+
+  fgm.data.08$religion <- factor(fgm.data.08$religion, labels = c("Muslim", "Christian", "Missing"))
 
   return(fgm.data)
 }
