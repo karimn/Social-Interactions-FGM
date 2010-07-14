@@ -1,6 +1,7 @@
 *.RData
 .Rhistory
 *.swp
+*.swo
 *.aux
 *.bbl
 *.blg
