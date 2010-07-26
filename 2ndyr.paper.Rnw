@@ -21,7 +21,7 @@
 \maketitle
 
   \begin{abstract}
-    Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper follows the argument that FGM is an investment by parents to signal quality in the marriage market. And making the assumption that it is an unobservable quality in Egypt, investigates the possibility that its increased medicalization might reduce its effectiveness as a signal of ``quality''.  The argument being that traditional circumcisers played the role of ``certifier'' of quality while professional health providers do not.
+    Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper follows the argument that FGM is an investment by parents to signal quality in the marriage market, and making the assumption that it is an unobservable quality in Egypt, investigates the possibility that its increased medicalization might reduce its effectiveness as a signal of ``quality''.  The argument being that traditional circumcisers play the role of ``certifier'' of quality while professional health providers do not.
   \end{abstract}
 
 \section{Introduction}
@@ -99,12 +99,12 @@ was run, where $i$ identifies the household and $j$ identifies a daughter's orde
 
 <<echo=FALSE>>=
 library(plm)
-load("fgm.data.08.RData")
+load("fgm.data.daughters.RData")
 @
 
 <<>>=
 summary(res.yesno <- plm(circum.yesno ~ lag(circum.yesno, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
-                         data = fgm.data.08, index = c("hh.id", "order"), model = "pooling"))
+                         data = fgm.data.daughters, index = c("hh.id", "order"), model = "pooling"))
 @
 
 
