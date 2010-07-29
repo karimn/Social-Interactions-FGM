@@ -89,6 +89,12 @@ In this paper, it is assumed that there is imperfect information about the type 
 
 For the empirical section of this paper I will rely on the Egyptian DHS data for the year 2008.  Aside from including standard household survey variables (wealth, education, income, etc.), the data contains FGM status for the interviewed women and for their daughters, by whom was the procedure done, intentions to circumcise uncircumcised daughters, and attitudes towards circumcision. Additionally, GPS data for the surveyed households is available.
 
+\subsection{GPS Data}
+
+I will be using the available GPS geographic data to test for peer/neighborhood effects.  It is of interest to determine what social effects could be identified (endogenous and contextual), as well as correlated effects.  We want to identify the aggregate influence of a cluster's members', and its geographically neighboring clusters' members', behavior and characteristics on a household's behavior.  To do this, we will be assuming that a household's peer group is a spatial one, with possibly religion and wealth as further reference characteristics. This is not an uncommon assumption made in the literature concerning health and schooling decisions.
+
+The first question to be addressed would be how the decision to opt for medicalized FGM might be affected by neighbors' decision.  The second and trickier question would be on how increased medicalization (and the reduced reliance on traditional circumcisers) affects the decision to decide on FGM at all.  
+
 \section{Descriptive Results}
 
 

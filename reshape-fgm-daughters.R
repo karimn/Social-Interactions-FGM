@@ -13,7 +13,7 @@ cleanup.by.hh <- function(df) {
   return(df)
 }
 
-ir <- read.dta('/home/karim/Data/EDHS/2008/EGIR5AFL.DTA', convert.underscore = TRUE)
+ir <- read.dta('~/Data/EDHS/2008/EGIR5AFL.DTA', convert.underscore = TRUE)
 
 #setClass("fgmDaughterDataFrame", contains = "data.frame")
 #setMethod("initialize", "fgmDaughterDataFrame",
@@ -42,8 +42,7 @@ fgm.data.daughters$circum.yesno <- ifelse(fgm.data.daughters$circum == 1, 1, 0)
 fgm.data.daughters$hh.id <- paste(fgm.data.daughters$cluster, fgm.data.daughters$hh, sep = '-')
 fgm.data.daughters$hh.id <- factor(fgm.data.daughters$hh.id)
 
-#br <- read.dta(br.file, convert.underscore = TRUE)
-br <- read.dta('/home/karim/Data/EDHS/2008/EGBR5AFL.DTA', convert.underscore = TRUE)
+br <- read.dta('~/Data/EDHS/2008/EGBR5AFL.DTA', convert.underscore = TRUE)
 
 fgm.data.daughters <- merge(fgm.data.daughters, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'))
 rm(br)
@@ -52,18 +51,18 @@ fgm.data.daughters$birth.year <- factor(fgm.data.daughters$b2)
 names(fgm.data.daughters)[names(fgm.data.daughters) == 'v437'] <- 'weight'
 names(fgm.data.daughters)[names(fgm.data.daughters) == 'v438'] <- 'height'
 
-pr <- read.dta('/home/karim/Data/EDHS/2008/EGPR5AFL.DTA', convert.underscore = TRUE)
+#pr <- read.dta('~/Data/EDHS/2008/EGPR5AFL.DTA', convert.underscore = TRUE)
 
-fgm.data.daughters <- merge(fgm.data.daughters, pr, by.x = c('cluster', 'hh', 'respond'), by.y = c('hv001', 'hv002', 'hv003'))
-rm(pr)
+#fgm.data.daughters <- merge(fgm.data.daughters, pr, by.x = c('cluster', 'hh', 'respond'), by.y = c('hv001', 'hv002', 'hv003'))
+#rm(pr)
 
-names(fgm.data.daughters)[names(fgm.data.daughters) == 'hc61'] <- 'mother.educlvl'
-names(fgm.data.daughters)[names(fgm.data.daughters) == 'hc62'] <- 'mother.educyr'
+#names(fgm.data.daughters)[names(fgm.data.daughters) == 'hc61'] <- 'mother.educlvl'
+#names(fgm.data.daughters)[names(fgm.data.daughters) == 'hc62'] <- 'mother.educyr'
 
-fgm.data.daughters <- transform(fgm.data.daughters, mother.edulvl = factor(mother.educlvl, levels = c(0:3, 9), labels = c("no education", "primary", "secondary", "higher"), exclude = 9))
+#fgm.data.daughters <- transform(fgm.data.daughters, mother.edulvl = factor(mother.educlvl, levels = c(0:3, 9), labels = c("no education", "primary", "secondary", "higher"), exclude = 9))
 
-fgm.data.daughters <- subset(fgm.data.daughters, select = c(cluster:hh.id, birth.year, weight, height, sdno, mother.educlvl, mother.educyr)) 
-fgm.data.daughters <- subset(fgm.data.daughters, select = c(-phase)) #excluding phase for now
+fgm.data.daughters <- subset(fgm.data.daughters, select = c(cluster:hh.id, birth.year, weight, height, sdno)) 
+#fgm.data.daughters <- subset(fgm.data.daughters, select = c(-phase)) #excluding phase for now
 
 fgm.data.daughters <- fgm.data.daughters[ order(fgm.data.daughters$hh.id, fgm.data.daughters$birth.year), ]
 
@@ -72,19 +71,24 @@ fgm.data.daughters <- do.call(rbind, by(fgm.data.daughters, fgm.data.daughters$h
 # To check if there are any duplicated birth.year's in the same hh
 # by(fgm.data.daughters, fgm.data.daughters[c('hh.id')], function(df) anyDuplicated(df$birth.year))
 
-fgm.data.daughters$has.or.intends.circum <- ifelse(fgm.data.daughters$circum == 1 | fgm.data.daughters$intends.circum == 1, 1, 0)
-fgm.data.daughters$med.circum <- ifelse(fgm.data.daughters$circum == 1 & (fgm.data.daughters$who.circum %in% c(1, 2)), 1, 0)
-fgm.data.daughters$year.circum <- factor(with(fgm.data.daughters, ifelse(circum == 1 & age.circum <= 19, as.numeric(levels(birth.year)[birth.year]) + age.circum, NA)), ordered = TRUE)
+# To see how many hhs per cluster
+# by(fgm.data.daughters, fgm.data.daughters[c('cluster')], function(df) length(unique(df$hh)))
 
-fgm.data.daughters$timeperiod.circum <- factor(with(fgm.data.daughters, ifelse(year.circum > "2007", 0,
+fgm.data.daughters <- within(fgm.data.daughters, {
+  has.or.intends.circum <- ifelse(circum == 1 | intends.circum == 1, 1, 0)
+  med.circum <- ifelse(circum == 1 & (who.circum %in% c(1, 2)), 1, 0)
+  year.circum <- factor(ifelse(circum == 1 & age.circum <= 19, as.numeric(levels(birth.year)[birth.year]) + age.circum, NA), ordered = TRUE)
+
+  timeperiod.circum <- factor(ifelse(year.circum > "2007", 0,
                                                            ifelse(year.circum >= "1997", 1, 
-                                                                  ifelse(year.circum < "1997", 2, NA)))),
+                                                                                         ifelse(year.circum < "1997", 2, NA))),
                                      labels = c("After 2007", "1997-2007", "Before 1997"))
 
-fgm.data.daughters$order.fac <- factor(with(fgm.data.daughters, as.numeric(levels(order)[order])), levels = 1:7)
-fgm.data.daughters$married <- ifelse(fgm.data.daughters$mar.status == 1, 1, 0)
+  order.fac <- factor(as.numeric(levels(order)[order]), levels = 1:7)
+  married <- ifelse(mar.status == 1, 1, 0)
 
-fgm.data.daughters$religion <- factor(fgm.data.daughters.08$religion, labels = c("Muslim", "Christian", "Missing"))
+  religion <- factor(religion, labels = c("Muslim", "Christian", "Missing"))
+})
 
 #return(fgm.data.daughters)
 #callNextMethod(.Object, ir.file = ir.file, br.file = br.file, ...)
@@ -96,3 +100,17 @@ fgm.data.daughters$religion <- factor(fgm.data.daughters.08$religion, labels = c
 #fgm.data.daughters.05 <- get.fgm.data.daughters('~/Data/EDHS/2005/egir51fl.dta', '~/Data/EDHS/2005/EGBR51FL.dta')
 #fgm.data.daughters.08 <- get.fgm.data.daughters('~/Data/EDHS/2008/EGIR5AFL.DTA', '~/Data/EDHS/2008/EGBR5AFL.DTA')
 
+# GPS Data
+############
+
+gps <- read.dbf("~/Data/EDHS/2008/EGGE5BFL.DBF")
+
+# This will result in the loss of about 268 observations with not GPS info
+fgm.data.daughters <- merge(fgm.data.daughters, gps, by.x = c('cluster'), by.y = c('DHSCLUST'))
+
+rm(gps)
+
+library(sp)
+
+coordinates(fgm.data.daughters) <- c("LONGNUM", "LATNUM")
+proj4string(fgm.data.daughters) <- CRS("+proj=longlat +ellps=WGS84")
