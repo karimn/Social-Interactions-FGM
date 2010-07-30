@@ -1,4 +1,5 @@
 library(foreign)
+library(sp)
 
 ir <- read.dta('/home/karim/Data/EDHS/2008/EGIR5AFL.DTA', convert.underscore = TRUE)
 
@@ -57,3 +58,8 @@ fgm.data.all <- transform(fgm.data.all, med.circum = ifelse((circum == 1) & (cir
 
  #fgm.data.all <- transform(fgm.data.all, religion = factor(religion, labels = c("Muslim", "Christian", "Missing")))
 
+gps <- read.dbf("~/Data/EDHS/2008/EGGE5BFL.DBF")
+
+cluster.coordinates(fgm.data.all) <- gps
+
+rm(gps)
