@@ -6,7 +6,8 @@ setClass("FgmDataAll",
          representation(cluster.info = "data.frame"),
          contains = "SpatialPointsDataFrame")
 
-if (!isGeneric("cluster.coordinates<-")) setGeneric("cluster.coordinates<-", function(object, value) standardGeneric("cluster.coordinates<-"))
+if (isGeneric("cluster.coordinates<-")) removeGeneric("cluster.coordinates<-")
+setGeneric("cluster.coordinates<-", function(object, value) standardGeneric("cluster.coordinates<-"))
 
 setMethod("cluster.coordinates<-", 
           signature = c(object = "data.frame"),
@@ -26,15 +27,53 @@ setMethod("by",
           signature = c(data = "FgmDataAll", INDICES = "list", FUN = "function"),
           function(data, INDICES, FUN, ...)
           {
-            by(data@data, INDICES, FUN, ...)
+            convert.FgmDataAll <- function(df)
+            {
+              cluster.coordinates(df) <- data@cluster.info
+              FUN(df)
+            }
+
+            by(data@data, INDICES, convert.FgmDataAll, ...)
           }
 )
 
-if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun) standardGeneric("by.radius"))
+if (!isGeneric("subset")) setGeneric("subset")
+
+setMethod("subset",
+          signature = c(x = "FgmDataAll"),
+          function(x, subset, ...)
+          {
+            # same implementation as subset.base().  I had to do this because of a parent.frame() used in evaluating the subset param
+            if (missing(subset)) 
+                r <- TRUE
+            else 
+            {
+                e <- substitute(subset)
+                r <- eval(e, x@data, parent.frame(n = 2))
+                if (!is.logical(r)) 
+                    stop("'subset' must evaluate to logical")
+                r <- r & !is.na(r)
+            }
+
+            x[r, ]
+          }
+)
+
+if (!isGeneric("nrow")) setGeneric("nrow")
+
+setMethod("nrow",
+          signature = c(x = "FgmDataAll"),
+          function(x)
+          {
+            nrow(x@data)
+          }
+)
+
+if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun, ...) standardGeneric("by.radius"))
 
 setMethod("by.radius",
           signature = c(self = "FgmDataAll", radius = "numeric", fun = "function"),
-          function(self, radius, fun)
+          function(self, radius, fun, by.cluster = TRUE)
           {
             clinfo.sp <- self@cluster.info
             coordinates(clinfo.sp) <- c("LONGNUM", "LATNUM")
@@ -48,43 +87,32 @@ setMethod("by.radius",
             # I'm going to use the "marks" field to identify the clusters
             clinfo.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = clinfo.sp$DHSCLUST, check = FALSE)
 
-            by.cluster <- function(df)
+            by.cluster.fun <- function(df)
             {
               cluster <- df$cluster[1] 
               cluster.ppp <- clinfo.ppp[clinfo.ppp$marks == cluster]
               cluster.coords <- coords(cluster.ppp)
-              neighbor <- clinfo.ppp[, disc(radius, c(cluster.coords$x, cluster.coords$y))]  
+              neighbor.ppp <- clinfo.ppp[, disc(radius, c(cluster.coords$x, cluster.coords$y))]  
+              neighbor.clusters <- neighbor.ppp$marks
+              neighbor.clusters.fgm <- subset(self, cluster %in% neighbor.clusters)
 
+              if (by.cluster)
+                fun(cluster, neighbor.clusters.fgm)
+              else
+              {
+                by.row.fun <- function(dfhh, dfrl)
+                {
+                  fun(cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (cluster != cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
+                }
 
+                vec.by.row.fun <- Vectorize(by.row.fun)
+
+                vec.by.row.fun(df$hh, df$respond.linenum)
+              }
             }
             
             # TODO Make the "by" overridden implementation take indices from the "self" directly 
-            by(self, self@data[c("cluster")], by.cluster)
+            by(self, self@data[c("cluster")], by.cluster.fun)
           }
 )
-
-#fgm.data.all.sp <- as(fgm.data.all, "SpatialPoints")
-#fgm.data.all.ppp <- as(fgm.data.all.sp, "ppp")
-#fgm.data.all.ppp
-#summary(fgm.data.all.ppp)
-#fgm.data.all.ppp[228]
-#fgm.data.all.ppp[228,]
-#? ppp
-#? disc
-#n <- fgm.data.all.ppp[, disc(1, c(f))))
-#fgm.data.all$LONGNUM
-#coordinates(fgm.data.all)
-#coordinates(fgm.data.all[228])
-#coordinates(fgm.data.all[228,])
-#coordinates(fgm.data.all[228,])$LONGNUM
-#coordinates(fgm.data.all[228,])[1,1]
-#coordinates(fgm.data.all[228,])[1,2]
-#n <- fgm.data.all.ppp[, disc(1, coordinates(fgm.data.all[228,]))]
-#n
-#fgm.data.all.ppp
-#plot(as(n, "SpatialPoints"))
-#n <- fgm.data.all.ppp[, disc(0.5, coordinates(fgm.data.all[228,]))]
-#plot(as(n, "SpatialPoints"))
-#plot(as(fgm.data.all.ppp[, disc(0.5, coordinates(fgm.data.all[228,]))], "SpatialPoints"))
-#plot(as(fgm.data.all.ppp[, disc(2, coordinates(fgm.data.all[228,]))], "SpatialPoints"))
 
