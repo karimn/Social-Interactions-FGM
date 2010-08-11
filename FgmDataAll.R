@@ -13,7 +13,7 @@ setMethod("cluster.coordinates<-",
           signature = c(object = "data.frame"),
           function(object, value) 
           {
-            fgm.spdf <- merge(object, value, by.x = c('cluster'), by.y = c('DHSCLUST'))
+            fgm.spdf <- merge(object, value, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
             coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
             proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
@@ -85,24 +85,26 @@ setMethod("by.radius",
             w <- owin(bb[1, ], bb[2, ])
             cc <- coordinates(clinfo.sp)
             # I'm going to use the "marks" field to identify the clusters
-            clinfo.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = clinfo.sp$DHSCLUST, check = FALSE)
+            clinfo.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = clinfo.sp$unique.cluster, check = FALSE)
 
             by.cluster.fun <- function(df)
             {
-              cluster <- df$cluster[1] 
-              cluster.ppp <- clinfo.ppp[clinfo.ppp$marks == cluster]
+              dhs.year <- df$dhs.year[1]
+              cluster <- df$cluster[1]
+              unique.cluster <- df$unique.cluster[1] 
+              cluster.ppp <- clinfo.ppp[clinfo.ppp$marks == unique.cluster]
               cluster.coords <- coords(cluster.ppp)
               neighbor.ppp <- clinfo.ppp[, disc(radius, c(cluster.coords$x, cluster.coords$y))]  
               neighbor.clusters <- neighbor.ppp$marks
-              neighbor.clusters.fgm <- subset(self, cluster %in% neighbor.clusters)
+              neighbor.clusters.fgm <- subset(self, unique.cluster %in% neighbor.clusters)
 
               if (by.cluster)
-                fun(cluster, neighbor.clusters.fgm)
+                fun(dhs.year, cluster, neighbor.clusters.fgm)
               else
               {
                 by.row.fun <- function(dfhh, dfrl)
                 {
-                  fun(cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (cluster != cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
+                  fun(dhs.year, cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (cluster != cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
                 }
 
                 vec.by.row.fun <- Vectorize(by.row.fun)
@@ -112,7 +114,7 @@ setMethod("by.radius",
             }
             
             # TODO Make the "by" overridden implementation take indices from the "self" directly 
-            by(self, self@data[c("cluster")], by.cluster.fun)
+            by(self, self@data[c("unique.cluster")], by.cluster.fun)
           }
 )
 
