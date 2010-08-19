@@ -21,6 +21,16 @@ setMethod("cluster.coordinates<-",
           }
 )
 
+if (!isGeneric("names")) setGeneric("names")
+
+setMethod("names",
+          signature = c(x = "FgmDataAll"),
+          function(x)
+          {
+            names(x@data)
+          }
+)
+
 if (!isGeneric("by")) setGeneric("by")
 
 setMethod("by",
