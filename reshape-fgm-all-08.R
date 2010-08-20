@@ -73,7 +73,7 @@ fgm.data.all.08 <- within(fgm.data.all.08, {
 })
 
 fgm.data.all.08 <- transform(fgm.data.all.08, med.circum = ifelse((circum == "yes") & (circum.bywhom %in% c("doctor", "trained nurse/midwife")), 1, 0),
-                                        circum.year = factor(ifelse(circum == "yes", as.numeric(levels(birth.year)[birth.year]) + circum.age, NA)))
+                                        circum.year = ifelse(circum == "yes", birth.year + circum.age, NA))
                                         #circum.year = factor(ifelse(circum == 1, birth.year + circum.age, NA))) 
 
 gps.08 <- read.dbf("~/Data/EDHS/2008/EGGE5BFL.DBF")

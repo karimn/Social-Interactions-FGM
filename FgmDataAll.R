@@ -13,6 +13,7 @@ setMethod("cluster.coordinates<-",
           signature = c(object = "data.frame"),
           function(object, value) 
           {
+            value$unique.cluster <- as.numeric(row.names(value))
             fgm.spdf <- merge(object, value, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
             coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
             proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")

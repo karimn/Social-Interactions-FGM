@@ -60,8 +60,6 @@ fgm.data.all.05 <- within(fgm.data.all.05, {
 
 fgm.data.all.05 <- transform(fgm.data.all.05, 
                                         med.circum = NA,
-                                        circum.year = factor(ifelse(circum == 1, as.numeric(levels(birth.year)[birth.year]) + circum.age, NA)))
-
-
+                                        circum.year = ifelse(circum == 'yes', birth.year + circum.age, NA))
 
 gps.05 <- read.dbf("~/Data/EDHS/2005/EGGE51FL.dbf")
