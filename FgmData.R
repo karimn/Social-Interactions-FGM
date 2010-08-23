@@ -2,7 +2,7 @@ library(sp)
 library(spatstat)
 library(maptools)
 
-setClass("FgmDataAll",
+setClass("FgmData",
          representation(cluster.info = "data.frame"),
          contains = "SpatialPointsDataFrame")
 
@@ -13,19 +13,21 @@ setMethod("cluster.coordinates<-",
           signature = c(object = "data.frame"),
           function(object, value) 
           {
-            value$unique.cluster <- as.numeric(row.names(value))
+            if (is.null(value$unique.cluster)) 
+              value$unique.cluster <- as.numeric(row.names(value))
+
             fgm.spdf <- merge(object, value, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
             coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
             proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
-            new("FgmDataAll", fgm.spdf, cluster.info = value)
+            new("FgmData", fgm.spdf, cluster.info = value)
           }
 )
 
 if (!isGeneric("names")) setGeneric("names")
 
 setMethod("names",
-          signature = c(x = "FgmDataAll"),
+          signature = c(x = "FgmData"),
           function(x)
           {
             names(x@data)
@@ -35,23 +37,56 @@ setMethod("names",
 if (!isGeneric("by")) setGeneric("by")
 
 setMethod("by",
-          signature = c(data = "FgmDataAll", INDICES = "list", FUN = "function"),
+          signature = c(data = "FgmData", INDICES = "list", FUN = "function"),
           function(data, INDICES, FUN, ...)
           {
-            convert.FgmDataAll <- function(df)
+            convert.FgmData <- function(df)
             {
-              cluster.coordinates(df) <- data@cluster.info
-              FUN(df)
-            }
+              df <- merge(df, data@cluster.info[, c('DHSYEAR', 'DHSCLUST', 'LONGNUM', 'LATNUM')], by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
+              coordinates(df) <- c('LONGNUM', 'LATNUM')
+              proj4string(df) <- CRS("+proj=longlat +ellps=WGS84")
 
-            by(data@data, INDICES, convert.FgmDataAll, ...)
+              FUN(new("FgmData", df, cluster.info = data@cluster.info))
+            } 
+            by(data@data, INDICES, convert.FgmData, ...)
           }
 )
+
+#if (!isGeneric("attach")) setGeneric("attach")
+
+#setMethod("attach",
+#          signature = c(what = "FgmData"),
+#          function(what)
+#          {
+#            attach(what@data)
+#          }
+#)
+#
+#if (!isGeneric("detach")) setGeneric("detach")
+#
+#setMethod("detach",
+#          signature = c(name = "FgmData"),
+#          function(name, pos = 2, unload = FALSE, character.only = FALSE, force = FALSE)
+#          {
+#            detach(name@data, pos, unload, character.only, force)
+#          }
+#)
+
+#if (!isGeneric("plm")) setGeneric("plm")
+#
+#setMethod("plm",
+#          signature = c(formula = "ANY", data = "FgmData"),
+#          function(formula, data, ...)
+#          {
+#            plm(formula, data = data@data, ...)
+#            
+#          }
+#)
 
 if (!isGeneric("subset")) setGeneric("subset")
 
 setMethod("subset",
-          signature = c(x = "FgmDataAll"),
+          signature = c(x = "FgmData"),
           function(x, subset, ...)
           {
             # same implementation as subset.base().  I had to do this because of a parent.frame() used in evaluating the subset param
@@ -73,7 +108,7 @@ setMethod("subset",
 if (!isGeneric("nrow")) setGeneric("nrow")
 
 setMethod("nrow",
-          signature = c(x = "FgmDataAll"),
+          signature = c(x = "FgmData"),
           function(x)
           {
             nrow(x@data)
@@ -83,7 +118,7 @@ setMethod("nrow",
 if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun, ...) standardGeneric("by.radius"))
 
 setMethod("by.radius",
-          signature = c(self = "FgmDataAll", radius = "numeric", fun = "function"),
+          signature = c(self = "FgmData", radius = "numeric", fun = "function"),
           function(self, radius, fun, by.cluster = TRUE)
           {
             clinfo.sp <- self@cluster.info
@@ -110,7 +145,9 @@ setMethod("by.radius",
               neighbor.clusters.fgm <- subset(self, unique.cluster %in% neighbor.clusters)
 
               if (by.cluster)
+              {
                 fun(dhs.year, cluster, neighbor.clusters.fgm)
+              }
               else
               {
                 by.row.fun <- function(dfhh, dfrl)
