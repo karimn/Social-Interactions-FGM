@@ -119,7 +119,7 @@ if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun,
 
 setMethod("by.radius",
           signature = c(self = "FgmData", radius = "numeric", fun = "function"),
-          function(self, radius, fun, by.cluster = TRUE)
+          function(self, radius, fun, indices = NULL, by.cluster = TRUE)
           {
             clinfo.sp <- self@cluster.info
             coordinates(clinfo.sp) <- c("LONGNUM", "LATNUM")
@@ -135,10 +135,10 @@ setMethod("by.radius",
 
             by.cluster.fun <- function(df)
             {
-              dhs.year <- df$dhs.year[1]
-              cluster <- df$cluster[1]
-              unique.cluster <- df$unique.cluster[1] 
-              cluster.ppp <- clinfo.ppp[clinfo.ppp$marks == unique.cluster]
+              stopifnot(nrow(df) > 0)
+
+              u.cluster <- df$unique.cluster[1] 
+              cluster.ppp <- clinfo.ppp[clinfo.ppp$marks == u.cluster]
               cluster.coords <- coords(cluster.ppp)
               neighbor.ppp <- clinfo.ppp[, disc(radius, c(cluster.coords$x, cluster.coords$y))]  
               neighbor.clusters <- neighbor.ppp$marks
@@ -146,13 +146,13 @@ setMethod("by.radius",
 
               if (by.cluster)
               {
-                fun(dhs.year, cluster, neighbor.clusters.fgm)
+                fun(u.cluster, neighbor.clusters.fgm)
               }
               else
               {
                 by.row.fun <- function(dfhh, dfrl)
                 {
-                  fun(dhs.year, cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (cluster != cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
+                  fun(u.cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (unique.cluster != u.cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
                 }
 
                 vec.by.row.fun <- Vectorize(by.row.fun)
@@ -160,9 +160,12 @@ setMethod("by.radius",
                 vec.by.row.fun(df$hh, df$respond.linenum)
               }
             }
-            
+
             # TODO Make the "by" overridden implementation take indices from the "self" directly 
-            by(self, self@data[c("unique.cluster")], by.cluster.fun)
+            if (is.null(indices))
+              by(self, self@data[c('unique.cluster')], by.cluster.fun)
+            else
+              by(self, indices, function(df) do.call(rbind, by.radius(df, radius, fun, by.cluster = by.cluster)))
           }
 )
 

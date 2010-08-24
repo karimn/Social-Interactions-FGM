@@ -130,7 +130,7 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
 
   order.fac <- factor(order)
   married <- ifelse(mar.status == 1, 1, 0)
-  religion <- factor(religion, levels = 0:1, labels = c("muslim", "christian")) #, "missing"))
+  religion <- factor(religion, levels = 1:2, labels = c("muslim", "christian")) #, "missing"))
   birth.year.fac <- factor(birth.year)
   literacy.fac <- factor(literacy, 
                          levels = c(0:2), #, 9), 
