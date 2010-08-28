@@ -109,11 +109,47 @@ load("fgm.data.daughters.RData")
 @
 
 <<>>=
-summary(res.yesno <- plm(circum.yesno ~ lag(circum.yesno, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
-                         data = fgm.data.daughters, index = c("hh.id", "order"), model = "pooling"))
+summary(res.yesno <- plm(circum ~ lag(circum, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
+                         data = fgm.data.daughters.08@data, index = c("hh.id", "order"), model = "pooling"))
 @
 
+\section{Social Effects}
 
+\subsection{\`{A} la Manski}
+
+We adopting an empirical linear model similar to \citet{Manski}
+\begin{equation*}
+  y_{ijt} = \alpha + \alpha_t + \beta_1 E[y_{ijt}|j, t] + \beta_2 E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\gamma_1 + E[z_{ijt}|j, t, y_{ijt} = 1]'\gamma_2 + z_{ij}'\eta + u_{jt} + v_{ijt}.
+\end{equation*}
+$i$ refer to an individual daughter, $j$ the spatial region that defines the neighborhood, and $t$ is the year of birth.  The dependent variable $y \in \{0, 1\}$ is a binary choice variable describing whether $i$ is circumcised (or the family intend to circumcise her if she still too young), or not (and the family has no intention to do so in the future). The variable $m \in \{0, 1\}$ is also a binary choice variable indicating whether the daughter is to be circumcised by a trained health provider or not, and $z$ is a vector of other household characteristics.  The error term $u$ captures neighborhood heterogeneity while $v$ captures individual heterogeneity.  The coefficient $\beta_1$ should capture the \emph{endogenous} social effect with respect to the decision to circumcise or not, and $beta_2$ should capture the \emph{endogenous} social effect with respect to who does the circumcision, conditional on $y = 1$. The coefficients $\gamma_1$ and $\gamma_2$ should capture the \emph{exogenous} social effect of the spatial neighborhood, and the members of the spatial neighborhood who opted for circumcision, respectively.  Finally, $\eta$ should capture the direct effect of a household's characteristics.
+
+Using a time variant dummy variable for neighborhoods we can rewrite this model as
+\begin{equation}
+  y_{ijt} = \alpha + \alpha_t + \beta_1 E[y_{ijt}|j, t] + \beta_2 E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\gamma_1 + E[z_{ijt}|j, t, y_{ijt} = 1]'\gamma_2 + z_{ij}'\eta + \delta_j + \delta_{jt} + \varepsilon_{ijt}. \label{first_model}
+\end{equation}
+
+If we take expectation conditional on $j$, $t$ and $z_{ijt}$ of \ref{first_model} we get
+\begin{equation}
+  E[y_{ijt}|j, t, z_{ijt}]  = \alpha + \alpha_t + \beta_1 E[y_{ijt}|j, t] + \beta_2 E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\gamma_1 + E[z_{ijt}|j, t, y_{ijt} = 1]'\gamma_2 + z_{ij}'\eta + \delta_j + \delta_{jt}. \label{first_regression}
+\end{equation}
+But the presence of $E[y_{ijt}|j, t]$ presents us with the reflection problem, which we can work to eliminate using the same approach as \citet{Manski}.  We integrate \ref{first_regression} with respect to $z_{ijt}$ to get
+\begin{align}
+  E[y_{ijt}|j, t] &= \alpha + \alpha_t + \beta_1 E[y_{ijt}|j, t] + \beta_2 E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\gamma_1 + E[z_{ijt}|j, t, y_{ijt} = 1]'\gamma_2 + E[z_{ij}|j, t]'\eta + \delta_j + \delta_{jt} \\
+  E[y_{ijt}|j, t] &= \frac{\alpha}{1 - \beta_1} + \frac{\alpha_t}{1 - \beta_1} + \frac{\beta_2}{1 - \beta_1} E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\frac{\gamma_1 + \eta}{1 - \beta_1} + E[z_{ijt}|j, t, y_{ijt} = 1]'\frac{\gamma_2}{1 - \beta_1} + \frac{\delta_j}{1 - \beta_1} + \frac{\delta_{jt}}{1 - \beta_1}. \label{first_reflection_term}
+\end{align}
+This is then plugged into \ref{first_regression} to get
+\begin{equation}
+  E[y_{ijt}|j, t, z_{ijt}] = \frac{\alpha}{1 - \beta_1} + \frac{\alpha_t}{1 - \beta_1} + \frac{\beta_2}{1 - \beta_1} E[m_{ijt}|j, t, y_{ijt} = 1] + E[z_{ijt}|j, t]'\frac{\gamma_1 + \beta_1 \eta}{1 - \beta_1} + E[z_{ijt}|j, t, y_{ijt} = 1]'\frac{\gamma_2}{1 - \beta_1} + \frac{\delta_j}{1 - \beta_1} + \frac{\delta_{jt}}{1 - \beta_1}.
+\end{equation}
+However, this still does not take care of the endogeneity of $E[m_{ijt}|j,t,y_{ijt} = 1]$.  For that we need to rely on an instrumental variable.  
+
+\subsection{\`{A} la Bertrand et al.}
+
+We estimate
+\begin{equation}
+  y_{ijkt} = \alpha + \alpha_t + \beta_1 \bar{y}_{jkt} + \beta_2 \bar{m}_{jkt} + \beta_3 \bar{y}_{jkt} \times \bar{m}_{jkt} + \gamma x_{ijt} + \delta_j + \delta_{jt} + \theta_k + \theta_{kt} + \varepsilon_{ijkt}
+\end{equation}
+where $i$ refers to individual daughters; $j$ to a geographic region; $k$ to other groups such as wealth, religion, or education; and $t$ to the birth year.  $y \in \{0, 1\}$ is a binary choice variable reflecting the decision to circumcise $i$.  $m \in \{0, 1\}$ is another binary choice variable indicating whether the household opted for circumcision by a trained health provider or not. $x$ are $i$'s household characteristics.
 
 \nocite{Refaat}
 \nocite{Yount}
