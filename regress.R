@@ -54,14 +54,14 @@ factor.mean <- function(df, col.name, prefix)
 }
 
 ###########################################################################################
-# Ref groups: birth.year.fac, governate
+# Ref groups: birth.year.fac, governorate
 
 grpavg.col.names <- c('urban.rural', 'religion', 'educ.lvl', 'med.help.permission.fac', 'med.help.distance.fac', 'med.help.transportation.fac',
                       'mother.circum.fac', 'partner.educlvl.fac', 'occupation.2.fac', 'partner.occupation.2.fac')
 
-grpavg.formula <- "has.or.intends.circum ~ governate * birth.year.fac + urban.rural + religion + wealth.index + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
+grpavg.formula <- "has.or.intends.circum ~ governorate * birth.year.fac + urban.rural + religion + wealth.index + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
 
-fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governate', 'birth.year.fac')], function(df)
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governorate', 'birth.year.fac')], function(df)
 {
   for (col.name in grpavg.col.names)
   {
@@ -78,14 +78,14 @@ grpavg.formula <- paste(grpavg.formula, paste(grep("^grpavg", names(fgm), value 
 p4 <- lm(formula(grpavg.formula), data = fgm)
 
 ###########################################################################################
-# Ref groups: birth.year.fac, governate, urban.rural 
+# Ref groups: birth.year.fac, governorate, urban.rural 
 
 grpavg.col.names <- c('religion', 'educ.lvl', 'med.help.permission.fac', 'med.help.distance.fac', 'med.help.transportation.fac',
                       'mother.circum.fac', 'partner.educlvl.fac', 'occupation.2.fac', 'partner.occupation.2.fac')
 
-grpavg.formula <- "has.or.intends.circum ~ (governate + birth.year.fac + urban.rural)^3 + religion + wealth.index + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
+grpavg.formula <- "has.or.intends.circum ~ governorate + governorate:birth.year.fac + birth.year.fac + urban.rural + urban.rural:birth.year.fac + religion + wealth.index + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
 
-fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governate', 'birth.year.fac', 'urban.rural')], function(df)
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governorate', 'birth.year.fac', 'urban.rural')], function(df)
 {
   for (col.name in grpavg.col.names)
   {
@@ -102,14 +102,14 @@ grpavg.formula <- paste(grpavg.formula, paste(grep("^grpavg", names(fgm), value 
 p5 <- lm(formula(grpavg.formula), data = fgm)
 
 ###########################################################################################
-# Ref groups: birth.year.fac, governate, wealth.index 
+# Ref groups: birth.year.fac, governorate, wealth.index 
 
 grpavg.col.names <- c('urban.rural', 'educ.lvl', 'religion', 'med.help.permission.fac', 'med.help.distance.fac', 'med.help.transportation.fac',
                       'mother.circum.fac', 'partner.educlvl.fac', 'occupation.2.fac', 'partner.occupation.2.fac')
 
-grpavg.formula <- "has.or.intends.circum ~ (governate + birth.year.fac + wealth.index)^2 + religion + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
+grpavg.formula <- "has.or.intends.circum ~ (governorate + birth.year.fac + wealth.index)^2 + religion + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
 
-fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governate', 'birth.year.fac', 'wealth.index')], function(df)
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c('governorate', 'birth.year.fac', 'wealth.index')], function(df)
 {
   for (col.name in grpavg.col.names)
   {
@@ -126,11 +126,11 @@ grpavg.formula <- paste(grpavg.formula, paste(grep("^grpavg", names(fgm), value 
 p6 <- lm(formula(grpavg.formula), data = fgm)
 ###########################################################################################
 
-radius <- 0.5
+radius <- 1 
 grpavg.col.names <- c('urban.rural', 'educ.lvl', 'religion', 'med.help.permission.fac', 'med.help.distance.fac', 'med.help.transportation.fac',
                       'mother.circum.fac', 'partner.educlvl.fac', 'occupation.2.fac', 'partner.occupation.2.fac', 'wealth.index')
 
-grpavg.formula <- "has.or.intends.circum ~ governate * birth.year.fac + wealth.index + religion + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
+grpavg.formula <- "has.or.intends.circum ~ birth.year.fac + governorate + wealth.index + religion + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac"
 
 byrad.grpavg.fun <- function(uc, df)
 {
@@ -153,6 +153,102 @@ fgm <- do.call(rbind, by.radius(fgm.data.daughters.08, radius, indices = fgm.dat
 grpavg.formula <- paste(grpavg.formula, paste(grep("^grpavg", names(fgm), value = TRUE), collapse = " + "), sep = " + ")
 p7 <- lm(formula(grpavg.formula), data = fgm)
 
+###########################################################################################
+
+# Ref group: governorate and religion
+
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c("birth.year.fac", "governorate", "religion")], function(df)
+{
+  df$grpavg.has.or.intends.circum <- mean(df$has.or.intends.circum, na.rm = TRUE) 
+  df$grpavg.circum <- mean(df$circum, na.rm = TRUE)
+  df$grpavg.med <- mean(df$med.circum, na.rm = TRUE)
+  df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
+
+  return(df)
+}))
+
+p8 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + religion + religion:birth.year.fac + grpavg.has.or.intends.circum + wealth.index + grpavg.circum_med + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac,
+        data = fgm) 
+        
+###########################################################################################
+
+# Ref group: governorate
+
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c("birth.year.fac", "governorate", "urban.rural")], function(df)
+{
+  df$grpavg.has.or.intends.circum <- mean(df$has.or.intends.circum, na.rm = TRUE) 
+  df$grpavg.circum <- mean(df$circum, na.rm = TRUE)
+  df$grpavg.med <- mean(df$med.circum, na.rm = TRUE)
+  df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
+
+  return(df)
+}))
+
+p9 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.has.or.intends.circum + grpavg.circum_med + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
+        data = fgm) 
+
+###########################################################################################
+# Ref group: governorate
+
+calc.grpavg <- function(df)
+{
+  current.birth.year <- df$birth.year[1]
+  current.governorate <- df$governorate[1]
+  current.urban.rural <- df$urban.rural[1]
+
+  grp <- subset(fgm.data.daughters.08@data, 
+                (birth.year <= current.birth.year) & (birth.year >= current.birth.year - 2) & 
+                (governorate == current.governorate) & (urban.rural == current.urban.rural))
+
+  df$grpavg.has.or.intends.circum <- mean(grp$has.or.intends.circum, na.rm = TRUE) 
+  df$grpavg.circum <- mean(grp$circum, na.rm = TRUE)
+  df$grpavg.med <- mean(grp$med.circum, na.rm = TRUE)
+  df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
+
+  return(df)
+}
+
+fgm <- do.call(rbind, by(fgm.data.daughters.08@data, fgm.data.daughters.08@data[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg))
+
+p10 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.has.or.intends.circum + grpavg.has.or.intends.circum:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
+        data = fgm) 
+###########################################################################################
+# Ref group: governorate
+
+cohort.range <- 1
+
+calc.grpavg <- function(df)
+{
+  current.birth.year <- df$birth.year[1]
+  current.governorate <- df$governorate[1]
+  current.urban.rural <- df$urban.rural[1]
+
+  grp <- subset(fgm.data.daughters.08@data, 
+                (birth.year <= current.birth.year + cohort.range) & (birth.year >= current.birth.year - cohort.range) & 
+                (governorate == current.governorate) & (urban.rural == current.urban.rural))
+
+  df$grpavg.has.or.intends.circum <- mean(grp$has.or.intends.circum, na.rm = TRUE) 
+  df$grpavg.circum <- mean(grp$circum, na.rm = TRUE)
+  df$grpavg.med <- mean(grp$med.circum, na.rm = TRUE)
+  df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
+
+  return(df)
+}
+
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= 1996)
+fgm <- do.call(rbind, by(fgm, fgm[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg))
+
+#p11 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
+#        data = fgm) 
+
+p12 <- lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac,
+        data = fgm) 
+
+p13 <- lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + (urban.rural + grpavg.circum + birth.year.fac)^3 + (grpavg.circum_med + urban.rural + birth.year.fac)^3 + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
+        data = fgm) 
+
+p14 <- plm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
+        data = fgm, model = "pooling", index = c("hh.id", "order.fac")) 
 ###########################################################################################
 
 #reg.pooled.lagged.med <- function(fgm.data) {

@@ -36,7 +36,7 @@ col.names <- c(
                'phase', 'cluster', 'hh', 'respond', 'area.unit', 'wt', 'domain', 'region', 'urban.rural', 'years.lived.res', 
                'religion', 'hh.head.sex', 'wealth.index', 'intends.circum', 'educ.lvl', 'literacy', 'med.help.permission', 'med.help.money', 'med.help.distance', 'med.help.transportation',
                'marital.age', 'partner.occupation.1', 'partner.occupation.2', 'working', 'occupation.1', 'occupation.2', 'work.for.whom', 'work.home', 'partner.educlvl', 'partner.age',
-               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governate', 'prev.governate',
+               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governorate', 'prev.governate',
                'nofpuse.husbandopposed', 'nofpuse.noaccess.toofar' 
 #               'prenatal.doctor', 'prenatal.nurse', 'prenatal.daya', 'prenatal.other', 'prenatal.noone',
 #               'assist.doctor', 'assist.nurse', 'assist.daya', 'assist.other', 'assist.noone', 
@@ -121,7 +121,8 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
   age <- dhs.year - birth.year
   has.or.intends.circum <- ifelse(circum == 1 | ((age <= 12) & (intends.circum == 1)), 1, 0)
   med.circum <- ifelse(circum == 1 & (who.circum %in% c(1, 2)), 1, 0)
-  year.circum <- factor(ifelse(circum == 1 & age.circum <= 19, birth.year + age.circum, NA), ordered = TRUE)
+  year.circum <- ifelse(circum == 1 & age.circum <= 19, birth.year + age.circum, NA)
+  year.circum.fac <- factor(year.circum)
 
 #  timeperiod.circum <- factor(ifelse(year.circum > "2007", 0,
 #                                                           ifelse(year.circum >= "1997", 1, 
@@ -149,8 +150,8 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
   occupation.1.fac <- factor(occupation.1)
   occupation.2.fac <- factor(occupation.2, levels = occupation.2.levels, labels = occupation.2.labels)
   partner.educlvl.fac <- factor(partner.educlvl, 
-                                levels = c(0:3), #, 8, 9), 
-                                labels = c('no educ', 'primary', 'secondary', 'higher')) #, "don't know", 'missing'))
+                                levels = c(0:5), #, 8, 9), 
+                                labels = c('no educ', 'incomplete primary', 'complete primary', 'incomplete secondary', 'complete secondary', 'higher')) #, "don't know", 'missing'))
   mother.circum.fac <- factor(mother.circum, 
                               levels = c(0:1), #, 9), 
                               labels = c('no', 'yes')) #, 'missing'))

@@ -9,7 +9,7 @@
 \usepackage{enumerate}
 \usepackage[utf8x]{inputenc}
 
-\renewcommand{\baselinestretch}{2}
+%\renewcommand{\baselinestretch}{2}
 
 \newtheorem{prop}{Proposition}
 
@@ -143,13 +143,33 @@ This is then plugged into \ref{first_regression} to get
 \end{equation}
 However, this still does not take care of the endogeneity of $E[m_{ijt}|j,t,y_{ijt} = 1]$.  For that we need to rely on an instrumental variable.  
 
+\pagebreak
+
 \subsection{\`{A} la Bertrand et al.}
 
-We estimate
+We estimate adopting the same model as \citet{Bertrand2000}
 \begin{equation}
-  y_{ijkt} = \alpha + \alpha_t + \beta_1 \bar{y}_{jkt} + \beta_2 \bar{m}_{jkt} + \beta_3 \bar{y}_{jkt} \times \bar{m}_{jkt} + \gamma x_{ijt} + \delta_j + \delta_{jt} + \theta_k + \theta_{kt} + \varepsilon_{ijkt}
+  fgm_{ijkt} = \alpha_t + \beta_{1t} \overline{fgm}_{j,k,t(n)} + \beta_{2t} \overline{med}_{j,k,t(n)} + \beta_{3t} \overline{fgm}_{j,k,t(n)} \times \overline{med}_{j,k,t(n)} + \gamma x_{ijt} + \delta_{jt} + \theta_{kt} + \varepsilon_{ijkt}
 \end{equation}
-where $i$ refers to individual daughters; $j$ to a geographic region; $k$ to other groups such as wealth, religion, or education; and $t$ to the birth year.  $y \in \{0, 1\}$ is a binary choice variable reflecting the decision to circumcise $i$.  $m \in \{0, 1\}$ is another binary choice variable indicating whether the household opted for circumcision by a trained health provider or not. $x$ are $i$'s household characteristics.
+where $i$ refers to individual daughters; $j$ to a geographic region; $k$ to rural versus urban; and $t$ to the birth year (cohort).  $fgm \in \{0, 1\}$ is a binary choice variable reflecting the decision to circumcise $i$.  $med \in \{0, 1\}$ is another binary choice variable indicating whether the household opted for circumcision by a trained health provider or not. $x$ are $i$'s household characteristics: mother's marital age, occupation, education level; father's occupation and education level; household's wealth index, religion, and distance/transportation level of difficulty in seeking medical care.
+$\overline{fgm}_{j,k,t(n)}$ is the mean decision for daughters in the $k$ urban/rural part of governorate $j$, and who are in the same cohort as $i$ or in the cohort $\pm 1$.  Similarly, $\overline{med}_{i,k,t(n)}$ is the group mean of which method of circumcision is chosen.
+
+Omitted variable bias is controlled in this regression by:
+\begin{enumerate}
+  \item Cohort effect 
+  \item Cohort variant local region (governorate) fixed effects capture unobserved differences between regions across time
+  \item Cohort variant urban/rural fixed effects capture unobserved differences between rural and urban areas
+\end{enumerate}
+
+<<echo=FALSE>>=
+require(lmtest)
+require(sandwich)
+load("p12.RData")
+@
+
+<<>>=
+coeftest(p12, vcov = vcov(p12, type = "HC0"))
+@
 
 \nocite{Refaat}
 \nocite{Yount}
