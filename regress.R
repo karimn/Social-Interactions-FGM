@@ -1,4 +1,7 @@
 library(plm)
+library(car)
+library(lmtest)
+library(sandwich)
 
 pl1 <- plm(has.or.intends.circum ~ ADM1SALBNA + birth.year.fac + urban.rural + religion + wealth.index + educ.lvl + med.help.permission.fac +
                                    med.help.distance.fac + med.help.transportation.fac +
@@ -217,7 +220,7 @@ p10 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:bir
 
 cohort.range <- 1
 
-calc.grpavg <- function(df)
+calc.grpavg.daughters <- function(df)
 {
   current.birth.year <- df$birth.year[1]
   current.governorate <- df$governorate[1]
@@ -227,28 +230,97 @@ calc.grpavg <- function(df)
                 (birth.year <= current.birth.year + cohort.range) & (birth.year >= current.birth.year - cohort.range) & 
                 (governorate == current.governorate) & (urban.rural == current.urban.rural))
 
-  df$grpavg.has.or.intends.circum <- mean(grp$has.or.intends.circum, na.rm = TRUE) 
-  df$grpavg.circum <- mean(grp$circum, na.rm = TRUE)
-  df$grpavg.med <- mean(grp$med.circum, na.rm = TRUE)
+  if ('has.or.intends.circum' %in% names(df)) 
+    df$grpavg.has.or.intends.circum <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "has.or.intends.circum"], na.rm = TRUE), 0) 
+
+  df$grpavg.circum <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "circum"], na.rm = TRUE), 0) 
+  df$grpavg.med <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "med.circum"], na.rm = TRUE), 0) 
   df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
 
   return(df)
 }
 
-fgm <- subset(fgm.data.daughters.08@data, birth.year <= 1996)
-fgm <- do.call(rbind, by(fgm, fgm[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg))
+subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, na.rows = NULL)
+{
+  if (!is.null(youngest.cohort)) fgm.data <- subset(fgm.data, (birth.year <= youngest.cohort) & (circum <= 1))
+  if (!is.null(na.rows)) fgm.data <- fgm.data[-na.rows,]
+  
+  do.call(rbind, by(fgm.data, fgm.data[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg.daughters))
+}
+
+fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data)
 
 #p11 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
 #        data = fgm) 
 
-p12 <- lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac,
-        data = fgm) 
+p12.lm <- function(fgm)
+  lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
+
+p12 <- p12.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(p12)))
+  p12 <- p12.lm(subset.to.regress.daughters(fgm, na.rows = na.action(p12)))
+
+vcov.type <- "HC0"
+vc <- vcovHC(p12, vcov.type)
+
+coeftest(p12, vcov = vc)
+
+coef.names <- names(coef(p12))
+linearHypothesis(p12, coef.names[grep("med$", coef.names)], vcov = vc)
 
 p13 <- lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + (urban.rural + grpavg.circum + birth.year.fac)^3 + (grpavg.circum_med + urban.rural + birth.year.fac)^3 + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
         data = fgm) 
 
 p14 <- plm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
         data = fgm, model = "pooling", index = c("hh.id", "order.fac")) 
+
+###########################################################################################
+
+calc.grpavg.all <- function(df)
+{
+  current.birth.year <- df$birth.year[1]
+  current.governorate <- df$governorate[1]
+  current.urban.rural <- df$urban.rural[1]
+
+  grp <- subset(fgm.data.all.08, 
+                (birth.year <= current.birth.year + cohort.range) & (birth.year >= current.birth.year - cohort.range) & 
+                (governorate == current.governorate) & (urban.rural == current.urban.rural))
+
+  if ('has.or.intends.circum' %in% names(df)) 
+    df$grpavg.has.or.intends.circum <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "has.or.intends.circum"], na.rm = TRUE), 0) 
+
+  df$grpavg.circum <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "circum"], na.rm = TRUE), 0) 
+  df$grpavg.med <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "med.circum"], na.rm = TRUE), 0) 
+  df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
+
+  return(df)
+}
+
+subset.to.regress.all <- function(fgm.data, youngest.cohort = 1988, oldest.cohort = 1959, na.rows = NULL)
+{
+  if (!is.null(youngest.cohort)) fgm.data <- subset(fgm.data, (birth.year <= youngest.cohort) & (circum <= 1))
+  if (!is.null(oldest.cohort)) fgm.data <- subset(fgm.data, (birth.year >= oldest.cohort) & (circum <= 1))
+  if (!is.null(na.rows)) fgm.data <- fgm.data[-na.rows,]
+  
+  do.call(rbind, by(fgm.data, fgm.data[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg.all))
+}
+
+p15.lm <- function(fgm)
+  lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + marital.age + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
+
+p15 <- p15.lm(fgm <- subset.to.regress.all(fgm.data.all.08))
+
+if (!is.null(na.action(p15)))
+  p15 <- p15.lm(subset.to.regress.all(fgm, na.rows = na.action(p15)))
+
+vcov.type <- "HC0"
+vc <- vcovHC(p15, vcov.type)
+
+coeftest(p15, vcov = vc)
+
+coef.names <- names(coef(p15))
+linearHypothesis(p15, coef.names[grep("med$", coef.names)], vcov = vc)
 ###########################################################################################
 
 #reg.pooled.lagged.med <- function(fgm.data) {
