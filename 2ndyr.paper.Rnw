@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 
 \usepackage{fullpage}
+\usepackage{longtable}
 \usepackage{amsmath}
 \usepackage{amssymb} 
 \usepackage{amsthm}
@@ -105,12 +106,12 @@ was run, where $i$ identifies the household and $j$ identifies a daughter's orde
 
 <<echo=FALSE>>=
 library(plm)
-load("fgm.data.daughters.RData")
+#load("fgm.data.daughters.RData")
 @
 
 <<>>=
-summary(res.yesno <- plm(circum ~ lag(circum, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
-                         data = fgm.data.daughters.08@data, index = c("hh.id", "order"), model = "pooling"))
+#summary(res.yesno <- plm(circum ~ lag(circum, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
+#                         data = fgm.data.daughters.08@data, index = c("hh.id", "order"), model = "pooling"))
 @
 
 \section{Social Effects}
@@ -164,11 +165,92 @@ Omitted variable bias is controlled in this regression by:
 <<echo=FALSE>>=
 require(lmtest)
 require(sandwich)
-load("p12.RData")
+require(car)
+load("fgm.RData")
+source("outreg-worked.R")
+
+reg.filter <- function(regname)
+{
+  #if ((length(grep('governorate', regname)) > 0) |
+  #    (length(grep('^birth\\.year\\.fac\\d{4}$', regname)) > 0))
+  #  return(NULL)
+
+  if (length(grep('^urban\\.ruralrural$', regname)) > 0)
+    return('Rural')
+
+  if (length(grep('^grpavg\\.circum$', regname)) > 0)
+    return('$\\overline{fgm}_{j,k,t(n)}$')
+
+  if (length(grep('^grpavg\\.has\\.or\\.intends\\.circum', regname)) > 0)
+    return('$\\overline{fgm\\_or\\_intends}_{j,k,t(n)}$')
+
+  if (length(grep('^grpavg\\.med$', regname)) > 0)
+    return('$\\overline{med}_{j,k,t(n)}$')
+
+  if (length(grep('^grpavg\\.circum_med$', regname)) > 0)
+    return('$\\overline{fgm}_{j,k,t(n)} \\times \\overline{med}_{j,k,t(n)}$')
+
+  if (length(grep('^educ\\.lvl', regname)) > 0)
+    return(sub('^educ\\.lvl(\\w)(\\w+)$', 'Mother\'s education: \\U\\1\\E\\2', regname, perl = TRUE)) 
+
+  if (length(grep('^marital\\.age', regname)) > 0)
+    return('Mother\'s Marital Age')
+
+  if (length(grep('^mother\\.circum\\.yes', regname)) > 0)
+    return('Mother Circumcised')
+
+  if (length(grep('^religionchristian', regname)) > 0)
+    return('Religion: Christian')
+
+  if (length(grep('^wealth\\.index', regname)) > 0)
+    return(sub('^wealth\\.index(\\w)(\\w+)$', 'Wealth Index: \\U\\1\\E\\2', regname, perl = TRUE)) 
+
+  return(NULL)
+}
+
+cohort.present <- function(coefs)
+{
+  return(c("Cohort Dummies", ifelse(length(grep("^birth.year.fac\\d{4}$", rownames(coefs))) > 0, "Yes", "")))
+}
+
+governorate.present <- function(coefs)
+{
+  return(c("Governorate Dummies", ifelse(length(grep("^governorate", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.governorate.present <- function(coefs)
+{
+  return(c("Cohort $\\times$ Governorate Dummies", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:governorate", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.rural.present <- function(coefs)
+{
+  return(c("Cohort $\\times$ Rural Dummies", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:urban\\.ruralrural", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.grpavg.circum.present <- function(coefs)
+{
+  return(c("Cohort $\\times \\overline{fgm}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.circum", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.grpavg.med.present <- function(coefs)
+{
+  return(c("Cohort $\\times \\overline{med}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.med", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.grpavg.circum_med.present <- function(coefs)
+{
+  return(c("Cohort $\\times \\overline{fgm}_{j,k,t(n)} \\times \\overline{med}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.circum_med", rownames(coefs))) > 0, "Yes", "")))
+}
+
+cohort.grpavg.has.or.intends.present <- function(coefs)
+{
+  return(c("Cohort $\\times \\overline{fgm\\_or\\_intends}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.has\\.or", rownames(coefs))) > 0, "Yes", "")))
+}
 @
 
-<<>>=
-coeftest(p12, vcov = vcov(p12, type = "HC0"))
+<<echo=FALSE, results=tex>>=
+outreg(list(p12, p13, p14, p15), varCallback = reg.filter, vcov = list(vac.12, vac.13, vac.14, vac.15), title = "FGM Social Effects Regression", lyx = FALSE, longtable = TRUE, pvalue = TRUE, showAIC = FALSE, isPresentFuncs = c(cohort.present, governorate.present, cohort.governorate.present, cohort.rural.present, cohort.grpavg.circum.present, cohort.grpavg.med.present, cohort.grpavg.circum_med.present, cohort.grpavg.has.or.intends.present))
 @
 
 \nocite{Refaat}

@@ -2,6 +2,7 @@ library(plm)
 library(car)
 library(lmtest)
 library(sandwich)
+library(AER)
 
 pl1 <- plm(has.or.intends.circum ~ ADM1SALBNA + birth.year.fac + urban.rural + religion + wealth.index + educ.lvl + med.help.permission.fac +
                                    med.help.distance.fac + med.help.transportation.fac +
@@ -237,6 +238,17 @@ calc.grpavg.daughters <- function(df)
   df$grpavg.med <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "med.circum"], na.rm = TRUE), 0) 
   df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
 
+  inst.grp <- subset(fgm.data.daughters.08@data, 
+                (birth.year <= current.birth.year + cohort.range) & (birth.year >= current.birth.year - cohort.range) & 
+                (urban.rural == current.urban.rural))
+
+  if ('has.or.intends.circum' %in% names(df)) 
+    df$inst.grpavg.has.or.intends.circum <- mean(inst.grp$has.or.intends.circum, na.rm = TRUE) 
+
+  df$inst.grpavg.circum <- mean(inst.grp$circum, na.rm = TRUE)
+  df$inst.grpavg.med <- mean(inst.grp$med.circum, na.rm = TRUE)
+  df$inst.grpavg.circum_med <- df$inst.grpavg.circum * df$inst.grpavg.med
+
   return(df)
 }
 
@@ -248,7 +260,7 @@ subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, na.row
   do.call(rbind, by(fgm.data, fgm.data[c("birth.year.fac", "governorate", "urban.rural")], calc.grpavg.daughters))
 }
 
-fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data)
+vcov.type <- "HC0"
 
 #p11 <- lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
 #        data = fgm) 
@@ -259,22 +271,126 @@ p12.lm <- function(fgm)
 p12 <- p12.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
 
 if (!is.null(na.action(p12)))
-  p12 <- p12.lm(subset.to.regress.daughters(fgm, na.rows = na.action(p12)))
+  p12 <- p12.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(p12)))
 
-vcov.type <- "HC0"
-vc <- vcovHC(p12, vcov.type)
+vc.12 <- vcovHC(p12, vcov.type)
+vac.12 <- vcovHAC(p12)
 
-coeftest(p12, vcov = vc)
+coeftest(p12, vcov = vac.12)
 
 coef.names <- names(coef(p12))
-linearHypothesis(p12, coef.names[grep("med$", coef.names)], vcov = vc)
+F12.1 <- linearHypothesis(p12, coef.names[grep("_med$", coef.names)], vcov = vac.12)
+F12.2 <- linearHypothesis(p12, coef.names[grep("[^_]med$", coef.names)], vcov = vac.12)
 
-p13 <- lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + (urban.rural + grpavg.circum + birth.year.fac)^3 + (grpavg.circum_med + urban.rural + birth.year.fac)^3 + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
-        data = fgm) 
+p13.lm <- function(fgm)
+  lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
 
-p14 <- plm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + partner.educlvl.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index,
-        data = fgm, model = "pooling", index = c("hh.id", "order.fac")) 
+p13 <- p13.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
 
+if (!is.null(na.action(p13)))
+  p13 <- p13.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(p13)))
+
+vc.13 <- vcovHC(p13, vcov.type)
+vac.13 <- vcovHAC(p13)
+
+coeftest(p13, vcov = vac.13)
+
+coef.names <- names(coef(p13))
+F13.1 <- linearHypothesis(p13, coef.names[grep("^birth.year.*circum$", coef.names)], vcov = vac.13)
+F13.2 <- linearHypothesis(p13, coef.names[grep("^birth.year.*med$", coef.names)], vcov = vac.13)
+
+p14.lm <- function(fgm)
+  lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.has.or.intends.circum + grpavg.has.or.intends.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
+
+p14 <- p14.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(p14)))
+  p14 <- p14.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(p14)))
+
+vc14 <- vcovHC(p14, vcov.type)
+vac.14 <- vcovHAC(p14)
+
+coeftest(p14, vcov = vac.14)
+
+coef.names <- names(coef(p14))
+F14.1 <- linearHypothesis(p14, coef.names[grep("med$", coef.names)], vcov = vac.14)
+F14.2 <- linearHypothesis(p14, coef.names[grep("^birth.year.*circum$", coef.names)], vcov = vac.14)
+
+p15.lm <- function(fgm)
+  lm(has.or.intends.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.has.or.intends.circum + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
+
+p15 <- p15.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(p15)))
+  p15 <- p15.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(p15)))
+
+vc15 <- vcovHC(p15, vcov.type)
+vac.15 <- vcovHAC(p15)
+
+coeftest(p15, vcov = vac.15)
+
+coef.names <- names(coef(p15))
+
+p16.lm <- function(fgm)
+  lm(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + urban.rural:birth.year.fac + grpavg.circum + grpavg.med + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm) 
+
+p16 <- p16.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(p16)))
+  p16 <- p16.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(p16)))
+
+vc.16 <- vcovHC(p16, vcov.type)
+vac.16 <- vcovHAC(p16)
+
+coeftest(p16, vcov = vac.16)
+
+m1.lm <- function(fgm)
+  lm(med.circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + grpavg.circum + grpavg.circum:birth.year.fac + grpavg.med + grpavg.med:birth.year.fac + grpavg.circum_med + grpavg.circum_med:birth.year.fac + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac, data = fgm, subset = circum == 1) 
+
+m1 <- m1.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(m1)))
+  m1 <- m1.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(m1)))
+
+vc.m1 <- vcovHC(m1, vcov.type)
+vac.m1 <- vcovHAC(m1)
+
+coeftest(m1, vcov = vac.m1)
+
+coef.names <- names(coef(m1))
+linearHypothesis(m1, coef.names[grep("med$", coef.names)], vcov = vac.m1)
+
+i1.lm <- function(fgm)
+  ivreg(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + grpavg.circum + grpavg.med + grpavg.circum_med + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac | birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac + inst.grpavg.circum + inst.grpavg.med + inst.grpavg.circum_med, data = fgm) 
+
+i1 <- i1.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(i1)))
+  i1 <- i1.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(i1)))
+
+vcov.type <- "HC0"
+vc <- vcovHC(i1, vcov.type)
+
+coeftest(i1, vcov = vc)
+
+coef.names <- names(coef(i1))
+linearHypothesis(i1, coef.names[grep("grpavg", coef.names)], vcov = vc)
+
+i2.lm <- function(fgm)
+  ivreg(circum ~ birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + grpavg.circum + grpavg.med + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac | birth.year.fac + governorate + governorate:birth.year.fac + urban.rural + educ.lvl + med.help.permission.fac + med.help.distance.fac + med.help.transportation.fac + marital.age + mother.circum.fac + occupation.2.fac + partner.occupation.2.fac + religion + wealth.index + partner.educlvl.fac + inst.grpavg.circum + inst.grpavg.med, data = fgm) 
+
+i2 <- i2.lm(fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data))
+
+if (!is.null(na.action(i2)))
+  i2 <- i2.lm(fgm <- subset.to.regress.daughters(fgm, na.rows = na.action(i2)))
+
+vcov.type <- "HC0"
+vc <- vcovHC(i2, vcov.type)
+
+coeftest(i2, vcov = vc)
+
+coef.names <- names(coef(i2))
+linearHypothesis(i2, coef.names[grep("grpavg", coef.names)], vcov = vc)
 ###########################################################################################
 
 calc.grpavg.all <- function(df)
