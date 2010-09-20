@@ -113,8 +113,8 @@ occupation.2.levels <- c(0:9) #, 98, 99)
 occupation.2.labels <- c('no work', 'prof., tech., manag.', 'clerical', 'sales', 'agri-self employed', 'agri-employee', 'hh & domestic', 
                          'services', 'skilled manual', 'unskilled manual') #, "don't know", 'missing')
 
-med.help.levels <- 0:2 #,9
-med.help.labels <- c('no problem', 'big problem', 'not big problem') #, 'missing')
+med.help.levels <- 1:2 #,9
+med.help.labels <- c('big problem', 'not big problem') #, 'missing')
 
 fgm.data.daughters.08 <- within(fgm.data.daughters.08, 
 {
@@ -155,6 +155,9 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
   mother.circum.fac <- factor(mother.circum, 
                               levels = c(0:1), #, 9), 
                               labels = c('no', 'yes')) #, 'missing'))
+
+  wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
+
 })
 
 # GPS Data
