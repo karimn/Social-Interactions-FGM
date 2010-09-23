@@ -15,40 +15,6 @@
 
 require(lmtest)
 
-sum.coefs <- function(reg.res, data, time.dummy, vcov = NULL, to.sum = NULL)
-{
-  ret.mat <- NULL
-  row.names <- NULL
-  time.lvls <- levels(data[, time.dummy])
-
-  coefs <- coeftest(reg.res, vcov = vcov)
-
-  timeinvar.estimate <- ifelse(!is.null(to.sum), coefs[to.sum, 1], coefs["(Intercept)", 1])
-
-  for (time.lvl in time.lvls)
-  {
-    lvl.name <- sprintf("%s%s%s",  time.dummy, time.lvl, ifelse(is.null(to.sum), "", paste(":", to.sum, sep = '')))
-    where.index <- grep(sprintf("^%s$", gsub("\\.", "\\\\.", lvl.name)), rownames(coefs))
-
-    stopifnot(length(where.index) < 2)
-
-    if (length(where.index) == 0)
-      next
-
-    estimate.sum <- coefs[lvl.name, 1] + timeinvar.estimate
-
-    lh <- linearHypothesis(reg.res, sprintf("%s + %s", ifelse(is.null(to.sum), "(Intercept)", to.sum), lvl.name), vcov = vcov)
-    fstat.sum <- lh[2,3]
-    pval.sum <- lh[2,4]
-
-    ret.mat <- rbind(ret.mat, c(estimate.sum, fstat.sum, pval.sum))
-    row.names <- c(row.names, sprintf("%s%s_%s", ifelse(is.null(to.sum), "", paste(to.sum, ":", sep = '')), time.dummy, time.lvl))
-  }
-
-  rownames(ret.mat) <- row.names
-  colnames(ret.mat) <- c("Estimate", "F statistic", "p-value")
-  return(ret.mat)
-}
 
 outreg <- function(incoming, title="My Regression", label="", modelLabels=NULL, varLabels=NULL, tight=TRUE, showAIC=TRUE, lyx=TRUE, pvalue = FALSE, longtable = FALSE, varCallback = NULL, isPresentFuncs = NULL, vcov = NULL){
 

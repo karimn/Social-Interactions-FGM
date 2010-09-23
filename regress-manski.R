@@ -125,3 +125,27 @@ vac.5 <- vcovHAC(p5)
 
 coeftest(p5, vcov = vac.5)
 
+###########################################################################################
+
+dep.reg <- c('med')
+ref.reg <- NULL #c("wealth.index.2")
+all.fac.reg <- c("urban.rural", 'religion', 'educ.lvl', 'med.help.distance.fac', 'med.help.transportation.fac', 'mother.circum.fac', 'wealth.index')
+dir.reg <- list(factors = all.fac.reg[!all.fac.reg %in% ref.reg],
+                cont = c('marital.age'))
+
+fgm <- subset(fgm.data.daughters.08@data, circum == 1)
+fgm <- subset.to.reg(fgm, dir.reg, ref.reg)
+
+grpavg.formula <- gen.reg.formula(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact = FALSE)
+
+pm1 <- lm(formula(grpavg.formula), data = fgm) 
+
+if (!is.null(na.action(pm5)))
+{
+  fgm <- subset.to.reg(fgm, dir.reg, ref.reg, na.rows = na.action(pm1))
+  pm1 <- lm(formula(grpavg.formula), data = fgm)  
+}
+
+vac.pm1 <- vcovHAC(pm1)
+
+coeftest(pm1, vcov = vac.pm1)
