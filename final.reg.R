@@ -1,4 +1,3 @@
-library(plm)
 library(car)
 library(lmtest)
 library(sandwich)
@@ -13,6 +12,9 @@ sum.coefs <- function(reg.res, data, time.dummy, vcov = NULL, to.sum = NULL)
   time.lvls <- names(time.xtabs)[time.xtabs > 0] # levels(data[, time.dummy])
 
   coefs <- coeftest(reg.res, vcov = vcov)
+
+  if (!is.null(to.sum) && (length(grep(to.sum, rownames(coefs), fixed = TRUE)) == 0))
+    return(NULL)
 
   timeinvar.estimate <- ifelse(!is.null(to.sum), coefs[to.sum, 1], coefs["(Intercept)", 1])
 
@@ -71,192 +73,435 @@ sum.coefs <- function(reg.res, data, time.dummy, vcov = NULL, to.sum = NULL)
   return(ret.mat)
 }
 
-print.cohorts <- function(results, coef.name = NULL, indent = 0, pvalue = TRUE, which.alter = 2)
+print.cohorts <- function(results, coef.name = NULL, indent = 1, pvalue = TRUE)
 {
   row.names <- NULL
   
-  for (i in 1:length(results))
-  {
-    results[[i]][[which.alter]]$sum.coefs <- sum.coefs(results[[i]][[which.alter]]$lm, 
-                                                       results[[i]][[which.alter]]$fgm, 
-                                                       "birth.year.fac", 
-                                                       results[[i]][[which.alter]]$vcov,
-                                                       coef.name)
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        results[[d]][[k]][[s]]$sum.coefs <- sum.coefs(results[[d]][[k]][[s]]$lm, 
+                                                      results[[d]][[k]][[s]]$fgm, 
+                                                      "birth.year.fac", 
+                                                      results[[d]][[k]][[s]]$vcov,
+                                                      coef.name)
 
-    if (is.null(row.names) & (is.matrix(results[[i]][[which.alter]]$sum.coefs)))
-      row.names <- rownames(results[[i]][[which.alter]]$sum.coefs)
-  }
-
-  for (i in 1:length(results))
-    if (is.matrix(results[[i]][[which.alter]]$sum.coefs))
-      results[[i]][[which.alter]]$sum.coefs.signif <- symnum(results[[i]][[which.alter]]$sum.coefs[, 3], 
-                                                             corr = FALSE, 
-                                                             na = FALSE, 
-                                                             cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                                                             symbols = c("***", "**", "*", ".", " "))
-    else
-      results[[i]][[which.alter]]$sum.coefs.signif <- symnum(results[[i]][[which.alter]]$sum.coefs[3], 
-                                                             corr = FALSE, 
-                                                             na = FALSE, 
-                                                             cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                                                             symbols = c("***", "**", "*", ".", " "))
+        if (!is.null(results[[d]][[k]][[s]]$sum.coefs))
+          if (is.matrix(results[[d]][[k]][[s]]$sum.coefs))
+          {
+            if (is.null(row.names))
+              row.names <- rownames(results[[d]][[k]][[s]]$sum.coefs)
+              
+            results[[d]][[k]][[s]]$sum.coefs.signif <- symnum(results[[d]][[k]][[s]]$sum.coefs[, 3], 
+                                                                   corr = FALSE, 
+                                                                   na = FALSE, 
+                                                                   cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
+                                                                   symbols = c("***", "**", "*", ".", " "))
+          }
+          else
+          {
+            results[[d]][[k]][[s]]$sum.coefs.signif <- symnum(results[[d]][[k]][[s]]$sum.coefs[3], 
+                                                                   corr = FALSE, 
+                                                                   na = FALSE, 
+                                                                   cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
+                                                                   symbols = c("***", "**", "*", ".", " "))
+          }
+      }
 
   for (r in row.names)
   {
-    if (indent > 0) for (i in 1:indent) cat("  ")
+    if (indent > 0) for (i in 1:indent) cat("~~")
 
     cat(sub(".*birth\\.year\\.fac_(\\d+)", "\\1", r))
 
-    for (model.refgrp in names(results))
-    {
-      if (is.matrix(results[[model.refgrp]][[which.alter]]$sum.coefs))
-      {
-          est <- results[[model.refgrp]][[which.alter]]$sum.coefs[r, 1] #coef(model)[regname]
-          #se <- results[[model.refgrp]][[which.alter]]$coefs[regname, 2] #sqrt(diag(vcov(model)))[regname]
-          pval <- results[[model.refgrp]][[which.alter]]$sum.coefs[r, 3]
+    #for (model.refgrp in names(results))
+    for (d in names(results))
+      for (k in names(results[[d]]))
+        for (s in names(results[[d]][[k]]))
+        {
+          if (is.matrix(results[[d]][[k]][[s]]$sum.coefs))
+          {
+              est <- results[[d]][[k]][[s]]$sum.coefs[r, 1] 
+              pval <- results[[d]][[k]][[s]]$sum.coefs[r, 3]
 
-          if (!is.na(est))
-            cat(paste("   &   ", round(est,3), results[[model.refgrp]][[which.alter]]$sum.coefs.signif[r]))
+              if (!is.na(est))
+                cat(paste("   &   ", round(est,3), results[[d]][[k]][[s]]$sum.coefs.signif[r]))
+              else
+                cat ("   & ")
+          }
           else
-            cat ("   &   ")
-      }
-      else
-        cat ("   &   ")
-    }
+            cat ("   & ")
+        }
 
-    cat (" \\\\\n ")
+    cat (" \\\\* \n ")
 
     if (pvalue)
-      for (model.refgrp in names(results))
-      {
-        if (is.matrix(results[[model.refgrp]][[which.alter]]$sum.coefs))
-        {
-            est <- results[[model.refgrp]][[which.alter]]$sum.coefs[r, 1] #coef(model)[regname]
-            pval <- results[[model.refgrp]][[which.alter]]$sum.coefs[r, 3]
+      #for (model.refgrp in names(results))
+      for (d in names(results))
+        for (k in names(results[[d]]))
+          for (s in names(results[[d]][[k]]))
+          {
+            if (is.matrix(results[[d]][[k]][[s]]$sum.coefs))
+            {
+                est <- results[[d]][[k]][[s]]$sum.coefs[r, 1] 
+                pval <- results[[d]][[k]][[s]]$sum.coefs[r, 3]
 
-            if (!is.na(est))
-              cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                if (!is.na(est))
+                  cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                else
+                  cat ("   &   ")
+            }
             else
               cat ("   &   ")
-        }
-        else
-          cat ("   &   ")
 
-      }
+          }
 
     cat (" \\\\\n ")
   }
 }
 
-print.factors <- function(results, regname, desc, pvalue = TRUE, which.alter = 2)
+print.factors <- function(results, regname, desc, pvalue = TRUE, indent = 1)
 {
-  if (length(levels(results[[1]][[which.alter]]$fgm[[regname]])) <= 2)
+  if (length(levels(results[[1]][[1]][[1]]$fgm[[regname]])) <= 2)
   {
-    lvl <- levels(results[[1]][[which.alter]]$fgm[[regname]])[2]
+    lvl <- levels(results[[1]][[1]][[1]]$fgm[[regname]])[2]
     fac <- sub("(.)(.+)", "\\U\\1\\E\\2", lvl, perl = TRUE)
     coef.name <- sprintf("%s%s", regname, lvl)
 
-    cat(fac)
+    cat(sprintf("%s\\\\\n", fac))
 
     if (!is.null(desc))
-      cat(sprintf(" (%s)", desc))
+      cat(sprintf("(%s)", desc))
+    #else
+    #  cat("}")
 
-    for (model.refgrp in names(results))
-    {
-      if (regname != model.refgrp)
-      {
-          est <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 1] #coef(model)[regname]
-          pval <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 4]
+    #for (model.refgrp in names(results))
+    for (d in names(results))
+      for (k in names(results[[d]]))
+        for (s in names(results[[d]][[k]]))
+        {
+          if (regname != k)
+          {
+              est <- results[[d]][[k]][[s]]$coefs[coef.name, 1] #coef(model)[regname]
+              pval <- results[[d]][[k]][[s]]$coefs[coef.name, 4]
 
-          if (!is.na(est))
-            cat(paste("   &   ", round(est,3), results[[model.refgrp]][[which.alter]]$signif[coef.name]))
+              if (!is.na(est))
+                cat(paste("   &   ", round(est,3), results[[d]][[k]][[s]]$signif[coef.name]))
+              else
+                cat ("   & ")
+          }
           else
-            cat ("   &   ")
-      }
-      else
-        cat ("   &   ")
-    }
+            cat ("   & ")
+        }
 
-    cat (" \\\\\n ")
+    cat (" \\\\* \n ")
 
     if (pvalue)
-      for (model.refgrp in names(results))
-      {
-        if (regname != model.refgrp)
-        {
-            est <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 1] #coef(model)[regname]
-            pval <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 4]
+#      for (model.refgrp in names(results))
+      for (d in names(results))
+        for (k in names(results[[d]]))
+          for (s in names(results[[d]][[k]]))
+          {
+            if (regname != k)
+            {
+              est <- results[[d]][[k]][[s]]$coefs[coef.name, 1] #coef(model)[regname]
+              pval <- results[[d]][[k]][[s]]$coefs[coef.name, 4]
 
-            if (!is.na(est))
-              cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                if (!is.na(est))
+                  cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                else
+                  cat ("   &   ")
+            }
             else
               cat ("   &   ")
-        }
-        else
-          cat ("   &   ")
-      }
+          }
 
     cat (" \\\\\n ")
   }
   else
   {
-    lvls <- levels(results[[1]][[which.alter]]$fgm[[regname]])
+    lvls <- levels(results[[1]][[1]][[1]]$fgm[[regname]])
 
     cat(sprintf("%s \\\\\n", desc))
 
     for (lvl in lvls[2:length(lvls)])
     {
-      if (summary(results[[1]][[which.alter]]$fgm[[regname]])[[lvl]] < 1)
+      if (summary(results[[1]][[1]][[1]]$fgm[[regname]])[[lvl]] < 1)
         next
 
       lvl.name <- sub("(.)(.+)", "\\U\\1\\E\\2", lvl, perl = TRUE) 
       coef.name <- sprintf("%s%s", regname, lvl)
 
+      if (indent > 0) for (i in 1:indent) cat("~~")
+
       cat(sprintf("  %s", lvl.name))
 
-      for (model.refgrp in names(results))
-      {
-        #if (regname != model.refgrp)
-        {
-            est <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 1] #coef(model)[regname]
-            pval <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 4]
+#      for (model.refgrp in names(results))
+      for (d in names(results))
+        for (k in names(results[[d]]))
+          for (s in names(results[[d]][[k]]))
+          {
+            #if (regname != model.refgrp)
+            {
+                est <- results[[d]][[k]][[s]]$coefs[coef.name, 1] #coef(model)[regname]
+                pval <- results[[d]][[k]][[s]]$coefs[coef.name, 4]
 
-            if (!is.na(est))
-              cat(paste("   &   ", round(est,3), results[[model.refgrp]][[which.alter]]$signif[coef.name]))
-            else
-              cat ("   &   ")
-        }
-        #else
-        #  cat ("   &   ")
-      }
+                if (!is.na(est))
+                  cat(paste("   &   ", round(est,3), results[[d]][[k]][[s]]$signif[coef.name]))
+                else
+                  cat ("   & ")
+            }
+            #else
+            #  cat ("   &   ")
+          }
 
-      cat (" \\\\\n ")
+      cat (" \\\\* \n ")
 
       if (pvalue)
-        for (model.refgrp in names(results))
-        {
-          #if (regname != model.refgrp)
-          {
-              est <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 1] #coef(model)[regname]
-              pval <- results[[model.refgrp]][[which.alter]]$coefs[coef.name, 4]
+#        for (model.refgrp in names(results))
+        for (d in names(results))
+          for (k in names(results[[d]]))
+            for (s in names(results[[d]][[k]]))
+            {
+              #if (regname != model.refgrp)
+              {
+                est <- results[[d]][[k]][[s]]$coefs[coef.name, 1] #coef(model)[regname]
+                pval <- results[[d]][[k]][[s]]$coefs[coef.name, 4]
 
-              if (!is.na(est))
-                cat(paste("   &   [", round(pval, 3), "]", sep=""))
-              else
-                cat ("   &   ")
-          }
-          #else
-          #  cat ("   &   ")
-        }
+                  if (!is.na(est))
+                    cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                  else
+                    cat ("   &   ")
+              }
+              #else
+              #  cat ("   &   ")
+            }
 
       cat (" \\\\\n ")
     }
   }
 }
 
-fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pvalue = TRUE, time.reg = "birth.year.fac", dummies = c("governorate")) # modelLabel = NULL, varLabels = NULL, showAIC=TRUE, lyx=TRUE, varCallback = NULL, isPresentFuncs = NULL, vcov = NULL, tight=TRUE, longtable = FALSE
+var.dict <- list(circum = "Circumcision", has.or.intends.circum = "Circumcision/Intention")
+
+fgm.results.outreg <- function(results, var.dict, title = "Regression", label = "", stderr = FALSE, pvalue = TRUE)
 {
-  which.alter <- 2 # I tried different alternative regressions.  Sticking to the second one for now.
+  num.dep <- length(results)
+  num.models <- 0
+
+  for (d in names(results))
+  {
+    results[[d]]$num.models <- 0
+
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        results[[d]]$num.models <- results[[d]]$num.models + 1
+        num.models <- num.models + 1
+
+        results[[d]][[k]][[s]]$coefs <- coeftest(results[[d]][[k]][[s]]$lm, vcov = results[[d]][[k]][[s]]$vcov)
+        results[[d]][[k]][[s]]$signif <- symnum(results[[d]][[k]][[s]]$coefs[, 4], 
+                                                     corr = FALSE, 
+                                                     na = FALSE, 
+                                                     cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
+                                                     symbols = c("***", "**", "*", ".", " "))
+      }
+  }
+
+  num.col <- num.models + 1
+
+  cat("\\begin{center}\n ")
+  cat(sprintf("\\begin{longtable}{*{%i}{l}}\n ", num.col))
+  cat(sprintf("\\caption{%s \\label{%s}}\\\\ \n ", title, label)) # TODO \\label{",label,"}\n ")
+  cat("\\hline \n")
+  cat("\\hline \n")
+
+  for (d in names(results))
+    cat(sprintf("& \\multicolumn{%i}{c}{%s} ", results[[d]]$num.models, var.dict[[d]]))
+
+  cat("\\\\ \n")
+
+  model.count <- 1
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        cat(sprintf("& \\multicolumn{1}{c}{(%i)} ", model.count))
+        model.count <- model.count + 1
+      }
+
+  cat("\\\\ \n")
+  cat("\\hline \n")
+  cat("\\endfirsthead \n")
+
+  cat(sprintf("\\multicolumn{%i}{c}{{\\tablename} \\thetable{} -- Continued} \\\\\n", num.col)) 
+
+  for (d in names(results))
+    cat(sprintf("& \\multicolumn{%i}{c}{%s} ", results[[d]]$num.models, var.dict[[d]]))
+
+  cat("\\\\ \n")
+
+  model.count <- 1
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        cat(sprintf("& \\multicolumn{1}{c}{(%i)} ", model.count))
+        model.count <- model.count + 1
+      }
+
+  cat("\\\\ \n")
+  cat("\\hline \n")
+  cat("\\endhead \n")
+
+  cat("\\hline \n")
+  cat("\\hline \n")
+  cat("\\endlastfoot \n")
+
+  cat("Cohort\\\\\n")
+  print.cohorts(results, indent = 1)
+
+  cat("Cohort $\\times$ Rich\\\\\n") # (Household Wealth Index)\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "wealth.index.2rich")
+
+  cat("Cohort $\\times$ Rural\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "urban.ruralrural")
+
+  cat("Cohort $\\times$ Christian\\\\\n") # (Household Religion)\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "religionchristian")
+
+  cat("Cohort $\\times \\overline{fgm}_{j(-i),k,t(n)}$\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "grpavg.circum")
+
+  cat("Cohort $\\times \\overline{int}_{j(-i),k,t(n)}$\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "grpavg.has.or.intends.circum")
+
+  cat("Cohort $\\times \\overline{med}_{j(-i),k,t(n)}$\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "grpavg.med5")
+
+  for (regname in names(covar.dict))
+  {
+    if (is.factor(results[[1]][[1]][[1]]$fgm[[regname]]))
+    {
+      print.factors(results, regname, covar.dict[[regname]], indent = 1)
+    }
+    else
+    {
+      cat(sprintf("%s", covar.dict[[regname]]))
+
+    #  for (model.refgrp in names(results))
+      for (d in names(results))
+        for (k in names(results[[d]]))
+          for (s in names(results[[d]][[k]]))
+          {
+            #if (model.refgrp != reg.name)
+            {
+                est <- results[[d]][[k]][[s]]$coefs[regname, 1] #coef(model)[regname]
+                se <- results[[d]][[k]][[s]]$coefs[regname, 2] #sqrt(diag(vcov(model)))[regname]
+                pval <- results[[d]][[k]][[s]]$coefs[regname, 4]
+
+                if (!is.na(est))
+                  cat(paste("   &   ", round(est,3), results[[d]][[k]][[s]]$signif[regname]))
+                else
+                  cat ("   & ")
+            }
+            #else
+            #  cat ("   &   ")
+
+          }
+
+      cat (" \\\\* \n ")
+
+      if (stderr)
+      {
+#        for (model.refgrp in names(results))
+        for (d in names(results))
+          for (k in names(results[[d]]))
+            for (s in names(results[[d]][[k]]))
+          #if (model.refgrp != regname)
+            {
+                est <- results[[d]][[k]][[s]]$coefs[regname, 1] #coef(model)[regname]
+                se <- results[[d]][[k]][[s]]$coefs[regname, 2] #sqrt(diag(vcov(model)))[regname]
+
+                if (!is.na(est))
+                  cat(paste("   &   (",round(se, 3), ")", sep=""))
+                else
+                  cat ("   &   ")
+            }
+          #else
+          #  cat ("   &   ")
+
+        cat (" \\\\* \n ")
+      }
+
+      if (pvalue)
+#        for (model.refgrp in names(results))
+        for (d in names(results))
+          for (k in names(results[[d]]))
+            for (s in names(results[[d]][[k]]))
+          #if (model.refgrp != regname)
+            {
+                est <- results[[d]][[k]][[s]]$coefs[regname, 1] #coef(model)[regname]
+                pval <- results[[d]][[k]][[s]]$coefs[regname, 4]
+
+                if (!is.na(est))
+                  cat(paste("   &   [", round(pval, 3), "]", sep=""))
+                else
+                  cat ("   &   ")
+            }
+          #else
+          #  cat ("   &   ")
+
+      cat (" \\\\\n ")
+    }
+  }
+
+  cat("\\hline \n")
+
+  ### Print a row for the number of cases
+  cat(paste("N"), sep="")
+
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        myDF <- sum(results[[d]][[k]][[s]]$lm$df[-3]) #omit third value from df vector
+        cat (paste("   &   ", myDF))
+      }
+
+  cat (" \\\\\n ")
+
+  cat(paste("$R^2$"),sep="")
+  
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        r.square <- summary(results[[d]][[k]][[s]]$lm)$r.square
+        cat( paste("       &", if (is.numeric(r.square)) round(r.square, 3)))
+      }
+
+  cat (" \\\\\n ")
+  cat(paste("Adjusted $R^2$"),sep="")
+  
+  for (d in names(results))
+    for (k in names(results[[d]]))
+      for (s in names(results[[d]][[k]]))
+      {
+        adj.r.squared <- summary(results[[d]][[k]][[s]]$lm)$adj.r.squared
+        cat( paste("       &", if (is.numeric(adj.r.squared)) round(adj.r.squared, 3)))
+      }
+
+  cat ("  \\\\\n ")
+
+  cat("\\end{longtable}\n")
+  cat("\\end{center}\n")
+}
+
+fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pvalue = TRUE, stderr = FALSE, time.reg = "birth.year.fac", dummies = c("governorate"), which.alter = "circum") # modelLabel = NULL, varLabels = NULL, showAIC=TRUE, lyx=TRUE, varCallback = NULL, isPresentFuncs = NULL, vcov = NULL, tight=TRUE, longtable = FALSE
+{
+  #which.alter <- 2 # I tried different alternative regressions.  Sticking to the second one for now.
   num.models <- length(results)
   num.col <- num.models + 1
 
@@ -273,11 +518,14 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
 
   cat(" \\\\\n")
   
-  cat("            ")
-  for (i in 1:num.models) 
-    cat (" & (S.E.) ")
+  if (stderr)
+  {
+    cat("            ")
+    for (i in 1:num.models) 
+      cat (" & (S.E.) ")
 
-  cat(" \\\\\n")
+    cat(" \\\\\n")
+  }
 
   if (pvalue) 
   {
@@ -305,25 +553,25 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
   }
 
   cat("Cohort\\\\\n")
-  print.cohorts(results, indent = 1)
+  print.cohorts(results, indent = 1, which.alter = which.alter)
 
-  cat("Cohort \\times Rich (Household Wealth Index)\\\\\n")
-  print.cohorts(results, indent = 1, coef.name = "wealth.index.2rich")
+  cat("Cohort $\\times$ Rich (Household Wealth Index)\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "wealth.index.2rich", which.alter = which.alter)
 
-  cat("Cohort \\times Rural\\\\\n")
-  print.cohorts(results, indent = 1, coef.name = "urban.ruralrural")
+  cat("Cohort $\\times$ Rural\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "urban.ruralrural", which.alter = which.alter)
 
-  cat("Cohort \\times Christian (Household Religion)\\\\\n")
-  print.cohorts(results, indent = 1, coef.name = "religionchristian")
+  cat("Cohort $\\times$ Christian (Household Religion)\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "religionchristian", which.alter = which.alter)
 
-  cat("Cohort \\times \\overline{med_{j(-i),k,t(n)}}\\\\\n")
-  print.cohorts(results, indent = 1, coef.name = "grpavg.med")
+  cat("Cohort $\\times \\overline{med}_{j(-i),k,t(n)}$\\\\\n")
+  print.cohorts(results, indent = 1, coef.name = "grpavg.med", which.alter = which.alter)
 
   for (regname in names(covar.dict))
   {
     if (is.factor(results[[1]][[which.alter]]$fgm[[regname]]))
     {
-      print.factors(results, regname, covar.dict[regname])
+      print.factors(results, regname, covar.dict[[regname]], which.alter = which.alter, indent = 1)
     }
     else
     {
@@ -345,31 +593,30 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
         #else
         #  cat ("   &   ")
 
-        cat (" \\\\\n ")
       }
 
-      for (model.refgrp in names(results))
-      {
-        if (model.refgrp != regname)
-        {
-            est <- results[[model.refgrp]][[which.alter]]$coefs[regname, 1] #coef(model)[regname]
-            se <- results[[model.refgrp]][[which.alter]]$coefs[regname, 2] #sqrt(diag(vcov(model)))[regname]
+      cat (" \\\\\n ")
 
-            if (!is.na(est))
-              cat(paste("   &   (",round(se, 3), ")", sep=""))
-            else
-              cat ("   &   ")
-        }
-        else
-          cat ("   &   ")
+      if (stderr)
+        for (model.refgrp in names(results))
+          #if (model.refgrp != regname)
+          {
+              est <- results[[model.refgrp]][[which.alter]]$coefs[regname, 1] #coef(model)[regname]
+              se <- results[[model.refgrp]][[which.alter]]$coefs[regname, 2] #sqrt(diag(vcov(model)))[regname]
 
-        cat (" \\\\\n ")
-      }
+              if (!is.na(est))
+                cat(paste("   &   (",round(se, 3), ")", sep=""))
+              else
+                cat ("   &   ")
+          }
+          #else
+          #  cat ("   &   ")
+
+      cat (" \\\\\n ")
 
       if (pvalue)
         for (model.refgrp in names(results))
-        {
-          if (model.refgrp != regname)
+          #if (model.refgrp != regname)
           {
               est <- results[[model.refgrp]][[which.alter]]$coefs[regname, 1] #coef(model)[regname]
               pval <- results[[model.refgrp]][[which.alter]]$coefs[regname, 4]
@@ -379,11 +626,10 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
               else
                 cat ("   &   ")
           }
-          else
-            cat ("   &   ")
+          #else
+          #  cat ("   &   ")
 
-          cat (" \\\\\n ")
-        }
+      cat (" \\\\\n ")
     }
   }
   
@@ -403,7 +649,18 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
   cat(paste("$R^2$"),sep="")
   
   for (i in 1:num.models)
-    cat( paste("       &", if (is.numeric(results[[i]][[which.alter]]$lm$r.square)) round(results[[i]][[which.alter]]$lm$r.square, 3)))
+  {
+    r.square <- summary(results[[i]][[which.alter]]$lm)$r.square
+    cat( paste("       &", if (is.numeric(r.square)) round(r.square, 3)))
+  }
+
+  cat(paste("Adjusted $R^2$"),sep="")
+  
+  for (i in 1:num.models)
+  {
+    adj.r.squared <- summary(results[[i]][[which.alter]]$lm)$adj.r.squared
+    cat( paste("       &", if (is.numeric(adj.r.squared)) round(adj.r.squared, 3)))
+  }
 
   cat ("  \\\\\n ")
 
@@ -443,24 +700,43 @@ calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.c
     grp.larger <- grp.country
   }
 
-  if ('has.or.intends.circum' %in% names(df)) 
-    df$grpavg.has.or.intends.circum <- vapply(1:nrow(df), function(rowid) mean(grp[-rowid, "has.or.intends.circum"], na.rm = TRUE), 0) 
+  grp.circum <- grp[grp$circum == 1, ]
+  grp.larger.circum <- grp.larger[grp.larger$circum == 1, ]
+  grp.geo.circum <- grp.geo[grp.geo$circum == 1, ]
+  grp.country.circum <- grp.country[grp.country$circum == 1, ]
 
   grp.mean <- function(rowid, grp.data, column) mean(grp.data[-rowid, column], na.rm = TRUE)
+
+  weighted.grp.mean <- function(rowid, grp.data, column) 
+  {
+    grp.data <- grp.data[-rowid,]
+    w.total <- sum(grp.data$weight)
+    grp.data$weight <- grp.data$weight / w.total
+    weighted.mean(grp.data[,column], grp.data$weight, na.rm = TRUE)
+  }
+
+  if ('has.or.intends.circum' %in% names(df)) 
+    df$grpavg.has.or.intends.circum <- vapply(1:nrow(df), grp.mean, 0, grp, "has.or.intends.circum")
 
   df$grpavg.circum <- vapply(1:nrow(df), grp.mean, 0, grp, "circum") 
   df$grpavg.circum2 <- vapply(1:nrow(df), grp.mean, 0, grp.larger, "circum") 
   df$grpavg.circum3 <- vapply(1:nrow(df), grp.mean, 0, grp.geo, "circum") 
   df$grpavg.circum4 <- vapply(1:nrow(df), grp.mean, 0, grp.country, "circum") 
-  df$grpavg.med <- vapply(1:nrow(df), grp.mean, 0, grp, "med.circum") 
-  df$grpavg.med2 <- vapply(1:nrow(df), grp.mean, 0, grp.larger, "med.circum") 
-  df$grpavg.med3 <- vapply(1:nrow(df), grp.mean, 0, grp.geo, "med.circum") 
-  df$grpavg.med4 <- vapply(1:nrow(df), grp.mean, 0, grp.country, "med.circum") 
+  df$wgrpavg.circum <- vapply(1:nrow(df), weighted.grp.mean, 0, grp, "circum")
+
+  df$grpavg.med <- vapply(1:nrow(df), grp.mean, 0, grp.circum, "med.circum") 
+  df$grpavg.med2 <- vapply(1:nrow(df), grp.mean, 0, grp.larger.circum, "med.circum") 
+  df$grpavg.med3 <- vapply(1:nrow(df), grp.mean, 0, grp.geo.circum, "med.circum") 
+  df$grpavg.med4 <- vapply(1:nrow(df), grp.mean, 0, grp.country.circum, "med.circum") 
+  df$grpavg.med5 <- vapply(1:nrow(df), grp.mean, 0, grp, "med.circum") 
+  df$wgrpavg.med <- vapply(1:nrow(df), weighted.grp.mean, 0, grp.circum, "med.circum") 
+  df$wgrpavg.med2 <- vapply(1:nrow(df), weighted.grp.mean, 0, grp.larger.circum, "med.circum") 
+
   df$grpavg.circum_med <- df$grpavg.circum * df$grpavg.med
   df$grpavg.circum_med2 <- df$grpavg.circum * df$grpavg.med2
   df$grpavg.circum_med3 <- df$grpavg.circum * df$grpavg.med3
   df$grpavg.circum_med4 <- df$grpavg.circum * df$grpavg.med4
-  df$grpavg.circum3_med <- df$grpavg.circum3 * df$grpavg.med
+  df$wgrpavg.circum_med2 <- df$wgrpavg.circum * df$wgrpavg.med2
 
   if ('has.or.intends.circum' %in% names(df)) 
     df$inst.grpavg.has.or.intends.circum <- mean(inst.grp$has.or.intends.circum, na.rm = TRUE) 
@@ -483,65 +759,84 @@ subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, oldest
   do.call(rbind, by(fgm.data, fgm.data[c(c("birth.year.fac", "governorate"), knetwork)], calc.grpavg.daughters, fgm.data, cohort.range, knetwork))
 }
 
+dep.var <- c("has.or.intends.circum", "circum") #, "med.circum")
+co.var <- c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "religion", "partner.educlvl.fac", "order.fac", "hh.head.sex")
+se.var <- list("grpavg.med", "grpavg.circum", "grpavg.has.or.intends.circum")
 
-dep.var <- "circum"
-co.var <- c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "partner.occupation.2.fac", "religion", "partner.educlvl.fac")
-se.var <- "grpavg.med"
 
-
-covar.dict <- list(wealth.index.2 = "Wealth Index", urban.rural = NULL, religion = "Household Religion", 
-                   educ.lvl = "Mother's Education Level", partner.educlvl.fac = "Father's Education Level",
-                   med.help.permission.fac = "Difficult Getting Permission for Medical Care", 
-                   med.help.distance.fac = "Distance to Medical Care", 
-                   med.help.transportation.fac = "Difficulty of Transportation to Medical Care", 
-                   marital.age = "Mother's Marital Age", mother.circum.fac = "Mother's FGM Status", occupation.2.fac = "Mother's Occupation") 
+covar.dict <- list(wealth.index.2 = "Wealth Index", urban.rural = NULL, religion = "Household\\\\\nReligion", 
+                   educ.lvl = "Mother's\\\\\nEducation Level", partner.educlvl.fac = "Father's\\\\\nEducation Level",
+                   med.help.permission.fac = "Difficulty\\\\\nGetting Permission\\\\\nfor Medical Care", 
+                   med.help.distance.fac = "Distance\\\\\nto Medical Care", 
+                   med.help.transportation.fac = "Difficulty\\\\\nof Transportation\\\\\nto Medical Care", 
+                   marital.age = "Mother's Marital Age", mother.circum.fac = "Mother's FGM\\\\\nStatus", occupation.2.fac = "Mother's Occupation",
+                   order.fac = "Order of Birth", hh.head.sex = "Sex of \\\\\nHead of Household") 
 
 knetworks <- c("wealth.index.2", "urban.rural", "religion")
-#knetworks <- c("wealth.index.2")
 
-results <- vector("list", length(knetworks))
-names(results) <- knetworks
-
-num.alter <- 2
-
-for (k in names(results))
+fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov = TRUE, govern.cohort.interact = TRUE, knet.cohort.interact = TRUE, se.cohort.interact = TRUE, wls = FALSE, oldest.cohort = NULL)
 {
-  results[[k]] <- vector("list", num.alter)
+  results <- vector("list", length(dep.var))
+  names(results) <- dep.var 
 
-  for (alter in 1:num.alter)
+  attr(results, "dep.var") <- dep.var
+  attr(results, "co.var") <- co.var
+  attr(results, "se.var") <- se.var
+  attr(results, "knetworks") <- knetworks
+  attr(results, "vcov") <- get.vcov
+  attr(results, "wls") <- wls
+
+  for (dep in dep.var)
   {
-    co.var.formula <- paste(co.var[(co.var != k) & ((alter == 1) | (co.var != "partner.occupation.2.fac"))], collapse = " + ")
+    results[[dep]] <- vector("list", length(knetworks))
+    names(results[[dep]]) <- knetworks
 
-    reg.formula <- sprintf("%s ~ birth.year.fac*governorate + birth.year.fac*%s + birth.year.fac*%s + %s",
-                           dep.var,
-                           k,
-                           se.var,
-                           co.var.formula)
-
-    print(reg.formula)
-
-    fgm <- subset.to.regress.daughters(fgm.data.daughters.08@data, knetwork = k)
-    p <- lm(formula(reg.formula), data = fgm)
-
-    if (!is.null(na.action(p)))
+    for (k in knetworks)
     {
-      fgm <- subset.to.regress.daughters(fgm, knetwork = k, na.rows = na.action(p))
-      p <- lm(formula(reg.formula), data = fgm)
+      results[[dep]][[k]] <- vector("list") #, length(dep.var))
+      #names(results[[dep]][[k]]) <- dep.var
+
+      for (se in se.var)
+      {
+        co.var.formula <- if (!is.null(co.var)) paste(co.var[(co.var != k)], collapse = " + ") 
+        se.formula <- if (!is.null(se)) 
+                        paste(" + ", paste(if (se.cohort.interact) 
+                                             paste("birth.year.fac", se, sep = "*") 
+                                           else 
+                                             se, 
+                                           collapse = " + "), 
+                                     sep = "") 
+                      else 
+                        ""
+
+        reg.formula <- sprintf("%s ~ %sgovernorate + %s%s %s %s",
+                               dep, 
+                               if (govern.cohort.interact) "birth.year.fac*" else "",
+                               if (knet.cohort.interact) "birth.year.fac*" else "",
+                               k,
+                               se.formula, 
+                               if (!is.null(co.var.formula)) paste("+ ", co.var.formula) else "")
+
+        print(reg.formula)
+
+        fgm <- subset.to.regress.daughters(fgm.data, knetwork = k, oldest.cohort = oldest.cohort)
+        p <- if (wls) lm(formula(reg.formula), data = fgm, weights = fgm$weight) else lm(formula(reg.formula), data = fgm)
+
+        if (!is.null(na.action(p)))
+        {
+          fgm <- subset.to.regress.daughters(fgm, knetwork = k, na.rows = na.action(p), oldest.cohort = oldest.cohort)
+          p <- if (wls) lm(formula(reg.formula), data = fgm, weights = fgm$weight) else lm(formula(reg.formula), data = fgm)
+        }
+
+        se.name <- paste(se, collapse = ",")
+
+        results[[dep]][[k]][[se.name]] <- list(formula = reg.formula, lm = p, fgm = fgm)
+
+        if (get.vcov)
+          results[[dep]][[k]][[se.name]]$vcov <- tryCatch(vcovHAC(p), error = function(e) { print("Could not get vcov") })
+      }
     }
-
-    vac <- vcovHAC(p)
-
-    results[[k]][[alter]] <- list(formula = reg.formula, lm = p, vcov = vac, fgm = fgm)
   }
-}
 
-for (k in names(results))
-{
-  coef.names <- names(coef(results[[k]][[1]]$lm))
-  print(linearHypothesis(results[[k]][[1]]$lm, coef.names[grep("partner.occupation", coef.names)], vcov = results[[k]][[1]]$vcov))
-}
-
-for (k in names(results))
-{
-  print(sum.coefs(results[[k]][[2]]$lm, results[[k]][[2]]$fgm, "birth.year.fac", vcov = results[[k]][[2]]$vcov, "grpavg.med"))
+  return(results)
 }

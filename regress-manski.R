@@ -39,7 +39,7 @@ calc.grpavg <- function(df, total.df, ref.reg, cohort.range, dir.reg)
   for (col.name in dir.reg$cont)
   {
     stopifnot(col.name %in% names(grp))
-    df[, paste(col.name, 'grpavg', sep = '.')] <- mean(grp[, col.name], na.rm = TRUE)
+    df[, paste('grpavg', col.name, sep = '.')] <- mean(grp[, col.name], na.rm = TRUE)
   }
 
   return(df)
@@ -62,12 +62,15 @@ gen.reg.formula <- function(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact 
   if (is.null(ref.reg))
     ref.reg.fe.formula <- ""
   else if (ref.cohort.interact)
-    ref.reg.fe.formula <- paste('+', paste(paste(ref.reg, collapse = ' + '), paste(ref.reg, ':birth.year.fac', sep = '', collapse = ' + '), sep = " + "))
+    #ref.reg.fe.formula <- paste('+', paste(paste(ref.reg, collapse = ' + '), paste(ref.reg, ':birth.year.fac', sep = '', collapse = ' + '), sep = " + "))
+    ref.reg.fe.formula <- sprintf("birth.year.fac*%s", ref.reg)
   else
-    ref.reg.fe.formula <- paste('+', paste(ref.reg, collapse = ' + '))
+    #ref.reg.fe.formula <- paste('+', paste(ref.reg, collapse = ' + '))
+    ref.reg.fe.formula <- ref.reg
 
   grpavg.reg <- paste(grep("^grpavg", names(fgm), value = TRUE), collapse = " + ")
-  sprintf("%s ~ birth.year.fac + governorate + governorate:birth.year.fac %s + %s + %s", 
+
+  sprintf("%s ~ birth.year.fac*governorate + %s + %s + %s", 
           dep.reg, 
           ref.reg.fe.formula, 
           paste(unlist(dir.reg, use.names = FALSE), collapse = ' + '),
@@ -77,75 +80,50 @@ gen.reg.formula <- function(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact 
 ###########################################################################################
 # Ref groups: birth.year.fac, governorate, urban.rural
 
-dep.reg <- c('circum')
-ref.reg <- c("urban.rural")
-all.fac.reg <- c("urban.rural", 'religion', 'educ.lvl', 'med.help.distance.fac', 'med.help.transportation.fac', 'mother.circum.fac', 'partner.educlvl.fac', 'wealth.index')
+dep.reg <- c('has.or.intends.circum', 'circum')
+ref.reg <- c("wealth.index.2", "urban.rural", "religion")
+all.fac.reg <- c("urban.rural", 'religion', 'educ.lvl', 'med.help.distance.fac', 'med.help.transportation.fac', 'mother.circum.fac', 'partner.educlvl.fac', 'wealth.index.2', 'hh.head.sex')
 #dir.reg <- list(factors = c('urban.rural', 'religion', 'educ.lvl', 'med.help.permission.fac', 'med.help.distance.fac', 'med.help.transportation.fac',
 #                            'mother.circum.fac', 'partner.educlvl.fac', 'occupation.2.fac', 'partner.occupation.2.fac'),
 #                cont = c('marital.age'))
-dir.reg <- list(factors = all.fac.reg[!all.fac.reg %in% ref.reg],
-                cont = c('marital.age'))
-fgm <- subset.to.reg(fgm.data.daughters.08@data, dir.reg, ref.reg)
+cont.reg <- c("marital.age", "order")
 
-grpavg.formula <- gen.reg.formula(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact = FALSE)
-
-p4 <- lm(formula(grpavg.formula), data = fgm) 
-
-if (!is.null(na.action(p4)))
+fgm.regress.manski <- function(fgm.data, dep.reg = dep.reg, all.fac.reg = all.fac.reg, cont.reg = cont.reg, ref.reg = ref.reg)
 {
-  fgm <- subset.to.reg(fgm, dir.reg, ref.reg, na.rows = na.action(p4))
-  p4 <- lm(formula(grpavg.formula), data = fgm)  
+  results = vector("list", length(ref.reg))
+
+  names(results) <- ref.reg
+
+  for (k in names(results))
+  {
+    results[[k]] <- list("vector", length(dep.reg))
+    names(results[[k]]) <- dep.reg
+
+    for (dep in dep.reg)
+    {
+      dir.reg <- list(factors = all.fac.reg[!all.fac.reg %in% k],
+                      cont = cont.reg)
+
+      fgm <- subset.to.reg(fgm.data, dir.reg, k)
+
+      grpavg.formula <- gen.reg.formula(fgm, dep, k, dir.reg, ref.cohort.interact = TRUE)
+
+      print(grpavg.formula)
+
+      p <- lm(formula(grpavg.formula), data = fgm) 
+
+      if (!is.null(na.action(p)))
+      {
+        fgm <- subset.to.reg(fgm, dir.reg, k, na.rows = na.action(p))
+        p <- lm(formula(grpavg.formula), data = fgm)  
+      }
+
+      results[[k]][[dep]] <- list(fgm <-fgm, lm = p, formula = grpavg.formula) #, vcov = vcovHAC(p))
+    }
+  }
+
+  return(results)
 }
-
-vac.4 <- vcovHAC(p4)
-
-coeftest(p4, vcov = vac.4)
 
 ###########################################################################################
 
-dep.reg <- c('circum')
-ref.reg <- c("wealth.index.2")
-all.fac.reg <- c("urban.rural", 'religion', 'educ.lvl', 'med.help.distance.fac', 'med.help.transportation.fac', 'mother.circum.fac', 'wealth.index.2')
-dir.reg <- list(factors = all.fac.reg[!all.fac.reg %in% ref.reg],
-                cont = c('marital.age'))
-
-fgm <- subset.to.reg(fgm.data.daughters.08@data, dir.reg, ref.reg)
-
-grpavg.formula <- gen.reg.formula(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact = FALSE)
-
-p5 <- lm(formula(grpavg.formula), data = fgm) 
-
-if (!is.null(na.action(p5)))
-{
-  fgm <- subset.to.reg(fgm, dir.reg, ref.reg, na.rows = na.action(p5))
-  p5 <- lm(formula(grpavg.formula), data = fgm)  
-}
-
-vac.5 <- vcovHAC(p5)
-
-coeftest(p5, vcov = vac.5)
-
-###########################################################################################
-
-dep.reg <- c('med')
-ref.reg <- NULL #c("wealth.index.2")
-all.fac.reg <- c("urban.rural", 'religion', 'educ.lvl', 'med.help.distance.fac', 'med.help.transportation.fac', 'mother.circum.fac', 'wealth.index')
-dir.reg <- list(factors = all.fac.reg[!all.fac.reg %in% ref.reg],
-                cont = c('marital.age'))
-
-fgm <- subset(fgm.data.daughters.08@data, circum == 1)
-fgm <- subset.to.reg(fgm, dir.reg, ref.reg)
-
-grpavg.formula <- gen.reg.formula(fgm, dep.reg, ref.reg, dir.reg, ref.cohort.interact = FALSE)
-
-pm1 <- lm(formula(grpavg.formula), data = fgm) 
-
-if (!is.null(na.action(pm5)))
-{
-  fgm <- subset.to.reg(fgm, dir.reg, ref.reg, na.rows = na.action(pm1))
-  pm1 <- lm(formula(grpavg.formula), data = fgm)  
-}
-
-vac.pm1 <- vcovHAC(pm1)
-
-coeftest(pm1, vcov = vac.pm1)

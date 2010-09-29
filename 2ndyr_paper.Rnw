@@ -9,12 +9,24 @@
 \usepackage{url}
 \usepackage{enumerate}
 \usepackage[utf8x]{inputenc}
+\usepackage{verbatim}
+\usepackage{pdflscape}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{paralist}
 
 %\renewcommand{\baselinestretch}{2}
 
+<<label=init, echo=FALSE>>=
+library(lattice)
+
+load("final.results.RData")
+source("final.reg.R")
+@
+
 \newtheorem{prop}{Proposition}
 
-\title{The Social Effect of Medicalization\\on Female Genital Mutilation in Egypt}
+\title{The Social Effect of\\Female Genital Mutilation in Egypt}
 \author{Karim Nagib}
 
 \begin{document}
@@ -47,50 +59,260 @@ Also according to the EDHS, in 2008 approximately 32\% of circumcised women had 
 
 Concerning the country specific assumption of unobservable nature of FGM, it follows from the lack of inspection by someone able to recognize it before and after marriage; the almost complete absence of sex education and premarital sexual experience precludes husbands from detecting FGM ex post\footnote{This is largely from personal knowledge of Egyptian society [I need some further sociological evidence]}.  And hence, the argument that only the circumciser is in a position to certify FGM\footnote{Actually, it is also worth noting that, with a high level of consanguinity in family formation, the family information network might play a role of certifying FGM.}.
 
-\section{Model}
-
-The model used in this paper, to reflect the empirical data, is based on that used by \citet{Chesnokova2007} (adopted from \citet{Fernandez2005}).  My purpose is to show that when the FGM signal is distorted the only equilibrium is to have no circumcision at all.  It considers circumcision as a premarital investment decision for preparation for the marriage market.  This is followed by two stages of matching of a husband and wife.  At the first stage individuals are randomly matched and have to simultaneously decide whether to accept or reject their partnership.  Should one of them reject, they go to the next stage where couples are assortatively matched.
-
-There are two types of individuals: males and female.  Males can be either of two types: Rich ($R$-type) or Poor ($P$-type).  Females are either circumcised ($C$-type) or uncircumcised ($U$-type). The number of males and females are assumed to be equal (normalized to 1).  Entering the first stage of the game, the measure of Rich males is $r_1$ (exogenously given and assumed to be greater than zero), and the measure of circumcised females is  $c_1$ (endogenously determined). The remaining unmatched individuals that go on to the second matching stage are of measures $r_2$ and $c_2$ (also with normalization to 1). At stage 0 of the game, the FGM decision is made at a cost $\gamma > 0$, due to the illegality of the procedure and hence the risk of prosecution, and also the pain inflicted on the child. This is followed by stages 1 and 2, the matching stages.
-
-The payoffs to a woman of marrying an $R$-type and a $P$-type are $R$ and $P$, respectively, where $R > P > 0$. It is assumed that marrying a $P$-type is always better than remaining unmarried. The payoffs of a man marrying a $C$-type and a $U$-type are $C$ and $U$, respectively, where $C > U > 0$. Again, it is assumed that marrying an uncircumcised woman is always better than remaining unmarried. Furthermore, it is assumed that there is no discount rate between the two matching stages.
-
-\citet{Chesnokova2007} consider the case where in every matched pair both individuals are perfectly informed about each other's type.  They show that both zero and nonzero levels of circumcision could be reached in equilibrium.  Defining $b \equiv \gamma/(R - P)$, the cost-benefit ratio of FGM, they show that if $\gamma \leq R - P$ and $r_1 < b$, the equilibrium level of circumcision is either $c_1^* = 0$ or $c_1^* = r(R-P)/\gamma$, and if $\gamma > R - P$ or $r_1 \geq b$, $c_1^* = 0$ is the only equilibrium level.
-
-In this paper, it is assumed that there is imperfect information about the type of a woman due to the distorted FGM signal.  What is known is the measure of circumcised women in both stages of the game.  This leads to the conclusion:
-
-\begin{prop}
-  If there is imperfect information in the marriage game, whereby male agents do not know the type of their matched females, but female agents know the type of their matched male; the measure of the types in all stages are known to all ($c_1$, $r_1$, $c_2$ and $r_2$); and FGM has a cost of $\gamma > 0$, the only equilibrium would be to choose $c_1^* = 0$ (no circumcision).
-\end{prop}
-\begin{proof}
-  Consider first the second (last) stage of the game.  Since male agents cannot distinguish between female agents, and female agents have no way of signaling their type, couples will be randomly matched.  A male agent's expected utility would be $c_2 C + (1-c_2)U $, and a $C$-type female agent's expected utility would be $r_2 R + (1 - r_2) P - \gamma$, while a $U$-type would get $r_2 R + (1 - r_2) P$.
-
-  Now considering the second stage, each male agent type would find himself in an information set with a probability of being matched with a $C$-type of $c_1$ and with a $U$-type of $1-c_1$. Let the information set of the $R$-type be referred to as $I_R$ and that of the $P$-type as $I_P$.
-
-  In $I_R$, since the female agent (of either type) knows the male agent's type, she will always accept. The $R$-type male agent would accept if $c_1 C + (1 - c_1)U \geq c_2C + (1-c_2)U$, i.e. $c_1 \geq c_2$.  He could use a mixed strategy of accepting with probability $\phi_R \in [0,1]$ if the first expression holds with equality.
-
-  In $I_P$, both types of female agent would accept if $P \geq r_2R + (1-r_2)P$, which, since $R > P$, can only hold with equality when $r_2 = 0$ (all $R$-types accept their partner), at which case she would use a mixed strategy, accepting with probability $\theta_P \in [0,1]$. The $P$-type agent would then accept if $\theta_P[c_1C + (1-c_1)U] + (1-\theta_P)[c_2C + (1-c_2)U] \geq c_2C + (1-c_2)U$, and if this condition holds with equality, he would use a mixed strategy of accepting with probability $\phi_P \in [0,1]$.
-
-  It can then be shown that the only equilibrium in the second stage is where
-    \begin{enumerate}[i.]
-      \item $c_1 = c_2$
-      \item The $R$-type accepts his partner with probability 1, and his female partner of either type would accept with probability 1
-      \item $r_2 = 0$
-      \item The female agent under the $I_P$ information set would accept with probability $\theta_P \in [0,1]$, and the $P$-type male agent would accept with probability 
-        \[\phi_P = \left\{
-            \begin{array}{rl}
-              1 & \text{if } \theta_P > 0 \\
-              \in[0,1] & \text{if } \theta_P = 0\\
-            \end{array} \right.\]
-    \end{enumerate}
-
-  At the premarital investment stage, if the $C$-type is chosen, her expected utility would be $r_1(R-\gamma) + (1-r_1)(P-\gamma)$, while if $U$-type is chosen, she would get $r_1R + (1-r_1)P$. Therefore, the only game equilibrium would be to always choose the $U$-type (no circumcision).
-
-\end{proof}
-
 \section{Data}\label{sec:data}
 
-For the empirical section of this paper I will rely on the Egyptian DHS data for the year 2008.  Aside from including standard household survey variables (wealth, education, income, etc.), the data contains FGM status for the interviewed women and for their daughters, by whom was the procedure done, intentions to circumcise uncircumcised daughters, and attitudes towards circumcision. Additionally, GPS data for the surveyed households is available.
+In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008).  This is the ninth such survey in Egypt, conducted every two or three years since 1988.  The survey focuses on a wide set of population, health, fertility, and nutrition indicators.  In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households.  Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. 
+DHS survey design standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \citep{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
+
+The survey sample was selected over three stages: 
+\begin{inparaenum}[1)]
+  \item the primary selection unit was done on the level of towns (\emph{shiakhas}) in urban areas and villages in rural areas.  This produced 610 primary sampling units (275 towns and 335 villages).
+  \item PSUs were further divided into parts with a population of about 5,000.  Depending on the total population of the PSU between one to three parts were selected.  This resulted in 998 parts selected.
+  \item further segmentation into about 200 household units on which a quick count in the field was conducted.
+  \item a final sample is randomly selected from these segments.
+\end{inparaenum}
+
+% FGM age density plot
+
+\begin{figure}
+\begin{center}
+<<label=fgmagedensity, fig=TRUE, echo=FALSE>>=
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
+txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
+all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+
+med.dp <- densityplot(~ age.circum, group = med.circum, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = c("Traditional", "Medical.")), main = "FGM Density Plot (Medicalization vs. Traditional)", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+
+plot(all.dp, split = c(1, 1, 1, 2))
+plot(med.dp, split = c(1, 2, 1, 2), newpage = FALSE)
+@
+\end{center}
+\caption{FGM Density Plot}
+\label{fig:fgmagedensity}
+\end{figure}
+
+The primary data survey used in this paper is actually that of the unmarried daughters residing in the household.  Each eligible woman was asked about the FGM status of their daughters and other related information.  In our data, each observation would correspond to a daughter of a surveyed woman, and for each we have their FGM characteristics and their household's characteristics (the parent's enducation levels, occupation, wealth level, etc.).  The full survey produces 17,710 observations from 810 households.  However, since the majority of girls are circumcised around the age of puberty, only those born before 1996 are considered (ages 12 and above).  The upper plot in figure \ref{fig:fgmagedensity} shows the density distribution of the daughter's sample.  The vertical line shows the cut off age for our sample in order not to bias our estimates with younger girls who have not yet reached the age at which they are risk of FGM.  Another strategy used to address this problem is to do our inference using the mother's response to whether they intend to circumcise the uncircumcised daughters. The lower plot shows the density differentiated by medicalization verus traditional FGM.  Both plot show little different between cohorts or method of circumcision.
+
+% Summary stats
+
+\begin{scriptsize}
+\begin{center}
+\begin{longtable}{lccc}
+\caption{Summary Statistics\label{tab:sumstat}} \\
+  \hline
+  \hline 
+  & \multicolumn{1}{c}{All} 
+  & \multicolumn{1}{c}{Circumcised}
+  & \multicolumn{1}{c}{Medicalization} \\
+  \hline
+\endfirsthead
+
+\multicolumn{4}{c}{{\tablename} \thetable{} -- Continued} \\
+  \hline
+  \hline 
+  & \multicolumn{1}{c}{All} 
+  & \multicolumn{1}{c}{Circumcised}
+  & \multicolumn{1}{c}{Medicalization} \\
+  \hline
+\endhead
+
+  \hline
+  \hline 
+\endlastfoot
+
+<<label=sumstat, echo=FALSE, results=tex>>=
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
+fgm.circum <- subset(fgm, circum == 1)
+fgm.med <- subset(fgm.circum, med.circum == 1)
+
+circum.frac <- nrow(fgm.circum) / nrow(fgm)
+med.frac <- nrow(fgm.med) / nrow(fgm)
+cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", circum.frac * 100, med.frac * 100))
+
+by.cohort <- function (df, total) 
+{
+  if ((length(df) > 1) || (!is.na(df)))
+  {
+    cat(sprintf("~~%s (Age %i) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", 
+               df[1, "birth.year.fac"], 
+               2008 - df[1, "birth.year"],
+               (nrow(df)/total)*100, 
+               (nrow(df[df$circum == 1,])/nrow(df))*100,
+               (nrow(df[(df$circum == 1) & (df$med.circum == 1),])/nrow(df))*100))
+  }
+}
+
+x <- by(fgm, fgm[,"birth.year.fac"], by.cohort, nrow(fgm))
+
+fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\* \n", 
+            nrow(fgm.rich)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.rich)*100))
+
+x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
+
+fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\* \n", 
+            nrow(fgm.poor)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.poor)*100))
+
+x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
+
+fgm.rural <- fgm[fgm$urban.rural == "rural", ]
+
+cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+            nrow(fgm.rural)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.rural)*100))
+
+x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
+
+fgm.urban <- fgm[fgm$urban.rural == "urban", ]
+
+cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+            nrow(fgm.urban)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.urban)*100))
+
+x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
+
+fgm.christ <- fgm[fgm$religion == "christian", ]
+
+cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+            nrow(fgm.christ)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100))
+
+x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
+
+fgm.christ <- fgm[fgm$religion == "muslim", ]
+
+cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+            nrow(fgm.christ)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.christ)*100,
+            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.christ)*100))
+
+x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
+@
+\end{longtable}
+\end{center}
+\end{scriptsize}
+
+Table \ref{tab:sumstat} gives displays descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion.What is noticeable is a decrease in the rate of overall circumcision with some fluctuation in the rate of medicalization (this can also be seen in figure \ref{fig:fgmprop}).  We also observe greater tendency for FGM among the poorer\footnote{EDHS 2008 data originally divides the wealth index of households into five levels, but in the interest of simplifying our analysis they are condensed into two levels: poor and rich.}, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households.
+
+% FGM, Med. proportions
+
+\begin{figure}
+\begin{center}
+<<label=fgmprop, echo=FALSE, fig=TRUE>>=
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
+fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
+fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
+
+prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+
+circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
+med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+
+plot(circum.bc, split = c(1, 1, 1, 2))
+plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
+@
+\end{center}
+\caption{FGM Proportions by Cohort}
+\label{fig:fgmprop}
+\end{figure}
+
+% Governorate Summary
+
+\begin{landscape}
+\begin{scriptsize}
+\begin{center}
+<<label=governsumstat, echo=FALSE, results=tex>>=
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
+govern.names <- levels(fgm$ADM1NAME)
+
+cat(sprintf("\\begin{longtable}{*{%i}{l}}\n", 1 + length(govern.names)))
+cat("\\caption{Governorate Summary Statistics\\label{governsumstat}} \\\\\n")
+cat("\\hline\n\\hline\n")
+cat("& \\begin{sideways}Circumcized\\end{sideways}")
+cat("& \\begin{sideways}Medicalization\\end{sideways}")
+cat("& \\begin{sideways}Wealth Index (Rich)\\end{sideways}")
+cat("& \\begin{sideways}Rural Residence\\end{sideways}")
+cat("& \\begin{sideways}Religion (Christian)\\end{sideways}")
+cat("& \\begin{sideways}Mother Circumcized\\end{sideways}")
+cat("& \\begin{sideways}Mother's Marital Age\\end{sideways}")
+cat("& \\begin{sideways}Age of Circumcision\\end{sideways}")
+cat("\\\\\n")
+cat("\\hline\n")
+cat("\\endfirsthead\n")
+cat(sprintf("\\multicolumn{%i}{c}{{\\tablename} \\thetable{} -- Continued} \\\\\n", length(govern.names) + 1))
+cat("\\hline\n\\hline\n")
+cat("& \\begin{sideways}Circumcized\\end{sideways}")
+cat("& \\begin{sideways}Medicalization\\end{sideways}")
+cat("& \\begin{sideways}Wealth Index (Rich)\\end{sideways}")
+cat("& \\begin{sideways}Rural Residence\\end{sideways}")
+cat("& \\begin{sideways}Religion (Christian)\\end{sideways}")
+cat("& \\begin{sideways}Mother Circumcized\\end{sideways}")
+cat("& \\begin{sideways}Mother's Marital Age\\end{sideways}")
+cat("& \\begin{sideways}Age of Circumcision\\end{sideways}")
+cat("\\\\\n")
+cat("\\hline\n")
+cat("\\endhead\n")
+cat("\\hline\n\\hline\n")
+cat("\\endlastfoot \n")
+
+cat(sprintf("All & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f (%.2f) & %.2f (%.2f) \\\\\n",
+            nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
+            nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
+            nrow(fgm[fgm$urban.rural == "rural",])/nrow(fgm)*100,
+            nrow(fgm[fgm$religion == "christian",])/nrow(fgm)*100,
+            nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
+            mean(fgm$marital.age), sd(fgm$marital.age),
+            mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE)))
+
+for (n in govern.names)
+{
+  fgm.govern <- fgm[fgm$ADM1NAME == n,]
+  cat(sprintf("%s & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f (%.2f) & %.2f (%.2f) \\\\\n",
+              n,
+              nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
+              mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
+              mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+                sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE)))
+}
+@
+\end{longtable}
+\end{center}
+\end{scriptsize}
+\end{landscape}
+
+
+% FGM Freq by governorate
+<<fig=TRUE, echo=FALSE>>=
+fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
+freq.tab <- xtabs(~ circum + birth.year.fac + ADM1NAME, data = fgm, drop.unused.levels = T)
+print(barchart(Freq ~ birth.year.fac | ADM1NAME, as.data.frame(freq.tab)))
+@
 
 \subsection{GPS Data}
 
@@ -100,14 +322,14 @@ The first question to be addressed would be how the decision to opt for medicali
 
 \section{Descriptive Results}
 
-
+\subsection{Lagged Order of Birth Effect of FGM and Medicalization}
 
 In an initial statistical inquiry, it was found that there is a significant and negative correlation between a household's past decision to opt for medicalized FGM and the present decision to choose FGM at all.  In other words, a linear probability model, pooled OLS regression of the form
-\[fgm_{ij} = \alpha + \beta \cdot fgm_{i,j-1} + \delta \cdot fgm_{i,j-1} \times med_{i,j-1} + \gamma \cdot x_i + \varepsilon_{ij}\]
+\[fgm_{ij} = \alpha + \beta fgm_{i,j-1} + \delta fgm_{i,j-1} \times med_{i,j-1} + \gamma x_i + \varepsilon_{ij}\]
 was run, where $i$ identifies the household and $j$ identifies a daughter's order of birth. $fgm_{ij}$ is an indicator of whether household $i$ decided to circumcise daughter $j$; $med_{ij}$ is an indicator of whether they chose medicalization; and $x_i$ are other household covariates: region, urban/rural indicators, religion, the head of household's sex, and wealth level.  This is an interesting yet inconclusive result---there is no clear identification of the cause of such a result.  Also, we are unable to say anything about the magnitude of these estimates; ideally we would like to run a fixed effect regression, but that would result in inconsistent estimates \citep{Angrist2008}.  
 
 <<echo=FALSE>>=
-library(plm)
+#library(plm)
 #load("fgm.data.daughters.RData")
 @
 
@@ -164,96 +386,27 @@ Omitted variable bias is controlled in this regression by:
   \item Cohort variant urban/rural fixed effects capture unobserved differences between rural and urban areas
 \end{enumerate}
 
-<<echo=FALSE>>=
-require(lmtest)
-require(sandwich)
-require(car)
-load("fgm.RData")
-source("outreg-worked.R")
-
-reg.filter <- function(regname)
-{
-  #if ((length(grep('governorate', regname)) > 0) |
-  #    (length(grep('^birth\\.year\\.fac\\d{4}$', regname)) > 0))
-  #  return(NULL)
-
-  if (length(grep('^urban\\.ruralrural$', regname)) > 0)
-    return('Rural')
-
-  if (length(grep('^grpavg\\.circum$', regname)) > 0)
-    return('$\\overline{fgm}_{j,k,t(n)}$')
-
-  if (length(grep('^grpavg\\.has\\.or\\.intends\\.circum', regname)) > 0)
-    return('$\\overline{fgm\\_or\\_intends}_{j,k,t(n)}$')
-
-  if (length(grep('^grpavg\\.med$', regname)) > 0)
-    return('$\\overline{med}_{j,k,t(n)}$')
-
-  if (length(grep('^grpavg\\.circum_med$', regname)) > 0)
-    return('$\\overline{fgm}_{j,k,t(n)} \\times \\overline{med}_{j,k,t(n)}$')
-
-  if (length(grep('^educ\\.lvl', regname)) > 0)
-    return(sub('^educ\\.lvl(\\w)(\\w+)$', 'Mother\'s education: \\U\\1\\E\\2', regname, perl = TRUE)) 
-
-  if (length(grep('^marital\\.age', regname)) > 0)
-    return('Mother\'s Marital Age')
-
-  if (length(grep('^mother\\.circum\\.yes', regname)) > 0)
-    return('Mother Circumcised')
-
-  if (length(grep('^religionchristian', regname)) > 0)
-    return('Religion: Christian')
-
-  if (length(grep('^wealth\\.index', regname)) > 0)
-    return(sub('^wealth\\.index(\\w)(\\w+)$', 'Wealth Index: \\U\\1\\E\\2', regname, perl = TRUE)) 
-
-  return(NULL)
-}
-
-cohort.present <- function(coefs)
-{
-  return(c("Cohort Dummies", ifelse(length(grep("^birth.year.fac\\d{4}$", rownames(coefs))) > 0, "Yes", "")))
-}
-
-governorate.present <- function(coefs)
-{
-  return(c("Governorate Dummies", ifelse(length(grep("^governorate", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.governorate.present <- function(coefs)
-{
-  return(c("Cohort $\\times$ Governorate Dummies", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:governorate", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.rural.present <- function(coefs)
-{
-  return(c("Cohort $\\times$ Rural Dummies", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:urban\\.ruralrural", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.grpavg.circum.present <- function(coefs)
-{
-  return(c("Cohort $\\times \\overline{fgm}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.circum", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.grpavg.med.present <- function(coefs)
-{
-  return(c("Cohort $\\times \\overline{med}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.med", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.grpavg.circum_med.present <- function(coefs)
-{
-  return(c("Cohort $\\times \\overline{fgm}_{j,k,t(n)} \\times \\overline{med}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.circum_med", rownames(coefs))) > 0, "Yes", "")))
-}
-
-cohort.grpavg.has.or.intends.present <- function(coefs)
-{
-  return(c("Cohort $\\times \\overline{fgm\\_or\\_intends}_{j,k,t(n)}$", ifelse(length(grep("^birth\\.year\\.fac\\d{4}:grpavg\\.has\\.or", rownames(coefs))) > 0, "Yes", "")))
-}
-@
-
 <<echo=FALSE, results=tex>>=
-outreg(list(p12, p13, p14, p15), varCallback = reg.filter, vcov = list(vac.12, vac.13, vac.14, vac.15), title = "FGM Social Effects Regression", lyx = FALSE, longtable = TRUE, pvalue = TRUE, showAIC = FALSE, isPresentFuncs = c(cohort.present, governorate.present, cohort.governorate.present, cohort.rural.present, cohort.grpavg.circum.present, cohort.grpavg.med.present, cohort.grpavg.circum_med.present, cohort.grpavg.has.or.intends.present))
+#outreg(list(p12, p13, p14, p15), varCallback = reg.filter, vcov = list(vac.12, vac.13, vac.14, vac.15), title = "FGM Social Effects Regression", lyx = FALSE, longtable = TRUE, pvalue = TRUE, showAIC = FALSE, isPresentFuncs = c(cohort.present, governorate.present, cohort.governorate.present, cohort.rural.present, cohort.grpavg.circum.present, cohort.grpavg.med.present, cohort.grpavg.circum_med.present, cohort.grpavg.has.or.intends.present))
 @
+
+\subsection{Effects of Medicalization}
+
+\begin{equation}
+  fgm_{ijkt} = \alpha_t + \beta_{jt} + \delta_{kt} + \gamma_{t} \overline{med}_{j(-i),k,t(n)} + \theta'x_{ijt} + \varepsilon_{ijkt}
+\end{equation}
+
+\begin{landscape}
+\begin{tiny}
+<<label=circum.reg, echo=FALSE, results=tex>>=
+#source("final.reg.R")
+#load("final.reg.RData")
+#fgm.outreg(results, covar.dict, title = "Circumcision Decision as Dependent Variable", which.alter = "circum")
+#fgm.outreg(results, covar.dict, title = "The Intention to Circumcised as Dependent Variable", which.alter = "has.or.intends.circum")
+fgm.results.outreg(results.circum, var.dict)
+@
+\end{tiny}
+\end{landscape}
 
 \nocite{Refaat}
 \nocite{Yount}

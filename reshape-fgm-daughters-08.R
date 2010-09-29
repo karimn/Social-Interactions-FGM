@@ -163,7 +163,7 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
 # GPS Data
 ############
 
-gps.08 <- read.dbf("~/Data/EDHS/2008/EGGE5BFL.DBF")
+gps.08 <- read.dbf("~/Data/EDHS/2008/EGGE5AFF.dbf")
 
 cluster.coordinates(fgm.data.daughters.08) <- gps.08
 
