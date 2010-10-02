@@ -40,13 +40,13 @@ setMethod("by",
           signature = c(data = "FgmData", INDICES = "list", FUN = "function"),
           function(data, INDICES, FUN, ...)
           {
-            convert.FgmData <- function(df)
+            convert.FgmData <- function(df, ...)
             {
               df <- merge(df, data@cluster.info[, c('DHSYEAR', 'DHSCLUST', 'LONGNUM', 'LATNUM')], by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
               coordinates(df) <- c('LONGNUM', 'LATNUM')
               proj4string(df) <- CRS("+proj=longlat +ellps=WGS84")
 
-              FUN(new("FgmData", df, cluster.info = data@cluster.info))
+              FUN(new("FgmData", df, cluster.info = data@cluster.info), ...)
             } 
             by(data@data, INDICES, convert.FgmData, ...)
           }
@@ -119,7 +119,7 @@ if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun,
 
 setMethod("by.radius",
           signature = c(self = "FgmData", radius = "numeric", fun = "function"),
-          function(self, radius, fun, indices = NULL, by.cluster = TRUE)
+          function(self, radius, fun, ..., indices = NULL, by.cluster = TRUE)
           {
             clinfo.sp <- self@cluster.info
             coordinates(clinfo.sp) <- c("LONGNUM", "LATNUM")
@@ -133,7 +133,7 @@ setMethod("by.radius",
             # I'm going to use the "marks" field to identify the clusters
             clinfo.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = clinfo.sp$unique.cluster, check = FALSE)
 
-            by.cluster.fun <- function(df)
+            by.cluster.fun <- function(df, fun, by.cluster, ...)
             {
               stopifnot(nrow(df) > 0)
 
@@ -146,13 +146,13 @@ setMethod("by.radius",
 
               if (by.cluster)
               {
-                fun(u.cluster, neighbor.clusters.fgm)
+                fun(u.cluster, neighbor.clusters.fgm, ...)
               }
               else
               {
                 by.row.fun <- function(dfhh, dfrl)
                 {
-                  fun(u.cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (unique.cluster != u.cluster) | (hh != dfhh) | (respond.linenum != dfrl)))
+                  fun(u.cluster, dfhh, dfrl, subset(neighbor.clusters.fgm, (unique.cluster != u.cluster) | (hh != dfhh) | (respond.linenum != dfrl)), ...)
                 }
 
                 vec.by.row.fun <- Vectorize(by.row.fun)
@@ -161,11 +161,14 @@ setMethod("by.radius",
               }
             }
 
+            with.indices.fun <- function(df, fun, by.cluster, radius, ...)
+              do.call(rbind, by.radius(df, radius, fun, ..., by.cluster = by.cluster))
+
             # TODO Make the "by" overridden implementation take indices from the "self" directly 
             if (is.null(indices))
-              by(self, self@data[c('unique.cluster')], by.cluster.fun)
+              by(self, self@data[c('unique.cluster')], by.cluster.fun, fun, by.cluster, ...)
             else
-              by(self, indices, function(df) do.call(rbind, by.radius(df, radius, fun, by.cluster = by.cluster)))
+              by(self, indices, with.indices.fun, fun, by.cluster, radius, ...)
           }
 )
 

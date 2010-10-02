@@ -19,6 +19,7 @@
 
 <<label=init, echo=FALSE>>=
 library(lattice)
+library(car)
 
 load("final.results.RData")
 source("final.reg.R")
@@ -34,34 +35,39 @@ source("final.reg.R")
 \maketitle
 
   \begin{abstract}
-    Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper follows the argument that FGM is an investment by parents to signal quality in the marriage market, and making the assumption that it is an unobservable quality in Egypt, investigates the possibility that its increased medicalization might reduce its effectiveness as a signal of ``quality''.  The argument being that traditional circumcisers play the role of ``certifier'' of quality while professional health providers do not.
+    Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper attempts to identify the social effects of both FGM and its medicalization on a household's decision to circumcise their daughters.  What is found is that FGM itself has a strong social effect, while medicalization has none.  Additionally, several direct effects are identified.
   \end{abstract}
 
 \section{Introduction}
 
 Female genital mutilation (FGM) \footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. I use all these terms synonymously.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from infancy to 15 years of age, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \citep{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt \citep{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \citep{whofs241}.
-
 The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth.  No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \citep{whofs241}. It has been compared to foot-binding in being a harmful traditional practice, ethically indefensible due to its permanent physical and psychological damage \citep{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \citep{whofs241}. In addition to health-related or ethical objections to FGM, it has been estimated, in a study conducted by the WHO, that the cost of obstetric complications caused by FGM to be \$ 3.7 million (PPP) \citep{Bishai2010}.
 
-The majority of research on the determinants of FGM has focused on individual characteristics \cite{Chesnokova2007, El-Gibaly2002}
+Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}.  Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine.  It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds.
 
-Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}. 
+This paper investigates the social effects of both circumcision and medicalization.  It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention.  The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices.  Recently, economists have taken a strong interest in studying such nonmarket interactions between agents.  There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior.  Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.
 
+\begin{comment}
 This paper investigates the possibility that medicalization might have an unintended side-effect on the practice of FGM.  It follows the argument that FGM is an investment for marriage; it is a form of ritualistic marking signaling the higher ``quality'' of potential wives in the marriage market. Thus, the question this paper addresses is whether medicalization contributes to the breakdown of the traditional mechanism by which FGM is signaled in the marriage market.  In the context investigated, Egypt, it is argued that circumcision is effectively an unobservable and unverifiable characteristic that must rely on ceremony or a reliable ``certifier'' (the reasoning motivating this is taken up in section \ref{sec:fgmegypt}).  As the procedure is increasingly done by health professionals in health clinics in some communities, and not by traditional circumcisers in the child's or a relative's home, the process by which information about FGM is conveyed is weakened, since health providers are less effective at playing the role of FGM ``certifier'' or are simply unwilling to do so. In other words, medicalization, by breaking the traditional information network, may introduce friction to the marriage market that would reduce the incentive to invest in FGM---arguably a desirable ``underinvestment''.
+\end{comment}
 
-This paper follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability . The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}. Finally, this work being focused on the signaling aspect of FGM, is related to Rai's \citeyearpar{Raia} work on the signaling of parents to prospective suitors for their daughters by disciplining or confining them. 
+This paper also follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society, using data DHS data from Burkina Faso. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability.  Another work this paper follows is \citep{Hayford} that considers the ``convention'' model\footnote{She also considers two other often cited models: the modernization model and the feminist model.} to explain the persistence of FGM in Kenya.  The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}. 
 
+\begin{comment}
 \section{Female Genital Mutilation in Egypt}\label{sec:fgmegypt}
+
+% TODO: Legal status of FGM in Egypt over the past 15 or so years
 
 According to the Egypt Demographic and Health Survey (EDHS) of 2008, 91\% of women between the age of 15 and 49 have been circumcised.  However, there is an observed decline: 80\% of women below the age of 25 are circumcised as opposed to 94--96\% for those above 25, and in Egypt it is very rare for women to be circumcised after the age of 15 \citep{El-Zanat, El-Gibaly2002} (Further summary statistics details will be covered in section \ref{sec:data}).  
 
 Also according to the EDHS, in 2008 approximately 32\% of circumcised women had the procedure done by a professional health provider (mainly doctors), while about 63\% had it done by a \emph{daya} (midwife). However, for girls age 0-17 years, the data shows that almost three-quarters of them had the procedure done by a professional health provider, a significant recent increase \citep{El-Zanat}.
 
 Concerning the country specific assumption of unobservable nature of FGM, it follows from the lack of inspection by someone able to recognize it before and after marriage; the almost complete absence of sex education and premarital sexual experience precludes husbands from detecting FGM ex post\footnote{This is largely from personal knowledge of Egyptian society [I need some further sociological evidence]}.  And hence, the argument that only the circumciser is in a position to certify FGM\footnote{Actually, it is also worth noting that, with a high level of consanguinity in family formation, the family information network might play a role of certifying FGM.}.
+\end{comment}
 
 \section{Data}\label{sec:data}
 
-In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008).  This is the ninth such survey in Egypt, conducted every two or three years since 1988.  The survey focuses on a wide set of population, health, fertility, and nutrition indicators.  In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households.  Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. 
+In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008).  This is the ninth such survey in Egypt, conducted every two or three years since 1988.  The survey focuses on a wide set of population, health, fertility, and nutrition indicators.  In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households.  Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure was done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. 
 DHS survey design standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \citep{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
 
 The survey sample was selected over three stages: 
@@ -210,7 +216,7 @@ x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
 \end{center}
 \end{scriptsize}
 
-Table \ref{tab:sumstat} gives displays descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion.What is noticeable is a decrease in the rate of overall circumcision with some fluctuation in the rate of medicalization (this can also be seen in figure \ref{fig:fgmprop}).  We also observe greater tendency for FGM among the poorer\footnote{EDHS 2008 data originally divides the wealth index of households into five levels, but in the interest of simplifying our analysis they are condensed into two levels: poor and rich.}, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households.
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion.  What is noticeable is a decrease in the rate of overall circumcision with some fluctuation in the rate of medicalization (this can also be seen in figure \ref{fig:fgmprop}).  We also observe greater tendency for FGM among the poorer\footnote{EDHS 2008 data originally divides the wealth index of households into five levels, but in the interest of simplifying our analysis they are condensed into two levels: poor and rich.}, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households.
 
 % FGM, Med. proportions
 
@@ -306,20 +312,25 @@ for (n in govern.names)
 \end{scriptsize}
 \end{landscape}
 
-
+\begin{comment}
+% I have too many graphs already!
 % FGM Freq by governorate
 <<fig=TRUE, echo=FALSE>>=
 fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
 freq.tab <- xtabs(~ circum + birth.year.fac + ADM1NAME, data = fgm, drop.unused.levels = T)
 print(barchart(Freq ~ birth.year.fac | ADM1NAME, as.data.frame(freq.tab)))
 @
+\end{comment}
 
+\begin{comment}
 \subsection{GPS Data}
 
 I will be using the available GPS geographic data to test for peer/neighborhood effects.  It is of interest to determine what social effects could be identified (endogenous and contextual), as well as correlated effects.  We want to identify the aggregate influence of a cluster's members', and its geographically neighboring clusters' members', behavior and characteristics on a household's behavior.  To do this, we will be assuming that a household's peer group is a spatial one, with possibly religion and wealth as further reference characteristics. This is not an uncommon assumption made in the literature concerning health and schooling decisions.
 
-The first question to be addressed would be how the decision to opt for medicalized FGM might be affected by neighbors' decision.  The second and trickier question would be on how increased medicalization (and the reduced reliance on traditional circumcisers) affects the decision to decide on FGM at all.  
+The first question to be addressed would be how the decision to opt for medicalized FGM might be affected by neighbors' decision.  The second and trickier question would be on how increased medicalization (and the reduced reliance on traditional circumcisers) affects the decision to decide on FGM at all. 
+\end{comment}
 
+\begin{comment}
 \section{Descriptive Results}
 
 \subsection{Lagged Order of Birth Effect of FGM and Medicalization}
@@ -337,7 +348,109 @@ was run, where $i$ identifies the household and $j$ identifies a daughter's orde
 #summary(res.yesno <- plm(circum ~ lag(circum, 1) + region + urban.rural + religion + hh.head.sex + wealth.index + lag(med.circum, 1), 
 #                         data = fgm.data.daughters.08@data, index = c("hh.id", "order"), model = "pooling"))
 @
+\end{comment}
 
+\section{Methodology}
+
+The methodology adopted in this paper is similar to that used by Betrand et al. \citeyearpar{Bertrand2000} in their paper investigating the network effects of welfare participation.  Their method is aimed at identifying the network effects of language groups within neighborhoods.  They consider both the ``contact'' availability of members of an individual, as well as the ``quality'' of effect---the mean tendency of the network to utilize welfare.  In our investigation of social effects of FGM we define contact availability as the proportion of circumcised girls in the same governorate, belonging to the same birth cohort (or in \emph{close} cohorts), and a third network level.  Several different specifications of the last network level (secondary network) were investigate: wealth level, urban/rural residence and religion.  The qualitative effect considered is the proportion of girls in the reference group whose parents had opted for medicalized FGM.
+  We assume that true model underlying the decision to circumcise is
+\begin{equation}
+  Pr(fgm_{ijkt}) = \alpha^*_t + Y^*_{jt} \beta^*_t + Z_{kt}^* \delta^*_t + Network_{jkt} \gamma^*_t + X_i^* \theta^* + \varepsilon_{ijkt}
+\end{equation}.
+$i$ indexes individual daughters, $j$ indexes governorates, $k$ the secondary network, and $t$ is $i$'s birth cohort.  $fgm_{ijkt}$ is the binary decision $i$'s household makes with respect to FGM; $Network_{jkt}$ is the social effect of being in governorate $j$, network $k$ and or cohort $t$; $X^*_i$ are observed and unobserved characteristics of $i$ and her household; $Y^*_{jt}$ are observed and unobserved governorate characteristics for cohort $t$; $Z^*_{kt}$ are observed and unobserved characteristics of network $k$ for cohort $t$; and $\varepsilon_{ijkt}$ is an error term.
+
+In our specification, we are attempting to identify two network effects: the social effect of the decision to circumcise daughters and the social effect of the method of circumcision chosen.  As in most inquires into social effects there are many problems to be addressed.  First, the data does not inform us about actual social links between households, and thus our strategy is to proxy for them by using group means.  Considering the observable characteristics we have this would result in estimating
+\begin{equation}
+  Pr(fgm_{ijkt}) = \alpha_t + \overline{fgm}_{jkt} \gamma_{1t} + \overline{med}_{jkt} \gamma_{2t} + X_i \theta + \varepsilon_{ijkt}
+\end{equation}, 
+where $\overline{fgm}_{jkt}$ and $\overline{med}_{jkt}$ are the group means for circumcision and medicalization, respectively.  $\overline{fgm}_{jkt}$ cannot be excluded from the regression, since it is correlated with $\overline{med}_{jkt}$ and would hence introduce endogeneity.  This is similar to the approach used in \citep{Hayford}, where the proportion of circumcised women in the community is used to proxy for social effects.  However, in the recent Egyptian context, undergoing big cultural and legal changes towards FGM, it was felt that the social effects of other's concurrent choices would be a stronger measure.
+
+Second, as Betrand et al. \citeyearpar{Bertrand2000} point out, this regression lacks clear identification due to the ``reflection problem'' \cite{Manski}.  Essentially, there is a problem with omitted variable bias due to unobservable characteristics.  These OVB problems are:
+\begin{enumerate}
+  \item Omitted personal and household characteristics might be correlated with the group means.
+  \item Omitted governorate, cohort, or secondary network characteristics might be correlated with the group means. In other words, group-wide shocks could be mistakenly interpreted as social effects (simultaneity).
+\end{enumerate}
+
+To circumvent these issues, we do the following
+\begin{enumerate}
+  \item We eliminate the $i^{th}$ observation from the group means, removing the first OVB problem.
+  \item We add cohort-variant intercepts, as well as cohort-variant fixed effects for governorates and secondary networks.
+\end{enumerate}
+This gives us the final regression form\footnote{No claim is made of differentiating between what \citet{Manski} calls ``endogenous'' and ``exogenous'' social effects.  We are only able to separate them from correlated effects.}
+\begin{equation}
+  fgm_{ijkt} = \alpha_t + \beta_{jt} + \delta_{kt} + \overline{fgm}_{j(-i),k,t(n)} \gamma_{1t} + \overline{med}_{k,t(n)} \gamma_{2t} + \varepsilon_{ijkt}\label{eqn:circum.reg}
+\end{equation}
+A few things are worth noting about this regression: for the group averages we use $t(n)$, where $n$ is a nonnegative integer, to indicate the inclusion of the $\pm n$ cohorts in calculating the means (for our purposes we take $n = 1$); $j(-i)$ indicates the exclusion of $i$ from the means; and instead of regressing on $\overline{med}_{j(-i),k,t(n)}$ we use $\overline{med}_{k,t(n)}$, otherwise we would introduce collinearity with $\overline{fgm}_{j(-i),k,t(n)}$.  One possible OVB problem, however, still remains: we are not controlling for for $(j,k,t)$ shocks.  What we would need, but cannot introduce into the regression, is a $(j,k,t)$ fixed effect to control for secondary network specific governorate shocks. For example, a shock to wealthy individuals in a particular governorate.
+
+\section{Results}
+
+\subsection{Effects of Medicalization}
+
+We estimate a linear probability model for regression (\ref{eqn:circum.reg}).  We do not use either probit of logit models due to the complexity of such an estimation with such a rich set of fixed effects.  The results are presented in table \ref{tab:circum.reg}.  The first six columns (1-6) are for the regression with the circumcision binary decision as the dependent variable, while the last six (7-12) use the decision to circumcise or the parent's \emph{intention} to do so for uncircumcised girls.  For each of these six columns, the first two (1, 2, 7, and 8) define the secondary network by the household's wealth index, while for the second two (3, 4, 9, and 10) it is defined by urban/rural residence, and the last two columns (5, 6, 11, and 12) define it by the household's religion.  
+
+For each pair of columns corresponding to a secondary network, the first is the same regression as in (\ref{eqn:circum.reg}), while the second drops the social effects of medicalization ($\overline{med}_{k,t(n)}$).  As demonstrated in table \ref{tab:med.ftest}, we cannot reject the hypothesis that the medicalization coefficients are jointly insignificant. 
+
+The first thing to observe is that very few of the cohort intercepts are significant, suggesting little effect of nationwide policy beyond the 1988 cohort, the majority of whom would have been at risk of circumcision in 2000.  The same can be said for the cohort variant secondary network coefficients, except for the urban/rural network, where we see significant negative effect to living in rural versus urban areas.  For the religion secondary network specifications, we see an initial significant negative effect for the 1988 cohort, but none beyond that.
+
+The estimates we have on social effects show a significant and strong positive effect for the reference group's circumcision decisions, but none for the reference group's medicalization decision.  The effect of the former is strong but varies with no conclusive trend.  What is noticeable is that secondary networks defined by wealth or urban/rural residence is stronger than that for religion.
+
+Considering the direct effects of a girl's household we see little that is unexpected.  Wealth and belonging to a Christian household have a significant and negative effect.  Perhaps unexpectedly---after seeing the negative effect of the cohort variant version---rural residence gives a significant and \emph{positive} effect.  For all specifications, the mother's increased education level has a significant and negative effect, while that of the father is to a lesser extent especially at the highest level of education.  
+
+Included in the regression are binary variables indicating whether interviewed mothers said it was `not a big problem' (as opposed to being a big problem) to questions on: getting permission to seek medical care, and distance and transportation to medical care.  For the former question we find: for the circumcision as dependent variable regressions, the estimates are only significant at the 10\% level; and for the circumcision-or-intention as dependent variable regression, we observe a positive significant effect.  Distance and transportation do not appear to have any influence.
+
+A slight significant and negative effect is found for the mother's marital age, which seems intuitive: the younger a mother was married, the more likely she would value improving her daughter's prospects in the marriage market as opposed to investing in her education, for example.  A strong significant and positive effect is found for the mother's FGM status.  Interestingly, no significant effect is seen for the mother's occupation in a professional, technical or management job, while there is a significant negative effect from employment in the services sector, and a significant and positive effect from employment in  the sales sector.  Finally, with respect to the mother's influence, a woman being the head of the household has a negative but insignificant effect in all the regressions.
+
+The estimation also shows what appears to be a positive and increasing significant effect to the order of birth.  Perhaps this could be a proxy for some unobservable characteristic that leads to having a greater number of children, as well as increase the tendency of opting for FGM.
+
+\begin{landscape}
+\begin{tiny}
+<<label=circum.reg, echo=FALSE, results=tex>>=
+fgm.results.outreg(results.circum, var.dict, title = "Circumcision Social Effects Estimate Results", label = "tab:circum.reg", exclude.foot = TRUE)
+@
+\footnotetext[1]{P values are reported between brackets below estimates}
+\footnotetext[2]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
+\footnotetext[3]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
+\end{longtable}
+\end{center}
+\end{tiny}
+\end{landscape}
+
+\begin{scriptsize}
+\begin{center}
+\begin{longtable}{lccc}
+\caption{Tests of Joint Significance of Medicalization Social Effects\label{tab:med.ftest}} \\
+  \hline
+  \hline
+  \multicolumn{1}{c}{Restricted Variables}
+  %& \multicolumn{1}{c}{Degrees of Freedom}
+  & \multicolumn{1}{c}{F statistic}
+  & \multicolumn{1}{c}{P value} \\
+  \hline
+\endfirsthead
+
+  \hline
+  \hline
+\endlastfoot
+
+<<label=circum.ftest, echo=FALSE, results=tex>>=
+for (d in 1:2)
+  for (i in 0:2)
+  {
+    coef.names <- names(coef(results.circum[[d]][[i + 1]][[1]]$lm))
+    lh <- linearHypothesis(results.circum[[d]][[i + 1]][[1]]$lm, coef.names[grep("med5", coef.names)], vcov = results.circum[[d]][[i + 1]][[1]]$vcov)
+    #lh2 <- linearHypothesis(results.circum[[d]][[i + 1]][[1]]$lm, coef.names[grep("birth.year.*med5", coef.names)], vcov = results.circum[[d]][[i + 1]][[1]]$vcov)
+    cat(sprintf("Medicalization Effects in Column (%i) & %.2f & %.2f\\\\\n", (d - 1) * 6 + (i * 2 + 1), lh[[3]][2], lh[[4]][2]))
+    #cat(sprintf("~~Only cohort variant & %i & %.2f & %.2f\\\\\n", d * (i * 2 + 1), lh2[[2]][2], lh2[[3]][2], lh2[[4]][2]))
+  }
+@
+
+\end{longtable}
+\end{center}
+\end{scriptsize}
+
+
+
+\begin{comment}
 \section{Social Effects}
 
 \subsection{\`{A} la Manski}
@@ -389,29 +502,17 @@ Omitted variable bias is controlled in this regression by:
 <<echo=FALSE, results=tex>>=
 #outreg(list(p12, p13, p14, p15), varCallback = reg.filter, vcov = list(vac.12, vac.13, vac.14, vac.15), title = "FGM Social Effects Regression", lyx = FALSE, longtable = TRUE, pvalue = TRUE, showAIC = FALSE, isPresentFuncs = c(cohort.present, governorate.present, cohort.governorate.present, cohort.rural.present, cohort.grpavg.circum.present, cohort.grpavg.med.present, cohort.grpavg.circum_med.present, cohort.grpavg.has.or.intends.present))
 @
+\end{comment}
 
-\subsection{Effects of Medicalization}
+\section{Conclusion}
 
-\begin{equation}
-  fgm_{ijkt} = \alpha_t + \beta_{jt} + \delta_{kt} + \gamma_{t} \overline{med}_{j(-i),k,t(n)} + \theta'x_{ijt} + \varepsilon_{ijkt}
-\end{equation}
-
-\begin{landscape}
-\begin{tiny}
-<<label=circum.reg, echo=FALSE, results=tex>>=
-#source("final.reg.R")
-#load("final.reg.RData")
-#fgm.outreg(results, covar.dict, title = "Circumcision Decision as Dependent Variable", which.alter = "circum")
-#fgm.outreg(results, covar.dict, title = "The Intention to Circumcised as Dependent Variable", which.alter = "has.or.intends.circum")
-fgm.results.outreg(results.circum, var.dict)
-@
-\end{tiny}
-\end{landscape}
+As has been demonstrated by our results, there is a strong social component, in Egypt, to a household's decision to circumcise their daughters.  Households tended to follow the same behavior as other members of their community.  However, in terms of medicalization, there appeared to be no social effects; households made their decision to seek professional medical circumcision in isolation.  This effectively answers the question of whether increased medicalization would result in legitimizing it.  Perhaps this strengths the harm reducing argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}.  These results are also a call on policy makers who seek to eliminate FGM, to not pursue exclusively healthcare professionals who preform FGM, as in the presence of alternative traditional circumcisers (mid-wives and bbarbers), parents are likely to seek these alternatives instead of opting out of FGM.  Also, in light of traditional circumcisers being less under the control of policy makers, an attempt to focus on stamping out non-medicalized FGM might be more productive.  This while simultaneously co-opting and redefining the nature of circumcision to a less injurious form.
 
 \nocite{Refaat}
 \nocite{Yount}
 \nocite{Hoodfar1997}
 \nocite{El-Gibaly2002}
+\nocite{R}
 
 \bibliographystyle{plainnat}
 \bibliography{$HOME/Documents/library}

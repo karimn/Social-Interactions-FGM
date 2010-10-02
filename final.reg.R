@@ -285,7 +285,7 @@ print.factors <- function(results, regname, desc, pvalue = TRUE, indent = 1)
 
 var.dict <- list(circum = "Circumcision", has.or.intends.circum = "Circumcision/Intention")
 
-fgm.results.outreg <- function(results, var.dict, title = "Regression", label = "", stderr = FALSE, pvalue = TRUE)
+fgm.results.outreg <- function(results, var.dict, title = "Regression", label = "", stderr = FALSE, pvalue = TRUE, exclude.foot = FALSE)
 {
   num.dep <- length(results)
   num.models <- 0
@@ -495,8 +495,11 @@ fgm.results.outreg <- function(results, var.dict, title = "Regression", label = 
 
   cat ("  \\\\\n ")
 
-  cat("\\end{longtable}\n")
-  cat("\\end{center}\n")
+  if (!exclude.foot)
+  {
+    cat("\\end{longtable}\n")
+    cat("\\end{center}\n")
+  }
 }
 
 fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pvalue = TRUE, stderr = FALSE, time.reg = "birth.year.fac", dummies = c("governorate"), which.alter = "circum") # modelLabel = NULL, varLabels = NULL, showAIC=TRUE, lyx=TRUE, varCallback = NULL, isPresentFuncs = NULL, vcov = NULL, tight=TRUE, longtable = FALSE
@@ -705,11 +708,28 @@ calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.c
   grp.geo.circum <- grp.geo[grp.geo$circum == 1, ]
   grp.country.circum <- grp.country[grp.country$circum == 1, ]
 
-  grp.mean <- function(rowid, grp.data, column) mean(grp.data[-rowid, column], na.rm = TRUE)
+  df$grp.size <- nrow(grp)
+  df$grp.larger.size <- nrow(grp.larger)
+  df$grp.geo.size <- nrow(grp.geo)
+  df$grp.country.size <- nrow(grp.country)
+
+  grp.mean <- function(rowid, grp.data, column)
+  {
+    grp.data <- grp.data[-rowid,]
+    
+    if (nrow(grp.data) == 0)
+      return(NA)
+
+    mean(grp.data[, column], na.rm = TRUE)
+  }
 
   weighted.grp.mean <- function(rowid, grp.data, column) 
   {
     grp.data <- grp.data[-rowid,]
+
+    if (nrow(grp.data) == 0) 
+      return(NA)
+
     w.total <- sum(grp.data$weight)
     grp.data$weight <- grp.data$weight / w.total
     weighted.mean(grp.data[,column], grp.data$weight, na.rm = TRUE)
@@ -748,7 +768,16 @@ calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.c
   return(df)
 }
 
-subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, oldest.cohort = NULL, cohort.range = 1, knetwork = "urban.rural", na.rows = NULL)
+byrad.calc.grpavg.daughters <- function(u.cluster, df, total.fgm, ...)
+{
+  cat('.')
+  ret <- calc.grpavg.daughters(df@data, total.fgm = total.fgm@data, ...)
+
+  # This is very important, otherwise I will end up returning all the neighboring observations
+  return(ret[ret$unique.cluster == u.cluster,])
+}
+
+subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, oldest.cohort = NULL, cohort.range = 1, knetwork = "urban.rural", na.rows = NULL, radius = NULL)
 {
   if (!is.null(youngest.cohort)) fgm.data <- subset(fgm.data, birth.year <= youngest.cohort)
   if (!is.null(oldest.cohort)) fgm.data <- subset(fgm.data, birth.year >= oldest.cohort)
@@ -756,7 +785,21 @@ subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, oldest
 
   fgm.data <- subset(fgm.data, circum <= 1)
   
-  do.call(rbind, by(fgm.data, fgm.data[c(c("birth.year.fac", "governorate"), knetwork)], calc.grpavg.daughters, fgm.data, cohort.range, knetwork))
+  if (is.null(radius))
+    return(do.call(rbind, by(fgm.data, 
+                             fgm.data[c(c("birth.year.fac", "governorate"), knetwork)], 
+                             calc.grpavg.daughters, 
+                             fgm.data, 
+                             cohort.range, 
+                             knetwork)))
+  else
+    return(do.call(rbind, by.radius(fgm.data, 
+                                    radius, 
+                                    indices = fgm.data@data[c(c("birth.year.fac"), knetwork)], # Don't include governorate! We're using GPS instead
+                                    byrad.calc.grpavg.daughters, 
+                                    total.fgm = fgm.data, 
+                                    cohort.range = cohort.range, 
+                                    knetwork = knetwork)))
 }
 
 dep.var <- c("has.or.intends.circum", "circum") #, "med.circum")
@@ -774,7 +817,7 @@ covar.dict <- list(wealth.index.2 = "Wealth Index", urban.rural = NULL, religion
 
 knetworks <- c("wealth.index.2", "urban.rural", "religion")
 
-fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov = TRUE, govern.cohort.interact = TRUE, knet.cohort.interact = TRUE, se.cohort.interact = TRUE, wls = FALSE, oldest.cohort = NULL)
+fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov = TRUE, include.govern = TRUE, govern.cohort.interact = TRUE, knet.cohort.interact = TRUE, se.cohort.interact = TRUE, wls = FALSE, oldest.cohort = NULL, radius = NULL, gen.data.only = FALSE, clean.missing = is.null(radius) && !gen.data.only)
 {
   results <- vector("list", length(dep.var))
   names(results) <- dep.var 
@@ -786,6 +829,9 @@ fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov =
   attr(results, "vcov") <- get.vcov
   attr(results, "wls") <- wls
 
+  if (!is.null(radius))
+    attr(results, "radius") <- radius
+
   for (dep in dep.var)
   {
     results[[dep]] <- vector("list", length(knetworks))
@@ -793,8 +839,8 @@ fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov =
 
     for (k in knetworks)
     {
-      results[[dep]][[k]] <- vector("list") #, length(dep.var))
-      #names(results[[dep]][[k]]) <- dep.var
+      results[[dep]][[k]] <- vector("list") 
+      k.data <- NULL
 
       for (se in se.var)
       {
@@ -809,30 +855,64 @@ fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov =
                       else 
                         ""
 
-        reg.formula <- sprintf("%s ~ %sgovernorate + %s%s %s %s",
+        govern.formula <- ""
+
+        if (include.govern)
+          govern.formula <- sprintf("%sgovernorate", if (govern.cohort.interact) "birth.year.fac*" else "")
+
+        reg.formula <- sprintf("%s ~ %s + %s%s %s %s",
                                dep, 
-                               if (govern.cohort.interact) "birth.year.fac*" else "",
+                               govern.formula,
                                if (knet.cohort.interact) "birth.year.fac*" else "",
                                k,
                                se.formula, 
                                if (!is.null(co.var.formula)) paste("+ ", co.var.formula) else "")
 
-        print(reg.formula)
+        cat(sprintf("\nRegression formula: %s\n\n", reg.formula))
 
-        fgm <- subset.to.regress.daughters(fgm.data, knetwork = k, oldest.cohort = oldest.cohort)
-        p <- if (wls) lm(formula(reg.formula), data = fgm, weights = fgm$weight) else lm(formula(reg.formula), data = fgm)
+        fgm <- NULL
 
-        if (!is.null(na.action(p)))
+        if (!clean.missing && !is.null(k.data))
         {
-          fgm <- subset.to.regress.daughters(fgm, knetwork = k, na.rows = na.action(p), oldest.cohort = oldest.cohort)
+          cat("Reusing data subset\n")
+          fgm <- k.data
+        }
+        else
+        {
+          cat("Retrieving initial data subset...")
+          fgm <- subset.to.regress.daughters(fgm.data, knetwork = k, oldest.cohort = oldest.cohort, radius = radius)
+          cat("done\n")
+        }
+
+        p <- NULL
+        
+        if (!gen.data.only)
+        {
+          cat("Running initial regression...")
           p <- if (wls) lm(formula(reg.formula), data = fgm, weights = fgm$weight) else lm(formula(reg.formula), data = fgm)
+          cat("done\n")
+        }
+
+        if (clean.missing && !is.null(p) && !is.null(na.action(p)))
+        {
+          cat("Removing rows with missingness...")
+          fgm <- subset.to.regress.daughters(fgm, knetwork = k, na.rows = na.action(p), oldest.cohort = oldest.cohort, radius = radius)
+          cat("done\n")
+
+          if (!gen.data.only)
+          {
+            cat("Running main regression...")
+            p <- if (wls) lm(formula(reg.formula), data = fgm, weights = fgm$weight) else lm(formula(reg.formula), data = fgm)
+            cat("done\n")
+          }
         }
 
         se.name <- paste(se, collapse = ",")
 
         results[[dep]][[k]][[se.name]] <- list(formula = reg.formula, lm = p, fgm = fgm)
+        k.data <- fgm
 
-        if (get.vcov)
+        if (get.vcov && !gen.data.only)
           results[[dep]][[k]][[se.name]]$vcov <- tryCatch(vcovHAC(p), error = function(e) { print("Could not get vcov") })
       }
     }
