@@ -675,7 +675,7 @@ fgm.outreg <- function(results, covar.dict, title="My Regression", label="", pva
 }
 
 
-calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.cohort.range = cohort.range)
+calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.cohort.range = cohort.range, u.cluster = NULL)
 {
   current.birth.year <- df$birth.year[1]
   current.governorate <- df$governorate[1]
@@ -687,7 +687,15 @@ calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.c
   inst.grp <- total.fgm[(total.fgm[["birth.year"]] <= current.birth.year + instr.cohort.range) & 
                           (total.fgm[["birth.year"]] >= current.birth.year - instr.cohort.range), ]
 
-  grp.geo <- grp.country[(grp.country[["governorate"]] == current.governorate), ]
+  if (is.null(u.cluster)) 
+    grp.geo <- grp.country[(grp.country[["governorate"]] == current.governorate), ]
+  else
+  {
+    grp.geo <- df
+    
+    # This is very important, otherwise I will end up returning all the neighboring observations
+    df <- df[df$unique.cluster == u.cluster,]
+  }
 
   if (!is.null(knetwork))
   {
@@ -771,10 +779,7 @@ calc.grpavg.daughters <- function(df, total.fgm, cohort.range, knetwork, instr.c
 byrad.calc.grpavg.daughters <- function(u.cluster, df, total.fgm, ...)
 {
   cat('.')
-  ret <- calc.grpavg.daughters(df@data, total.fgm = total.fgm@data, ...)
-
-  # This is very important, otherwise I will end up returning all the neighboring observations
-  return(ret[ret$unique.cluster == u.cluster,])
+  calc.grpavg.daughters(df@data, total.fgm = total.fgm@data, ..., u.cluster = u.cluster)
 }
 
 subset.to.regress.daughters <- function(fgm.data, youngest.cohort = 1996, oldest.cohort = NULL, cohort.range = 1, knetwork = "urban.rural", na.rows = NULL, radius = NULL)
