@@ -822,33 +822,59 @@ covar.dict <- list(wealth.index.2 = "Wealth Index", urban.rural = NULL, religion
 
 knetworks <- c("wealth.index.2", "urban.rural", "religion")
 
-fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov = TRUE, include.govern = TRUE, govern.cohort.interact = TRUE, knet.cohort.interact = TRUE, se.cohort.interact = TRUE, wls = FALSE, oldest.cohort = NULL, radius = NULL, gen.data.only = FALSE, clean.missing = is.null(radius) && !gen.data.only)
+fgm.regress <- function(fgm.data, dep.var, co.var = NULL, se.var, knetworks, get.vcov = TRUE, include.govern = TRUE, govern.cohort.interact = TRUE, knet.cohort.interact = TRUE, se.cohort.interact = TRUE, wls = FALSE, oldest.cohort = NULL, radius = NULL, gen.data.only = FALSE, clean.missing = is.null(radius) && !gen.data.only, use.existing = NULL)
 {
-  results <- vector("list", length(dep.var))
-  names(results) <- dep.var 
+  if (is.null(use.existing))
+  {
+    results <- vector("list", length(dep.var))
+    names(results) <- dep.var 
 
-  attr(results, "dep.var") <- dep.var
-  attr(results, "co.var") <- co.var
-  attr(results, "se.var") <- se.var
-  attr(results, "knetworks") <- knetworks
-  attr(results, "vcov") <- get.vcov
-  attr(results, "wls") <- wls
+    attr(results, "dep.var") <- dep.var
+    attr(results, "co.var") <- co.var
+    attr(results, "se.var") <- se.var
+    attr(results, "knetworks") <- knetworks
+    attr(results, "vcov") <- get.vcov
+    attr(results, "wls") <- wls
 
-  if (!is.null(radius))
-    attr(results, "radius") <- radius
+    if (!is.null(radius))
+      attr(results, "radius") <- radius
+  }
+  else
+  {
+    dep.var <- names(use.existing)
+    radius <- attr(use.existing, "radius") 
+    wls <- attr(use.existing, "wls")
+    if (is.null(co.var)) co.var <- attr(use.existing, "co.var")
+  }
 
   for (dep in dep.var)
   {
-    results[[dep]] <- vector("list", length(knetworks))
-    names(results[[dep]]) <- knetworks
+    if (is.null(use.existing))
+    {
+      results[[dep]] <- vector("list", length(knetworks))
+      names(results[[dep]]) <- knetworks
+    }
+    else
+    {
+      knetworks <- names(use.existing[[dep]])
+    }
 
     for (k in knetworks)
     {
-      results[[dep]][[k]] <- vector("list") 
-      k.data <- NULL
+      if (is.null(use.existing))
+      {
+        results[[dep]][[k]] <- vector("list") 
+        k.data <- NULL
+      }
+      else
+      {
+        se.var <- strsplit(names(use.existing[[dep]][[k]]), split = ',')
+      }
 
       for (se in se.var)
       {
+        se.name <- paste(se, collapse = ",")
+
         co.var.formula <- if (!is.null(co.var)) paste(co.var[(co.var != k)], collapse = " + ") 
         se.formula <- if (!is.null(se)) 
                         paste(" + ", paste(if (se.cohort.interact) 
@@ -877,7 +903,11 @@ fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov =
 
         fgm <- NULL
 
-        if (!clean.missing && !is.null(k.data))
+        if (!is.null(use.existing) && !is.null(use.existing[[dep]][[k]][[se.name]]$fgm))
+        {
+          fgm <- use.existing[[dep]][[k]][[se.name]]$fgm
+        }
+        else if (!clean.missing && !is.null(k.data))
         {
           cat("Reusing data subset\n")
           fgm <- k.data
@@ -912,16 +942,26 @@ fgm.regress <- function(fgm.data, dep.var, co.var, se.var, knetworks, get.vcov =
           }
         }
 
-        se.name <- paste(se, collapse = ",")
 
-        results[[dep]][[k]][[se.name]] <- list(formula = reg.formula, lm = p, fgm = fgm)
+        if (is.null(use.existing))
+          results[[dep]][[k]][[se.name]] <- list(formula = reg.formula, lm = p, fgm = fgm)
+        else
+          use.existing[[dep]][[k]][[se.name]] <- list(formula = reg.formula, lm = p, fgm = fgm)
+
         k.data <- fgm
 
         if (get.vcov && !gen.data.only)
-          results[[dep]][[k]][[se.name]]$vcov <- tryCatch(vcovHAC(p), error = function(e) { print("Could not get vcov") })
+        {
+          cat("Calculating HAC vcov...")
+          if (is.null(use.existing))
+            results[[dep]][[k]][[se.name]]$vcov <- tryCatch(vcovHAC(p), error = function(e) { print("Could not get vcov") })
+          else
+            use.existing[[dep]][[k]][[se.name]]$vcov <- tryCatch(vcovHAC(p), error = function(e) { print("Could not get vcov") })      
+          cat("done\n")
+        }
       }
     }
   }
 
-  return(results)
+  if (is.null(use.existing)) results else use.existing
 }
