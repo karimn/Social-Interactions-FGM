@@ -2,6 +2,7 @@
 .Rhistory
 *.swp
 *.swo
+*.swn
 *.aux
 *.bbl
 *.blg
