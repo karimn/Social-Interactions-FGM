@@ -18,7 +18,9 @@ ir <- read.dta('~/Data/EDHS/2008/EGIR5AFL.DTA', convert.underscore = TRUE)
 fgm.data.daughters.08 <- subset(ir, select = c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
                                                v511, v704, v705, v714, v716, v717, v719, v721, v729, v730,
-                                               g102, g106, g107, g118, g119, sgovern, s103g,
+                                               g102, g106, g107, g118, g119, sgovern, s103g, s912, s915,
+                                               v394,
+                                               s917a:s917x,
                                                v3a08j, v3a08q,
 #                                               m2a, m2b, m2g, m2k, m2n,
 #                                               m3a, m3b, m3g, m3k, m3n,
@@ -32,11 +34,15 @@ fgm.data.daughters.08 <- subset(ir, select = c(v000, v001, v002, v003, v004, v00
 
 rm(ir)
 
+circum.info <- c('circum.info.tv', 'circum.info.radio', 'circum.info.papers', 'circum.info.pamph', 'circum.info.poster', 'circum.info.comm', 'circum.info.hw.home', 'circum.info.hw.facil', 'circum.info.husb', 'circum.info.relfr', 'circum.info.other')
+
 col.names <- c(
                'phase', 'cluster', 'hh', 'respond', 'area.unit', 'wt', 'domain', 'region', 'urban.rural', 'years.lived.res', 
                'religion', 'hh.head.sex', 'wealth.index', 'intends.circum', 'educ.lvl', 'literacy', 'med.help.permission', 'med.help.money', 'med.help.distance', 'med.help.transportation',
                'marital.age', 'partner.occupation.1', 'partner.occupation.2', 'working', 'occupation.1', 'occupation.2', 'work.for.whom', 'work.home', 'partner.educlvl', 'partner.age',
-               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governorate', 'prev.governate',
+               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governorate', 'prev.governate', 'num.not.circum', 'discuss.circum',
+               'visit.health.facil.12mon',
+               circum.info,
                'nofpuse.husbandopposed', 'nofpuse.noaccess.toofar' 
 #               'prenatal.doctor', 'prenatal.nurse', 'prenatal.daya', 'prenatal.other', 'prenatal.noone',
 #               'assist.doctor', 'assist.nurse', 'assist.daya', 'assist.other', 'assist.noone', 
@@ -145,6 +151,9 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
   med.help.transportation.fac <- factor(med.help.transportation, 
                                         levels = med.help.levels,
                                         labels = med.help.labels)
+  med.help.money.fac <- factor(med.help.money, 
+                                        levels = med.help.levels,
+                                        labels = med.help.labels)
   partner.occupation.1.fac <- factor(partner.occupation.1)
   partner.occupation.2.fac <- factor(partner.occupation.2, levels = occupation.2.levels, labels = occupation.2.labels)
   occupation.1.fac <- factor(occupation.1)
@@ -158,7 +167,12 @@ fgm.data.daughters.08 <- within(fgm.data.daughters.08,
 
   wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
 
+  discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
+  visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
 })
+
+for (ci in circum.info)
+  fgm.data.daughters.08[,paste(ci, "fac", sep = ".")] <- factor(fgm.data.daughters.08[,ci], levels = 0:1, labels = c("no", "yes"))
 
 # GPS Data
 ############
