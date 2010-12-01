@@ -285,7 +285,7 @@ print.factors <- function(results, regname, desc, pvalue = TRUE, indent = 1)
 
 var.dict <- list(circum = "Circumcision", has.or.intends.circum = "Circumcision/Intention")
 
-fgm.results.outreg <- function(results, var.dict, title = "Regression", label = "", stderr = FALSE, pvalue = TRUE, exclude.foot = FALSE)
+fgm.results.outreg <- function(results, var.dict, title = "Regression", label = "", stderr = FALSE, pvalue = TRUE, exclude.foot = FALSE, exclude.k = NULL)
 {
   num.dep <- length(results)
   num.models <- 0
@@ -295,6 +295,13 @@ fgm.results.outreg <- function(results, var.dict, title = "Regression", label = 
     results[[d]]$num.models <- 0
 
     for (k in names(results[[d]]))
+    {
+      if (k %in% exclude.k)
+      {
+        results[[d]][[k]] <- NULL
+        next 
+      }
+      
       for (s in names(results[[d]][[k]]))
       {
         results[[d]]$num.models <- results[[d]]$num.models + 1
@@ -307,6 +314,7 @@ fgm.results.outreg <- function(results, var.dict, title = "Regression", label = 
                                                      cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
                                                      symbols = c("***", "**", "*", ".", " "))
       }
+    }
   }
 
   num.col <- num.models + 1
