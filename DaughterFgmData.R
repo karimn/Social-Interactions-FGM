@@ -21,8 +21,13 @@ setClass("DaughterFgmData",
 setMethod("initialize", "DaughterFgmData",
           function(.Object, ..., ir.file, br.file, gps.file, dhs.year = 2008)
           {
+            individ.controls = c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", 
+                                 "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "religion", 
+                                 "partner.educlvl.fac", "order.fac", "hh.head.sex")
+
             cols <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
-            this <- callNextMethod(.Object, ..., ir.file = ir.file, gps.file = gps.file, cols = cols, dhs.year = dhs.year)
+            this <- callNextMethod(.Object, individual.controls = individ.controls, ..., 
+                                   ir.file = ir.file, gps.file = gps.file, cols = cols, dhs.year = dhs.year)
 
             num.col <- length(FgmData.col.names)
 

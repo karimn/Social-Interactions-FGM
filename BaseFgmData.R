@@ -2,8 +2,48 @@ library(sp)
 library(spatstat)
 library(maptools)
 
+factor.mean <- function(df, grp, col.name, prefix)
+{
+  stopifnot(is.factor(df[, col.name]))
+
+  col.lvls <- levels(df[, col.name])
+  grp.nrow <- nrow(grp)
+
+  for (i in 2:length(col.lvls))
+  {
+    cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", col.lvls[i], perl = TRUE))
+    new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
+    df[, new.col.name] <- sum(grp[, col.name] == col.lvls[i], na.rm = TRUE) / grp.nrow
+  }
+
+  return(df)
+}
+
+calc.grpavg <- function(df, total.df, cohort.range, regs)
+{
+  current.birth.year <- df$birth.year[1]
+  current.governorate <- df$governorate[1]
+
+  grp <- total.df[(total.df[["birth.year"]] <= current.birth.year) & (total.df[["birth.year"]] >= current.birth.year - cohort.range), ] 
+
+  for (col.name in regs)
+  {
+    if (is.factor(df[, col.name]))
+    {
+      df <- factor.mean(df, grp, col.name, 'grpavg')
+    }
+    else
+    {
+      df[, paste('grpavg', col.name, sep = '.')] <- mean(grp[, col.name], na.rm = TRUE)
+    }
+  }
+
+  return(df)
+}
+
 setClass("BaseFgmData",
-         representation(cluster.info = "data.frame"),
+         representation(cluster.info = "data.frame",
+                        individual.controls = "character"),
          contains = c("SpatialPointsDataFrame"))
 
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
@@ -247,3 +287,10 @@ setMethod("by.radius",
           }
 )
 
+setMethod("generate.reg.means",
+          signature = c(this = "BaseFgmData"),
+          function(this, cohort.range = 1)
+          {
+            this@data <- do.call(rbind, by(this@data, this@data[c("birth.year.fac", "governorate")], calc.grpavg.fun, this@data, cohort.range))
+          }
+)
