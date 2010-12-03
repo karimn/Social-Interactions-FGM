@@ -19,27 +19,6 @@ factor.mean <- function(df, grp, col.name, prefix)
   return(df)
 }
 
-calc.grpavg <- function(df, total.df, cohort.range, regs)
-{
-  current.birth.year <- df$birth.year[1]
-  current.governorate <- df$governorate[1]
-
-  grp <- total.df[(total.df[["birth.year"]] <= current.birth.year) & (total.df[["birth.year"]] >= current.birth.year - cohort.range), ] 
-
-  for (col.name in regs)
-  {
-    if (is.factor(df[, col.name]))
-    {
-      df <- factor.mean(df, grp, col.name, 'grpavg')
-    }
-    else
-    {
-      df[, paste('grpavg', col.name, sep = '.')] <- mean(grp[, col.name], na.rm = TRUE)
-    }
-  }
-
-  return(df)
-}
 
 setClass("BaseFgmData",
          representation(cluster.info = "data.frame",
@@ -163,7 +142,7 @@ setMethod("initialize",
             .Object@cluster.info <- gps
 
             rm(gps)
-
+  
             .Object
 
             #.Object <- callNextMethod(.Object, fgm.spdf, cluster.info = gps, ...)
@@ -287,11 +266,3 @@ setMethod("by.radius",
           }
 )
 
-if (!isGeneric("generate.reg.means")) setGeneric("generate.reg.means", function(self, ...) standardGeneric("generate.reg.means"))
-setMethod("generate.reg.means",
-          "BaseFgmData",
-          function(self, ..., cohort.range = 1)
-          {
-            self@data <- do.call(rbind, by(self@data, self@data[c("birth.year.fac", "governorate")], calc.grpavg.fun, self@data, cohort.range))
-          }
-)
