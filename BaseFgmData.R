@@ -287,10 +287,11 @@ setMethod("by.radius",
           }
 )
 
+if (!isGeneric("generate.reg.means")) setGeneric("generate.reg.means", function(self, ...) standardGeneric("generate.reg.means"))
 setMethod("generate.reg.means",
-          signature = c(this = "BaseFgmData"),
-          function(this, cohort.range = 1)
+          "BaseFgmData",
+          function(self, ..., cohort.range = 1)
           {
-            this@data <- do.call(rbind, by(this@data, this@data[c("birth.year.fac", "governorate")], calc.grpavg.fun, this@data, cohort.range))
+            self@data <- do.call(rbind, by(self@data, self@data[c("birth.year.fac", "governorate")], calc.grpavg.fun, self@data, cohort.range))
           }
 )
