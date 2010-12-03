@@ -2,10 +2,10 @@ library(sp)
 library(spatstat)
 library(maptools)
 
-setClass("FgmData",
+setClass("BaseFgmData",
          representation(cluster.info = "data.frame"),
-         contains = "SpatialPointsDataFrame")
-         
+         contains = c("SpatialPointsDataFrame"))
+
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
                                                v511, v704, v705, v714, v716, v717, v719, v721, v729, v730,
@@ -50,20 +50,25 @@ FgmData.religions <- c("muslim", "christian")
 FgmData.literacy.labels <- c('cannot read', 'reads with difficulty', 'reads easily')
 FgmData.partner.educlvl.labels <- c('no educ', 'incomplete primary', 'complete primary', 'incomplete secondary', 'complete secondary', 'higher')
 
-setMethod("initialize", "FgmData",
-          function(.Object, ir.file, gps.file, dhs.year = 2008, ...)
+setMethod("initialize", 
+          signature(.Object = "BaseFgmData"), #, ir.file = "character", gps.file = "character"),
+          function(.Object, ..., ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008)
           {
+            if (is.empty(ir.file) | is.empty(gps.file))
+              return(callNextMethod(.Object, ...))
+
             ir <- read.dta(ir.file, convert.underscore = TRUE)
-            fgm.data <- subset(ir, select = eval(FgmData.cols))
+            fgm.data <- subset(ir, select = eval(cols))
             
             rm(ir)
 
-            num.col <- length(FgmData.col.names)
-            names(fgm.data)[1:num.col] <- FgmData.col.names
+            num.col <- length(col.names)
+            names(fgm.data)[1:num.col] <- col.names
+
+            fgm.data$dhs.year <- dhs.year
 
             fgm.data <- within(fgm.data, 
             {
-              dhs.year <- dhs.year
               hh.id <- factor(paste(cluster, hh, sep = '-'))
               religion <- factor(religion, 
                                  levels = 1:2, 
@@ -103,8 +108,7 @@ setMethod("initialize", "FgmData",
             for (ci in FgmData.circum.info)
               fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
 
-            fgm.data <- subset(fgm.data, select = c(cluster:hh.id)) 
-            fgm.data <- fgm.data[ order(fgm.data$hh.id, fgm.data$birth.year), ]
+            fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
 
             if (is.null(fgm.data$unique.cluster)) 
               fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
@@ -115,34 +119,21 @@ setMethod("initialize", "FgmData",
             coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
             proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
+            as(.Object, "SpatialPointsDataFrame") <- fgm.spdf
+            .Object@cluster.info <- gps
+
             rm(gps)
 
-            callNextMethod(.Object, fgm.spdf, cluster.info = cluster.info, ...)
-          }
-)
+            .Object
 
-if (isGeneric("cluster.coordinates<-")) removeGeneric("cluster.coordinates<-")
-setGeneric("cluster.coordinates<-", function(object, value) standardGeneric("cluster.coordinates<-"))
-
-setMethod("cluster.coordinates<-", 
-          signature = c(object = "data.frame"),
-          function(object, value) 
-          {
-            if (is.null(value$unique.cluster)) 
-              value$unique.cluster <- as.numeric(row.names(value))
-
-            fgm.spdf <- merge(object, value, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-            coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
-            proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
-
-            new("FgmData", fgm.spdf, cluster.info = value)
+            #.Object <- callNextMethod(.Object, fgm.spdf, cluster.info = gps, ...)
           }
 )
 
 if (!isGeneric("names")) setGeneric("names")
 
 setMethod("names",
-          signature = c(x = "FgmData"),
+          signature = c(x = "BaseFgmData"),
           function(x)
           {
             names(x@data)
@@ -152,7 +143,7 @@ setMethod("names",
 if (!isGeneric("by")) setGeneric("by")
 
 setMethod("by",
-          signature = c(data = "FgmData", INDICES = "list", FUN = "function"),
+          signature = c(data = "BaseFgmData", INDICES = "list", FUN = "function"),
           function(data, INDICES, FUN, ...)
           {
             convert.FgmData <- function(df, ...)
@@ -167,41 +158,10 @@ setMethod("by",
           }
 )
 
-#if (!isGeneric("attach")) setGeneric("attach")
-
-#setMethod("attach",
-#          signature = c(what = "FgmData"),
-#          function(what)
-#          {
-#            attach(what@data)
-#          }
-#)
-#
-#if (!isGeneric("detach")) setGeneric("detach")
-#
-#setMethod("detach",
-#          signature = c(name = "FgmData"),
-#          function(name, pos = 2, unload = FALSE, character.only = FALSE, force = FALSE)
-#          {
-#            detach(name@data, pos, unload, character.only, force)
-#          }
-#)
-
-#if (!isGeneric("plm")) setGeneric("plm")
-#
-#setMethod("plm",
-#          signature = c(formula = "ANY", data = "FgmData"),
-#          function(formula, data, ...)
-#          {
-#            plm(formula, data = data@data, ...)
-#            
-#          }
-#)
-
 if (!isGeneric("subset")) setGeneric("subset")
 
 setMethod("subset",
-          signature = c(x = "FgmData"),
+          signature = c(x = "BaseFgmData"),
           function(x, subset, ...)
           {
             # same implementation as subset.base().  I had to do this because of a parent.frame() used in evaluating the subset param
@@ -223,7 +183,7 @@ setMethod("subset",
 if (!isGeneric("nrow")) setGeneric("nrow")
 
 setMethod("nrow",
-          signature = c(x = "FgmData"),
+          signature = c(x = "BaseFgmData"),
           function(x)
           {
             nrow(x@data)
@@ -233,7 +193,7 @@ setMethod("nrow",
 if (!isGeneric("by.radius")) setGeneric("by.radius", function(self, radius, fun, ...) standardGeneric("by.radius"))
 
 setMethod("by.radius",
-          signature = c(self = "FgmData", radius = "numeric", fun = "function"),
+          signature = c(self = "BaseFgmData", radius = "numeric", fun = "function"),
           function(self, radius, fun, ..., indices = NULL, by.cluster = TRUE)
           {
             clinfo.sp <- self@cluster.info
