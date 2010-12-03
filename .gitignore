@@ -3,6 +3,7 @@
 *.swp
 *.swo
 *.swn
+*.sw*
 *.aux
 *.bbl
 *.blg
