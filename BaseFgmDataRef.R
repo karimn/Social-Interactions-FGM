@@ -69,7 +69,7 @@ FgmData.literacy.labels <- c('cannot read', 'reads with difficulty', 'reads easi
 FgmData.partner.educlvl.labels <- c('no educ', 'incomplete primary', 'complete primary', 'incomplete secondary', 'complete secondary', 'higher')
 
 BaseFgmData$methods(
-          initialize = function(ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008, ...)
+          initialize = function(ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008)
           {
             if (is.empty(ir.file) | is.empty(gps.file))
               return(initFields())
@@ -141,7 +141,8 @@ BaseFgmData$methods(
             cluster.info <<- gps
 
             rm(gps)
-            #callSuper(...)
+
+            return(.self)
           }
 )
 

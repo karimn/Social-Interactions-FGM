@@ -40,7 +40,7 @@ cleanup.by.hh <- function(df) {
 DaughterFgmData <- setRefClass("DaughterFgmData", contains = "BaseFgmData")
 
 DaughterFgmData$methods(
-  initialize = function(ir.file, br.file, gps.file, youngest.cohort = 1996, dhs.year = 2008, ...)
+  initialize = function(ir.file, br.file, gps.file, youngest.cohort = 1996, dhs.year = 2008)
           {
             individual.controls <<- c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", 
                                       "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "religion", 
@@ -48,17 +48,17 @@ DaughterFgmData$methods(
 
             cols <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
 
-            callSuper(ir.file = ir.file, gps.file = gps.file, cols = cols, dhs.year = dhs.year, ...)
+            callSuper(ir.file = ir.file, gps.file = gps.file, cols = cols, col.names = FgmData.col.names, dhs.year = dhs.year)
 
             num.col <- length(FgmData.col.names)
 
             spdf@data <<- reshape(spdf@data, 
-                                 varying = list(names(spdf@data)[(num.col + 1):(num.col + 7)], 
-                                                names(spdf@data)[(num.col + 8):(num.col + 14)], 
-                                                names(spdf@data)[(num.col + 15):(num.col + 21)], 
-                                                names(spdf@data)[(num.col + 22):(num.col + 28)], 
-                                                names(spdf@data)[(num.col + 29):(num.col + 35)], 
-                                                names(spdf@data)[(num.col + 36):(num.col + 42)]), 
+                                 varying = list(names()[(num.col + 1):(num.col + 7)], 
+                                                names()[(num.col + 8):(num.col + 14)], 
+                                                names()[(num.col + 15):(num.col + 21)], 
+                                                names()[(num.col + 22):(num.col + 28)], 
+                                                names()[(num.col + 29):(num.col + 35)], 
+                                                names()[(num.col + 36):(num.col + 42)]), 
                                  direction = 'long', 
                                  sep = '.', 
                                  v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'), 
@@ -100,6 +100,8 @@ DaughterFgmData$methods(
             spdf@data <<- spdf@data[ order(spdf@data$hh.id, spdf@data$birth.year), ]
 
             spdf@data <<- subset(spdf@data, circum <= 1)
+
+            return(.self)
           }
 )
 
