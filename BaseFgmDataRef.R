@@ -19,10 +19,6 @@ factor.mean <- function(df, grp, col.name, prefix)
   return(df)
 }
 
-BaseFgmData <- setRefClass("BaseFgmData",
-                           fields = list(cluster.info = "data.frame", 
-                                         individual.controls = "character",
-                                         spdf = "SpatialPointsDataFrame"))
 
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
@@ -68,83 +64,89 @@ FgmData.religions <- c("muslim", "christian")
 FgmData.literacy.labels <- c('cannot read', 'reads with difficulty', 'reads easily')
 FgmData.partner.educlvl.labels <- c('no educ', 'incomplete primary', 'complete primary', 'incomplete secondary', 'complete secondary', 'higher')
 
-BaseFgmData$methods(
-          initialize = function(ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008)
-          {
-            if (is.empty(ir.file) | is.empty(gps.file))
-              return(initFields())
+BaseFgmData <- setRefClass("BaseFgmData",
+  fields = list(
+    cluster.info = "data.frame", 
+    individual.controls = "character",
+    spdf = "SpatialPointsDataFrame"),
 
-            ir <- read.dta(ir.file, convert.underscore = TRUE)
-            fgm.data <- subset(ir, select = eval(cols))
-            
-            rm(ir)
+  methods = list(
+    initialize = function(ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008, ...)
+    {
+      if (is.empty(ir.file) | is.empty(gps.file))
+        return(initFields(...))
 
-            num.col <- length(col.names)
-            names(fgm.data)[1:num.col] <- col.names
+      ir <- read.dta(ir.file, convert.underscore = TRUE)
+      fgm.data <- base::subset(ir, select = eval(cols))
+      
+      rm(ir)
 
-            fgm.data$dhs.year <- dhs.year
+      num.col <- length(col.names)
+      names(fgm.data)[1:num.col] <- col.names
 
-            fgm.data <- within(fgm.data, 
-            {
-              hh.id <- factor(paste(cluster, hh, sep = '-'))
-              religion <- factor(religion, 
-                                 levels = 1:2, 
-                                 labels = FgmData.religions) #, "missing"))
-              literacy.fac <- factor(literacy, 
-                                     levels = c(0:2), #, 9), 
-                                     labels = FgmData.literacy.labels) #, 'missing'))
-              med.help.permission.fac <- factor(med.help.permission, 
-                                                levels = FgmData.med.help.levels,
-                                                labels = FgmData.med.help.labels)
-              med.help.distance.fac <- factor(med.help.distance, 
-                                              levels = FgmData.med.help.levels, 
+      fgm.data$dhs.year <- dhs.year
+
+      fgm.data <- within(fgm.data, 
+      {
+        hh.id <- factor(paste(cluster, hh, sep = '-'))
+        religion <- factor(religion, 
+                           levels = 1:2, 
+                           labels = FgmData.religions) #, "missing"))
+        literacy.fac <- factor(literacy, 
+                               levels = c(0:2), #, 9), 
+                               labels = FgmData.literacy.labels) #, 'missing'))
+        med.help.permission.fac <- factor(med.help.permission, 
+                                          levels = FgmData.med.help.levels,
+                                          labels = FgmData.med.help.labels)
+        med.help.distance.fac <- factor(med.help.distance, 
+                                        levels = FgmData.med.help.levels, 
+                                        labels = FgmData.med.help.labels)
+        med.help.transportation.fac <- factor(med.help.transportation, 
+                                              levels = FgmData.med.help.levels,
                                               labels = FgmData.med.help.labels)
-              med.help.transportation.fac <- factor(med.help.transportation, 
-                                                    levels = FgmData.med.help.levels,
-                                                    labels = FgmData.med.help.labels)
-              med.help.money.fac <- factor(med.help.money, 
-                                                    levels = FgmData.med.help.levels,
-                                                    labels = FgmData.med.help.labels)
-              partner.occupation.1.fac <- factor(partner.occupation.1)
-              partner.occupation.2.fac <- factor(partner.occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
-              occupation.1.fac <- factor(occupation.1)
-              occupation.2.fac <- factor(occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
-              partner.educlvl.fac <- factor(partner.educlvl, 
-                                            levels = c(0:5), #, 8, 9), 
-                                            labels = FgmData.partner.educlvl.labels) #, "don't know", 'missing'))
-              mother.circum.fac <- factor(mother.circum, 
-                                          levels = c(0:1), #, 9), 
-                                          labels = c('no', 'yes')) #, 'missing'))
+        med.help.money.fac <- factor(med.help.money, 
+                                              levels = FgmData.med.help.levels,
+                                              labels = FgmData.med.help.labels)
+        partner.occupation.1.fac <- factor(partner.occupation.1)
+        partner.occupation.2.fac <- factor(partner.occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
+        occupation.1.fac <- factor(occupation.1)
+        occupation.2.fac <- factor(occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
+        partner.educlvl.fac <- factor(partner.educlvl, 
+                                      levels = c(0:5), #, 8, 9), 
+                                      labels = FgmData.partner.educlvl.labels) #, "don't know", 'missing'))
+        mother.circum.fac <- factor(mother.circum, 
+                                    levels = c(0:1), #, 9), 
+                                    labels = c('no', 'yes')) #, 'missing'))
 
-              wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
+        wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
 
-              discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
-              visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
-            })
+        discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
+        visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
+      })
 
-            for (ci in FgmData.circum.info)
-              fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
+      for (ci in FgmData.circum.info)
+        fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
 
-            fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
+      fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
 
-            if (is.null(fgm.data$unique.cluster)) 
-              fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
+      if (is.null(fgm.data$unique.cluster)) 
+        fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
 
-            gps <- read.dbf(gps.file)
+      gps <- read.dbf(gps.file)
 
-            fgm.spdf <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-            coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
-            proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
+      fgm.spdf <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
+      coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
+      proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
-            spfd <<- fgm.spdf
+      spdf <<- fgm.spdf
 
-            cluster.info <<- gps
+      cluster.info <<- gps
 
-            rm(gps)
+      rm(gps)
 
-            return(.self)
-          }
-)
+      return(.self)
+    }
+))
 
 BaseFgmData$methods(
   names = function()
@@ -243,9 +245,9 @@ BaseFgmData$methods(
 
             # TODO Make the "by" overridden implementation take indices from the "self" directly 
             if (is.null(indices))
-              by(spdf@data, spdf@data[c('unique.cluster')], by.cluster.fun, fun, by.cluster, ...)
+              base::by(spdf@data, spdf@data[c('unique.cluster')], by.cluster.fun, fun, by.cluster, ...)
             else
-              by(spdf@data, indices, with.indices.fun, fun, by.cluster, radius, ...)
+              base::by(spdf@data, indices, with.indices.fun, fun, by.cluster, radius, ...)
           }
 )
 
