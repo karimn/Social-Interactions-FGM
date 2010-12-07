@@ -2,7 +2,21 @@ library(sp)
 library(spatstat)
 library(maptools)
 
-factor.mean <- function(df, grp, col.name, prefix)
+grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
+{
+  if (exclude.self)
+    grp.data <- grp.data[-rowid,]
+  
+  if (nrow(grp.data) == 0)
+    return(NA)
+
+  if (is.null(column.lvl))
+    mean(grp.data[, column], na.rm = TRUE)
+  else
+    mean(grp.data[, column] == column.lvl, na.rm = TRUE)
+}
+
+factor.mean <- function(df, grp, col.name, prefix, exclude.self = FALSE)
 {
   stopifnot(is.factor(df[, col.name]))
 
@@ -13,7 +27,8 @@ factor.mean <- function(df, grp, col.name, prefix)
   {
     cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", col.lvls[i], perl = TRUE))
     new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
-    df[, new.col.name] <- sum(grp[, col.name] == col.lvls[i], na.rm = TRUE) / grp.nrow
+    #df[, new.col.name] <- if (grp.nrow != 0) sum(grp[, col.name] == col.lvls[i], na.rm = TRUE) / grp.nrow else NA
+    df[, new.col.name] <- vapply(1:nrow(df), grp.mean, 0, grp, col.name, col.lvls[i], exclude.self)
   }
 
   return(df)
@@ -63,6 +78,9 @@ FgmData.med.help.labels <- c('big problem', 'not big problem') #, 'missing')
 FgmData.religions <- c("muslim", "christian")
 FgmData.literacy.labels <- c('cannot read', 'reads with difficulty', 'reads easily')
 FgmData.partner.educlvl.labels <- c('no educ', 'incomplete primary', 'complete primary', 'incomplete secondary', 'complete secondary', 'higher')
+
+FgmData.grpavg.prefix = "grpavg"
+FgmData.lagged.grpavg.prefix = "lagged.grpavg"
 
 BaseFgmData <- setRefClass("BaseFgmData",
   fields = list(
@@ -138,9 +156,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
       coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
       proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
-      spdf <<- fgm.spdf
-
-      cluster.info <<- gps
+      initFields(spdf = fgm.spdf, cluster.info = gps)
 
       rm(gps)
 
@@ -148,8 +164,9 @@ BaseFgmData <- setRefClass("BaseFgmData",
     }
 ))
 
+# Can use the name "names"
 BaseFgmData$methods(
-  names = function()
+  get.names = function()
           {
             names(spdf@data)
           }
@@ -193,7 +210,7 @@ BaseFgmData$methods(
 BaseFgmData$methods(
   nrow = function()
   {
-    nrow(spdf@data)
+    base::nrow(spdf@data)
   }
 )
 
