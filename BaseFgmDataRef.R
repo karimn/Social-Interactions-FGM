@@ -86,10 +86,14 @@ BaseFgmData <- setRefClass("BaseFgmData",
   fields = list(
     cluster.info = "data.frame", 
     individual.controls = "character",
+    other.grpavg.controls = "character",
     spdf = "SpatialPointsDataFrame"),
 
   methods = list(
-    initialize = function(ir.file = character(0), gps.file = character(0), cols = FgmData.cols, col.names = FgmData.col.names, dhs.year = 2008, ...)
+    initialize = function(ir.file = character(0), gps.file = character(0), 
+                          cols = FgmData.cols, 
+                          col.names = FgmData.col.names, 
+                          dhs.year = 2008, ...)
     {
       if (is.empty(ir.file) | is.empty(gps.file))
         return(initFields(...))

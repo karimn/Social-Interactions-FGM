@@ -4,9 +4,11 @@ library(maptools)
 library(sandwich)
 library(lmtest)
 library(plm)
+library(AER)
 
 calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE)
 {
+  #print(sprintf("calc.grpavg: size = %i", nrow(df)))
   current.birth.year <- df$birth.year[1] - lag
   current.governorate <- df$governorate[1]
 
@@ -14,19 +16,20 @@ calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpav
                   (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
                   (total.df[["governorate"]] == current.governorate), ] 
 
-  for (col.name in regs)
-  {
-    if (is.factor(df[, col.name]))
+  if (length(regs) > 0)
+    for (col.name in regs)
     {
-      df <- factor.mean(df, grp, col.name, prefix, exclude.self)
+      if (is.factor(df[, col.name]))
+      {
+        df <- factor.mean(df, grp, col.name, prefix, exclude.self)
+      }
+      else
+      {
+        new.col.name <- paste(prefix, col.name, sep = '.')
+        #df[, new.col.name] <- if (nrow(grp) != 0) mean(grp[, col.name], na.rm = TRUE) else NA
+        df[, new.col.name] <- vapply(1:nrow(df), grp.mean, 0, grp, col.name, NULL, exclude.self)
+      }
     }
-    else
-    {
-      new.col.name <- paste(prefix, col.name, sep = '.')
-      #df[, new.col.name] <- if (nrow(grp) != 0) mean(grp[, col.name], na.rm = TRUE) else NA
-      df[, new.col.name] <- vapply(1:nrow(df), grp.mean, 0, grp, col.name, NULL, exclude.self)
-    }
-  }
 
   df$grp.size <- nrow(grp) 
 
@@ -58,11 +61,15 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
 
   methods = list(
     initialize = function(ir.file = character(0), br.file, gps.file = character(0), 
-                          youngest.cohort = 1996, dhs.year = 2008, individual.controls = DaughterFgmData.individual.controls, ...)
+                          youngest.cohort = 1996, 
+                          dhs.year = 2008, 
+                          individual.controls = DaughterFgmData.individual.controls, 
+                          other.grpavg.controls = character(0),
+                          ...)
     {
       cols <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
 
-      callSuper(ir.file = ir.file, gps.file = gps.file, cols = cols, col.names = FgmData.col.names, dhs.year = dhs.year, individual.controls = individual.controls, ...)
+      callSuper(ir.file = ir.file, gps.file = gps.file, cols = cols, col.names = FgmData.col.names, dhs.year = dhs.year, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls, ...)
 
       if (!is.empty(ir.file) & !is.empty(gps.file))
       {
@@ -147,14 +154,14 @@ RegressionResults <- setRefClass("RegressionResults",
 )
 
 DaughterFgmData$methods(
-  generate.reg.means = function(cohort.range = 1, regs = individual.controls, exclude.self = FALSE)
+  generate.reg.means = function(cohort.range = 1, regs = c(individual.controls, other.grpavg.controls), exclude.self = FALSE)
   {
     spdf@data <<- do.call(rbind, 
-                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, 
-                          spdf@data, cohort.range, regs, lag = 0, exclude.self = exclude.self))
-    #spdf@data <<- do.call(rbind, 
-    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs,
-    #                      prefix = "lagged.grpavg", lag = 1))
+                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs, 
+                          lag = 0, exclude.self = exclude.self))
+    spdf@data <<- do.call(rbind, 
+                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs, 
+                          lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self))
   }
 )
 
@@ -174,39 +181,66 @@ DaughterFgmData$methods(
 )
 
 DaughterFgmData$methods(
-  get.regress.formula = function(dep.var, include.grpavg = FALSE, interact.govern.cohort = FALSE) 
+  get.regress.formula = function(dep.var, 
+                                 include.grpavg = FALSE, 
+                                 interact.govern.cohort = FALSE, 
+                                 instr.grpavg = FALSE, 
+                                 instr.regs = c(individual.controls, other.grpavg.controls)) 
   {
-    individ.controls.formula <- paste(individual.controls, collapse = " + ")
-    individ.controls.regex <- gsub("\\.", "\\\\.", sprintf("(%s)", paste(individual.controls, collapse = ")|(")))
-    grpavg.formula <- paste(grep(sprintf("^%s\\.(%s)", FgmData.grpavg.prefix, individ.controls.regex), get.names(), value = TRUE), collapse = " + ")
+    individ.controls.formula <- if (length(individual.controls) > 0) paste(individual.controls, collapse = " + ")
+    grpavg.controls.regex <- gsub("\\.", "\\\\.", sprintf("((%s))", paste(c(individual.controls, other.grpavg.controls), collapse = ")|(")))
+    grpavg.regs <- grep(sprintf("^%s\\.%s", FgmData.grpavg.prefix, grpavg.controls.regex), get.names(), value = TRUE)
+    grpavg.formula <- paste(grpavg.regs, collapse = " + ")
+    lagged.grpavg.controls.regex <- gsub("\\.", "\\\\.", sprintf("((%s))", paste(instr.regs, collapse = ")|(")))
+    lagged.grpavg.formula <- paste(grep(sprintf("^%s\\.%s", FgmData.lagged.grpavg.prefix, lagged.grpavg.controls.regex), get.names(), value = TRUE), 
+                                   collapse = " + ")
+    not.instr.grpavg.formula <- paste(grep(sprintf("^%s\\.%s", 
+                                                   FgmData.grpavg.prefix, 
+                                                   lagged.grpavg.controls.regex),
+                                           grpavg.regs, 
+                                           value = TRUE, 
+                                           invert = TRUE), 
+                                      collapse = " + ")
 
-    sprintf("%s ~ birth.year.fac%sgovernorate + %s %s",
+    timevar.fe <- sprintf("birth.year.fac%sgovernorate", if (interact.govern.cohort) "*" else " + ")
+    instr.formula <- sprintf("| %s %s %s %s", 
+                             timevar.fe,
+                             if (length(individ.controls.formula) > 0) paste("+", individ.controls.formula) else "",
+                             paste("+", not.instr.grpavg.formula), 
+                             paste("+", lagged.grpavg.formula))
+
+    sprintf("%s ~ %s %s %s %s",
             dep.var, 
-            if (interact.govern.cohort) "*" else " + ",
-            individ.controls.formula, 
-            if (include.grpavg) paste("+", grpavg.formula) else "")
+            timevar.fe,
+            if (length(individ.controls.formula) > 0) paste("+", individ.controls.formula) else "", 
+            if (include.grpavg) paste("+", grpavg.formula) else "",
+            if (instr.grpavg) instr.formula else "")
   }
 )
 
 DaughterFgmData$methods(
-  regress = function(dep.var, include.grpavg = FALSE, interact.govern.cohort = FALSE, gen.vcov = TRUE) 
+  regress = function(dep.var, 
+                     include.grpavg = FALSE, 
+                     interact.govern.cohort = FALSE, 
+                     instr.grpavg = FALSE, 
+                     instr.regs = c(individual.controls, other.grpavg.controls), 
+                     gen.vcov = TRUE) 
   {
-    regress.formula <- get.regress.formula(dep.var, include.grpavg, interact.govern.cohort) 
+    regress.formula <- get.regress.formula(dep.var, include.grpavg, interact.govern.cohort, instr.grpavg, instr.regs) 
 
-    r <- lm(formula(regress.formula), data = spdf@data)
+    r <- if (instr.grpavg) ivreg(formula(regress.formula),data = spdf@data) else lm(formula(regress.formula), data = spdf@data)
     v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
 
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula(regress.formula))
-  }
+    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula(regress.formula)) }
 )
 
 DaughterFgmData$methods(
   get.regress.formula.panel = function(dep.var, interact.govern.cohort = FALSE, instr.grpavg = FALSE) 
   {
     individ.controls.formula <- paste(individual.controls, collapse = " + ")
-    individ.controls.regex <- gsub("\\.", "\\\\.", sprintf("(%s)", paste(individual.controls, collapse = ")|(")))
-    grpavg.formula <- paste(grep(sprintf("^%s\\.(%s)", FgmData.grpavg.prefix, individ.controls.regex), get.names(), value = TRUE), collapse = " + ")
-    lagged.grpavg.formula <- paste(grep(sprintf("^%s\\.(%s)", FgmData.lagged.grpavg.prefix, individ.controls.regex), get.names(), value = TRUE), collapse = " + ")
+    grpavg.controls.regex <- gsub("\\.", "\\\\.", sprintf("((%s))", paste(c(individual.controls, other.grpavg.controls), collapse = ")|(")))
+    grpavg.formula <- paste(grep(sprintf("^%s\\.%s", FgmData.grpavg.prefix, grpavg.controls.regex), get.names(), value = TRUE), collapse = " + ")
+    lagged.grpavg.formula <- paste(grep(sprintf("^%s\\.(%s)", FgmData.lagged.grpavg.prefix, grpavg.controls.regex), get.names(), value = TRUE), collapse = " + ")
 
     timevar.fe <- sprintf("birth.year.fac%s", if (interact.govern.cohort) ":governorate" else "")
     instr.formula <- sprintf("| %s + %s", timevar.fe, lagged.grpavg.formula)
@@ -220,9 +254,14 @@ DaughterFgmData$methods(
 )
 
 DaughterFgmData$methods(
-  regress.panel = function(dep.var, interact.govern.cohort = FALSE, gen.vcov = TRUE, instr.grpavg = FALSE) 
+  regress.panel = function(dep.var, 
+                           interact.govern.cohort = FALSE, 
+                           instr.grpavg = FALSE, 
+                           instr.regs = c(individual.controls, other.grpavg.controls),
+                           gen.vcov = TRUE) 
   {
-    regress.formula <- get.regress.formula.panel(dep.var, interact.govern.cohort, instr.grpavg) 
+    #regress.formula <- get.regress.formula.panel(dep.var, interact.govern.cohort, instr.grpavg) 
+    regress.formula <- get.regress.formula(dep.var, TRUE, interact.govern.cohort, instr.grpavg, instr.regs) 
 
     r <- plm(formula(regress.formula), index = c("hh.id", "order.fac"), effects = "individual", model = "within", data = spdf@data)
 
