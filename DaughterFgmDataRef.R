@@ -181,6 +181,21 @@ DaughterFgmData$methods(
 )
 
 DaughterFgmData$methods(
+  rm.duplicate = function(rm.by = NULL)
+  {
+    dup <- if (is.null(rm.by)) duplicated(spdf@data) else duplicated(spdf@data[rm.by])
+    spdf@data <<- spdf@data[!dup,]
+  }
+)
+
+DaughterFgmData$methods(
+  copy = function()
+  {
+    DaughterFgmData$new(spdf = spdf, cluster.info = cluster.info, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls)
+  }
+)
+
+DaughterFgmData$methods(
   get.regress.formula = function(dep.var, 
                                  include.grpavg = FALSE, 
                                  interact.govern.cohort = FALSE, 
