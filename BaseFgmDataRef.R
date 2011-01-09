@@ -1,6 +1,8 @@
 library(sp)
 library(spatstat)
 library(maptools)
+library(sem)
+library(AER)
 
 grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
 {
@@ -272,3 +274,32 @@ BaseFgmData$methods(
           }
 )
 
+BaseFgmData$methods(
+  lm = function(formula, gen.vcov = FALSE)
+  {
+    r <- stats::lm(formula, data = spdf@data)
+    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+    
+    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
+  }
+)
+
+BaseFgmData$methods(
+  tsls = function(formula, instruments, gen.vcov = FALSE)
+  {
+    r <- sem::tsls(formula, formula, data = spdf@data)
+    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+    
+    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula, instruments = instruments) 
+  }
+)
+
+BaseFgmData$methods(
+  ivreg = function(formula, gen.vcov = FALSE)
+  {
+    r <- AER::ivreg(formula, data = spdf@data)
+    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+    
+    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
+  }
+)
