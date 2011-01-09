@@ -2,10 +2,16 @@ source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, youngest.cohort = 2000, other.grpavg.controls = "med.circum")
-#x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
+x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
 #x <- DaughterFgmData$new(spdf = y$spdf, cluster.info = clust.info, other.grpavg.controls = "med.circum")
-x$generate.reg.means(0, exclude.self = TRUE)
-#x$rm.by.res.years()
+y <- x$copy()
+y$rm.by.res.years(20)
+y$generate.reg.means(exclude.self = FALSE)
+y$rm.by.grp.size(24)
+y$rm.duplicate(c("governorate", "birth.year.fac"))
+
+x$rm.by.res.years(20)
+x$generate.reg.means(exclude.self = TRUE)
 x$rm.by.grp.size(24)
 
 #r <- x$regress("has.or.intends.circum", TRUE)
@@ -15,15 +21,12 @@ r.panel <- x$regress.panel("circum")
 r.panel$summary()
 
 # To show that some grpavg don't effect grpavg.circum
-y$rm.duplicate(c("governorate", "birth.year.fac"))
-r0 <- lm(grpavg.circum ~ governorate + birth.year.fac + grpavg.wealth.index.2_rich + grpavg.urban.rural_rural + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, data = y$spdf@data)
-v0 <- vcov(r0)
-coeftest(r0, vcov = v0)
+r0 <- y$lm(grpavg.circum ~ governorate + birth.year.fac + grpavg.wealth.index.2_rich + grpavg.urban.rural_rural + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, gen.vcov = TRUE)
 
 # pooled model 1
-r1 <- lm(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.wealth.index.2_rich + grpavg.urban.rural_rural + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, data = x$spdf@data)
-v1 <- vcov(r1)
-coeftest(r1, vcov = v1)
+r1 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.wealth.index.2_rich + grpavg.urban.rural_rural + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, gen.vcov = TRUE)
+
+r1.instr <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.circum | grpavg.urban.rural_rural + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, gen.vcov = TRUE)
 
 # panel model 1
 r2 <- plm(circum ~ birth.year.fac + grpavg.wealth.index.2_rich + grpavg.urban.rural_rural + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female, data = x$spdf@data, index = c("hh.id", "order.fac"), model = "within", effects = "individual")
