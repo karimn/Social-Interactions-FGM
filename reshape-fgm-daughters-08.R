@@ -1,5 +1,7 @@
 library(foreign)
 
+# x <- new("DaughterFgmData", ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', gps.file = "~/Data/EDHS/2008/EGGE5AFF.dbf", br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA')
+
 cleanup.by.hh <- function(df) {
   # Removing birth.year duplicates
   dup <- duplicated(df$birth.year)
