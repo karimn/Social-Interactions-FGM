@@ -6,15 +6,20 @@ library(lmtest)
 library(plm)
 library(AER)
 
-calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE)
+calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE,
+                        range.type = c("both", "older"))
 {
   #print(sprintf("calc.grpavg: size = %i", nrow(df)))
   current.birth.year <- df$birth.year[1] - lag
   current.governorate <- df$governorate[1]
 
-  grp <- total.df[(total.df[["birth.year"]] <= current.birth.year) & 
-                  (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
-                  (total.df[["governorate"]] == current.governorate), ] 
+  grp <- switch(match.arg(range.type),
+                both = total.df[(total.df[["birth.year"]] <= current.birth.year + cohort.range) & 
+                                (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                (total.df[["governorate"]] == current.governorate), ],
+                older = total.df[(total.df[["birth.year"]] <= current.birth.year) & 
+                                 (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                 (total.df[["governorate"]] == current.governorate), ]) 
 
   if (length(regs) > 0)
     for (col.name in regs)
@@ -100,9 +105,9 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
         spdf@data <<- merge(spdf@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'))
         rm(br)
         
-        names(spdf@data)[names(spdf@data) == 'v437'] <- 'weight'
-        names(spdf@data)[names(spdf@data) == 'v438'] <- 'height'
-        names(spdf@data)[names(spdf@data) == 'b2'] <- 'birth.year'
+        names(spdf@data)[names(spdf@data) == 'v437'] <<- 'weight'
+        names(spdf@data)[names(spdf@data) == 'v438'] <<- 'height'
+        names(spdf@data)[names(spdf@data) == 'b2'] <<- 'birth.year'
 
         spdf@data <<- within(spdf@data, 
         {
@@ -139,6 +144,7 @@ RegressionResults <- setRefClass("RegressionResults",
     .lm = "ANY", 
     vcov = "matrix",
     regress.formula = "formula",
+    instruments = "formula",
     data = "DaughterFgmData"),
 
   methods = list(
@@ -154,7 +160,8 @@ RegressionResults <- setRefClass("RegressionResults",
 )
 
 DaughterFgmData$methods(
-  generate.reg.means = function(cohort.range = 1, regs = c(individual.controls, other.grpavg.controls), exclude.self = FALSE)
+  generate.reg.means = function(cohort.range = 1, regs = c(individual.controls, other.grpavg.controls), exclude.self = FALSE,
+                                range.type = c("both", "older"))
   {
     spdf@data <<- do.call(rbind, 
                           base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs, 
