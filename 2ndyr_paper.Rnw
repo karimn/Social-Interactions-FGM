@@ -105,28 +105,30 @@ plot(med.dp, split = c(1, 2, 1, 2), newpage = FALSE)
 \label{fig:fgmagedensity}
 \end{figure}
 
-The primary data survey used in this paper is actually that of the unmarried daughters residing in the household.  Each eligible woman was asked about the FGM status of their daughters and other related information.  In our data, each observation would correspond to a daughter of a surveyed woman, and for each we have their FGM characteristics and their household's characteristics (the parent's enducation levels, occupation, wealth level, etc.).  The full survey produces 17,710 observations from 810 households.  However, since the majority of girls are circumcised around the age of puberty, only those born before 1996 are considered (ages 12 and above).  The upper plot in figure \ref{fig:fgmagedensity} shows the density distribution of the daughter's sample.  The vertical line shows the cut off age for our sample in order not to bias our estimates with younger girls who have not yet reached the age at which they are risk of FGM.  Another strategy used to address this problem is to do our inference using the mother's response to whether they intend to circumcise the uncircumcised daughters. The lower plot shows the density differentiated by medicalization verus traditional FGM.  Both plot show little different between cohorts or method of circumcision.
+The primary data survey used in this paper is actually that of the unmarried daughters residing in the household.  Each eligible woman was asked about the FGM status of their daughters and other related information.  In our data, each observation would correspond to a daughter of a surveyed woman, and for each we have their FGM characteristics and their household's characteristics (the parent's enducation levels, occupation, wealth level\footnote{The DHS wealth index is used here, which is divided into quintiles: poorest, poorer, middle, richer, richest.  Calculations of household wealth are based on standard of living measures derived from the survey questionnaires, based on such indicators as the ownership of assets, the characteristics of housing, and the source of drinking water.  In this paper, the wealth levels are reduced to two groups: the poorest/poorer/middle are reclassified as poor, and the rest as rich.}, etc.).  The full survey produces 17,710 observations from 810 households.  However, since the majority of girls are circumcised around the age of puberty, only those born before 1996 are considered (ages 12 and above).  The upper plot in figure \ref{fig:fgmagedensity} shows the density distribution of the daughter's sample.  The vertical line shows the cut off age for our sample in order not to bias our estimates with younger girls who have not yet reached the age at which they are risk of FGM.  Another strategy used to address this problem is to do our inference using the mother's response to whether they intend to circumcise the uncircumcised daughters. The lower plot shows the density differentiated by medicalization verus traditional FGM.  Both plot show little different between cohorts or method of circumcision.
 
 % Summary stats
 
 \begin{scriptsize}
 \begin{center}
-\begin{longtable}{lccc}
+\begin{longtable}{lcccc}
 \caption{Summary Statistics\label{tab:sumstat}} \\
   \hline
   \hline 
   & \multicolumn{1}{c}{All} 
   & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization} \\
+  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{N} \\
   \hline
 \endfirsthead
 
-\multicolumn{4}{c}{{\tablename} \thetable{} -- Continued} \\
+\multicolumn{5}{c}{{\tablename} \thetable{} -- Continued} \\
   \hline
   \hline 
   & \multicolumn{1}{c}{All} 
   & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization} \\
+  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{N} \\
   \hline
 \endhead
 
@@ -141,7 +143,7 @@ fgm.med <- subset(fgm.circum, med.circum == 1)
 
 circum.frac <- nrow(fgm.circum) / nrow(fgm)
 med.frac <- nrow(fgm.med) / nrow(fgm)
-cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", circum.frac * 100, med.frac * 100))
+cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% & %i \\\\ \n", circum.frac * 100, med.frac * 100, nrow(fgm)))
 
 by.cohort <- function (df, total) 
 {
@@ -156,67 +158,74 @@ by.cohort <- function (df, total)
   }
 }
 
-x <- by(fgm, fgm[,"birth.year.fac"], by.cohort, nrow(fgm))
+#x <- by(fgm, fgm[,"birth.year.fac"], by.cohort, nrow(fgm))
 
 fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
 
-cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\* \n", 
+cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
             nrow(fgm.rich)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.rich)*100))
+            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.rich)))
 
-x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
+#x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
 
 fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
 
-cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\* \n", 
+cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
             nrow(fgm.poor)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.poor)*100))
+            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.poor)))
 
-x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
+#x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
 
 fgm.rural <- fgm[fgm$urban.rural == "rural", ]
 
-cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.rural)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.rural)*100))
+            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.rural)))
 
-x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
+#x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
 
 fgm.urban <- fgm[fgm$urban.rural == "urban", ]
 
-cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.urban)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.urban)*100))
+            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.urban)))
 
-x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
+#x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
 
 fgm.christ <- fgm[fgm$religion == "christian", ]
 
-cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
+cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.christ)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$religion == "christian",])/nrow(fgm.christ)*100,
-            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100))
+            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.christ)))
 
-x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
+#x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
 
-fgm.christ <- fgm[fgm$religion == "muslim", ]
+fgm.mus <- fgm[fgm$religion == "muslim", ]
 
-cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\*\n", 
-            nrow(fgm.christ)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.christ)*100,
-            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.christ)*100))
+cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.mus)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.mus)))
 
-x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
+#x <- by(fgm.mus, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.mus))
 @
+
 \end{longtable}
 \end{center}
 \end{scriptsize}
 
-Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion.  What is noticeable is a decrease in the rate of overall circumcision with some fluctuation in the rate of medicalization (this can also be seen in figure \ref{fig:fgmprop}).  We also observe greater tendency for FGM among the poorer\footnote{EDHS 2008 data originally divides the wealth index of households into five levels, but in the interest of simplifying our analysis they are condensed into two levels: poor and rich.}, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households.
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households. In figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with some fluctuation in the rate of medicalization.
 
 % FGM, Med. proportions
 
@@ -243,44 +252,47 @@ plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
 
 % Governorate Summary
 
-\begin{landscape}
+%\begin{landscape}
 \begin{scriptsize}
 \begin{center}
+\begin{longtable}{*{10}{l}}
+\caption{Governorate Summary Statistics\label{governsumstat}} \\
+\hline
+\hline
+& \begin{sideways}Circumcized\end{sideways}
+& \begin{sideways}Medicalization\end{sideways}
+& \begin{sideways}Wealth Index (Rich)\end{sideways}
+& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Mother Circumcized\end{sideways}
+& \begin{sideways}Mother's Marital Age\end{sideways}
+& \begin{sideways}Age of Circumcision\end{sideways} 
+& N \\
+\hline
+\endfirsthead
+\multicolumn{10}{c}{{\tablename} \thetable{} -- Continued} \\
+\hline
+\hline
+& \begin{sideways}Circumcized\end{sideways}
+& \begin{sideways}Medicalization\end{sideways}
+& \begin{sideways}Wealth Index (Rich)\end{sideways}
+& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Mother Circumcized\end{sideways}
+& \begin{sideways}Mother's Marital Age\end{sideways}
+& \begin{sideways}Age of Circumcision\end{sideways}
+& N \\
+\hline
+\endhead
+\hline
+\hline
+\endlastfoot
+
 <<label=governsumstat, echo=FALSE, results=tex>>=
 fgm <- subset(fgm.data.daughters.08@data, birth.year <= youngest.cohort)
 govern.names <- levels(fgm$ADM1NAME)
 
-cat(sprintf("\\begin{longtable}{*{%i}{l}}\n", 1 + length(govern.names)))
-cat("\\caption{Governorate Summary Statistics\\label{governsumstat}} \\\\\n")
-cat("\\hline\n\\hline\n")
-cat("& \\begin{sideways}Circumcized\\end{sideways}")
-cat("& \\begin{sideways}Medicalization\\end{sideways}")
-cat("& \\begin{sideways}Wealth Index (Rich)\\end{sideways}")
-cat("& \\begin{sideways}Rural Residence\\end{sideways}")
-cat("& \\begin{sideways}Religion (Christian)\\end{sideways}")
-cat("& \\begin{sideways}Mother Circumcized\\end{sideways}")
-cat("& \\begin{sideways}Mother's Marital Age\\end{sideways}")
-cat("& \\begin{sideways}Age of Circumcision\\end{sideways}")
-cat("\\\\\n")
-cat("\\hline\n")
-cat("\\endfirsthead\n")
-cat(sprintf("\\multicolumn{%i}{c}{{\\tablename} \\thetable{} -- Continued} \\\\\n", length(govern.names) + 1))
-cat("\\hline\n\\hline\n")
-cat("& \\begin{sideways}Circumcized\\end{sideways}")
-cat("& \\begin{sideways}Medicalization\\end{sideways}")
-cat("& \\begin{sideways}Wealth Index (Rich)\\end{sideways}")
-cat("& \\begin{sideways}Rural Residence\\end{sideways}")
-cat("& \\begin{sideways}Religion (Christian)\\end{sideways}")
-cat("& \\begin{sideways}Mother Circumcized\\end{sideways}")
-cat("& \\begin{sideways}Mother's Marital Age\\end{sideways}")
-cat("& \\begin{sideways}Age of Circumcision\\end{sideways}")
-cat("\\\\\n")
-cat("\\hline\n")
-cat("\\endhead\n")
-cat("\\hline\n\\hline\n")
-cat("\\endlastfoot \n")
-
-cat(sprintf("All & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f (%.2f) & %.2f (%.2f) \\\\\n",
+cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
             nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
             nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
             nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
@@ -289,12 +301,13 @@ cat(sprintf("All & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\
             nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
             mean(fgm$marital.age), sd(fgm$marital.age),
             mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
-              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE)))
+              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+            nrow(fgm)))
 
 for (n in govern.names)
 {
   fgm.govern <- fgm[fgm$ADM1NAME == n,]
-  cat(sprintf("%s & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f\\%% & %.2f (%.2f) & %.2f (%.2f) \\\\\n",
+  cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
               n,
               nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
               nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
@@ -304,13 +317,15 @@ for (n in govern.names)
               nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
               mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
               mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
-                sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE)))
+                sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+              nrow(fgm.govern)))
 }
 @
+\footnotetext[1]{Standard deviation is reported between parenthesis}
 \end{longtable}
 \end{center}
 \end{scriptsize}
-\end{landscape}
+%\end{landscape}
 
 \begin{comment}
 % I have too many graphs already!
@@ -355,14 +370,14 @@ was run, where $i$ identifies the household and $j$ identifies a daughter's orde
 The methodology adopted in this paper is similar to that used by Betrand et al. \citeyearpar{Bertrand2000} in their paper investigating the network effects of welfare participation.  Their method is aimed at identifying the network effects of language groups within neighborhoods.  They consider both the ``contact'' availability of members of an individual, as well as the ``quality'' of effect---the mean tendency of the network to utilize welfare.  In our investigation of social effects of FGM we define contact availability as the proportion of circumcised girls in the same governorate, belonging to the same birth cohort (or in \emph{close} cohorts), and a third network level.  Several different specifications of the last network level (secondary network) were investigate: wealth level, urban/rural residence and religion.  The qualitative effect considered is the proportion of girls in the reference group whose parents had opted for medicalized FGM.
   We assume that true model underlying the decision to circumcise is
 \begin{equation}
-  Pr(fgm_{ijkt}) = \alpha^*_t + Y^*_{jt} \beta^*_t + Z_{kt}^* \delta^*_t + Network_{jkt} \gamma^*_t + X_i^* \theta^* + \varepsilon_{ijkt}
-\end{equation}.
+  Pr(fgm_{ijkt}) = \alpha^*_t + Y^*_{jt} \beta^*_t + Z_{kt}^* \delta^*_t + Network_{jkt} \gamma^*_t + X_i^* \theta^* + \varepsilon_{ijkt}.
+\end{equation}
 $i$ indexes individual daughters, $j$ indexes governorates, $k$ the secondary network, and $t$ is $i$'s birth cohort.  $fgm_{ijkt}$ is the binary decision $i$'s household makes with respect to FGM; $Network_{jkt}$ is the social effect of being in governorate $j$, network $k$ and or cohort $t$; $X^*_i$ are observed and unobserved characteristics of $i$ and her household; $Y^*_{jt}$ are observed and unobserved governorate characteristics for cohort $t$; $Z^*_{kt}$ are observed and unobserved characteristics of network $k$ for cohort $t$; and $\varepsilon_{ijkt}$ is an error term.
 
 In our specification, we are attempting to identify two network effects: the social effect of the decision to circumcise daughters and the social effect of the method of circumcision chosen.  As in most inquires into social effects there are many problems to be addressed.  First, the data does not inform us about actual social links between households, and thus our strategy is to proxy for them by using group means.  Considering the observable characteristics we have this would result in estimating
 \begin{equation}
-  Pr(fgm_{ijkt}) = \alpha_t + \overline{fgm}_{jkt} \gamma_{1t} + \overline{med}_{jkt} \gamma_{2t} + X_i \theta + \varepsilon_{ijkt}
-\end{equation}, 
+  Pr(fgm_{ijkt}) = \alpha_t + \overline{fgm}_{jkt} \gamma_{1t} + \overline{med}_{jkt} \gamma_{2t} + X_i \theta + \varepsilon_{ijkt},
+\end{equation} 
 where $\overline{fgm}_{jkt}$ and $\overline{med}_{jkt}$ are the group means for circumcision and medicalization, respectively.  $\overline{fgm}_{jkt}$ cannot be excluded from the regression, since it is correlated with $\overline{med}_{jkt}$ and would hence introduce endogeneity.  This is similar to the approach used in \citep{Hayford}, where the proportion of circumcised women in the community is used to proxy for social effects.  However, in the recent Egyptian context, undergoing big cultural and legal changes towards FGM, it was felt that the social effects of other's concurrent choices would be a stronger measure.
 
 Second, as Betrand et al. \citeyearpar{Bertrand2000} point out, this regression lacks clear identification due to the ``reflection problem'' \cite{Manski}.  Essentially, there is a problem with omitted variable bias due to unobservable characteristics.  These OVB problems are:
@@ -378,7 +393,7 @@ To circumvent these issues, we do the following
 \end{enumerate}
 This gives us the final regression form\footnote{No claim is made of differentiating between what \citet{Manski} calls ``endogenous'' and ``exogenous'' social effects.  We are only able to separate them from correlated effects.}
 \begin{equation}
-  fgm_{ijkt} = \alpha_t + \beta_{jt} + \delta_{kt} + \overline{fgm}_{j(-i),k,t(n)} \gamma_{1t} + \overline{med}_{k,t(n)} \gamma_{2t} + \varepsilon_{ijkt}\label{eqn:circum.reg}
+  fgm_{ijkt} = \alpha_t + \beta_{jt} + \delta_{kt} + \overline{fgm}_{j(-i),k,t(n)} \gamma_{1t} + \overline{med}_{k,t(n)} \gamma_{2t} + \varepsilon_{ijkt}.\label{eqn:circum.reg}
 \end{equation}
 A few things are worth noting about this regression: for the group averages we use $t(n)$, where $n$ is a nonnegative integer, to indicate the inclusion of the $\pm n$ cohorts in calculating the means (for our purposes we take $n = 1$); $j(-i)$ indicates the exclusion of $i$ from the means; and instead of regressing on $\overline{med}_{j(-i),k,t(n)}$ we use $\overline{med}_{k,t(n)}$, otherwise we would introduce collinearity with $\overline{fgm}_{j(-i),k,t(n)}$.  One possible OVB problem, however, still remains: we are not controlling for for $(j,k,t)$ shocks.  What we would need, but cannot introduce into the regression, is a $(j,k,t)$ fixed effect to control for secondary network specific governorate shocks. For example, a shock to wealthy individuals in a particular governorate.
 
@@ -402,10 +417,10 @@ A slight significant and negative effect is found for the mother's marital age, 
 
 The estimation also shows what appears to be a positive and increasing significant effect to the order of birth.  Perhaps this could be a proxy for some unobservable characteristic that leads to having a greater number of children, as well as increase the tendency of opting for FGM.
 
-\begin{landscape}
+%\begin{landscape}
 \begin{tiny}
 <<label=circum.reg, echo=FALSE, results=tex>>=
-fgm.results.outreg(results.circum, var.dict, title = "Circumcision Social Effects Estimate Results", label = "tab:circum.reg", exclude.foot = TRUE)
+fgm.results.outreg(results.circum, var.dict, title = "Circumcision Social Effects Estimation Results", label = "tab:circum.reg", exclude.foot = TRUE, exclude.k = c("religion"))
 @
 \footnotetext[1]{P values are reported between brackets below estimates}
 \footnotetext[2]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
@@ -413,7 +428,7 @@ fgm.results.outreg(results.circum, var.dict, title = "Circumcision Social Effect
 \end{longtable}
 \end{center}
 \end{tiny}
-\end{landscape}
+%\end{landscape}
 
 \begin{scriptsize}
 \begin{center}
