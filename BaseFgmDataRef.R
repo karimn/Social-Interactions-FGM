@@ -3,6 +3,7 @@ library(spatstat)
 library(maptools)
 library(sem)
 library(AER)
+library(plm)
 
 grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
 {
@@ -278,7 +279,7 @@ BaseFgmData$methods(
   lm = function(formula, gen.vcov = FALSE)
   {
     r <- stats::lm(formula, data = spdf@data)
-    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else matrix(NA, 0, 0)
     
     RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
   }
@@ -303,3 +304,14 @@ BaseFgmData$methods(
     RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
   }
 )
+
+BaseFgmData$methods(
+  plm = function(formula, effect, model, index, gen.vcov = FALSE)
+  {
+    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spdf@data)
+    v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+    
+    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
+  }
+)
+
