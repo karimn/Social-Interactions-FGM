@@ -1,0 +1,427 @@
+\documentclass[12pt]{article}
+
+\usepackage{fullpage}
+\usepackage{longtable}
+\usepackage{amsmath}
+\usepackage{amssymb} 
+\usepackage{amsthm}
+\usepackage[round]{natbib}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage[utf8x]{inputenc}
+\usepackage{verbatim}
+\usepackage{pdflscape}
+\usepackage{rotating}
+\usepackage{multirow}
+\usepackage{paralist}
+\usepackage{Sweave}
+
+%\renewcommand{\baselinestretch}{2}
+
+<<label=init, echo=FALSE, results=hide>>=
+library(lattice)
+library(car)
+
+load("new_results.RData")
+
+source("BaseFgmDataRef.R")
+source("DaughterFgmDataRef.R")
+
+youngest.cohort <- 1996
+@
+
+\newtheorem{prop}{Proposition}
+
+\title{The Social Effect of\\Female Genital Mutilation in Egypt}
+\author{Karim Nagib}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Female genital mutilation (FGM) \footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. I use all these terms synonymously.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from infancy to 15 years of age, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \citep{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt \citep{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \citep{whofs241}.
+The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth.  No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \citep{whofs241}. It has been compared to foot-binding in being a harmful traditional practice, ethically indefensible due to its permanent physical and psychological damage \citep{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \citep{whofs241}. In addition to health-related or ethical objections to FGM, it has been estimated, in a study conducted by the WHO, that the cost of obstetric complications caused by FGM to be \$ 3.7 million (PPP) \citep{Bishai2010}.
+
+Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}.  Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine.  It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds.
+
+This paper investigates the social effects of both circumcision and medicalization.  It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention.  The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices.  Recently, economists have taken a strong interest in studying such nonmarket interactions between agents.  There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior.  Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.
+
+This paper also follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society, using data DHS data from Burkina Faso. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability.  Another work this paper follows is \citep{Hayford} that considers the ``convention'' model\footnote{She also considers two other often cited models: the modernization model and the feminist model.} to explain the persistence of FGM in Kenya.  The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}. 
+
+\section{Data}\label{sec:data}
+
+In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008).  This is the ninth such survey in Egypt, conducted every two or three years since 1988.  The survey focuses on a wide set of population, health, fertility, and nutrition indicators.  In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households.  Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure was done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. 
+DHS survey design standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \citep{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
+
+The survey sample was selected over three stages: 
+\begin{inparaenum}[1)]
+  \item the primary selection unit was done on the level of towns (\emph{shiakhas}) in urban areas and villages in rural areas.  This produced 610 primary sampling units (275 towns and 335 villages).
+  \item PSUs were further divided into parts with a population of about 5,000.  Depending on the total population of the PSU between one to three parts were selected.  This resulted in 998 parts selected.
+  \item further segmentation into about 200 household units on which a quick count in the field was conducted.
+  \item a final sample is randomly selected from these segments.
+\end{inparaenum}
+
+% FGM age density plot
+
+\begin{figure}
+\begin{center}
+<<label=fgmagedensity, fig=TRUE, echo=FALSE>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
+all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+
+med.dp <- densityplot(~ age.circum, group = med.circum, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = c("Traditional", "Medical.")), main = "FGM Density Plot (Medicalization vs. Traditional)", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+
+plot(all.dp, split = c(1, 1, 1, 2))
+plot(med.dp, split = c(1, 2, 1, 2), newpage = FALSE)
+@
+\end{center}
+\caption{FGM Density Plot}
+\label{fig:fgmagedensity}
+\end{figure}
+
+The primary data survey used in this paper is actually that of the unmarried daughters residing in the household.  Each eligible woman was asked about the FGM status of their daughters and other related information.  In our data, each observation would correspond to a daughter of a surveyed woman, and for each we have their FGM characteristics and their household's characteristics (the parent's enducation levels, occupation, wealth level\footnote{The DHS wealth index is used here, which is divided into quintiles: poorest, poorer, middle, richer, richest.  Calculations of household wealth are based on standard of living measures derived from the survey questionnaires, based on such indicators as the ownership of assets, the characteristics of housing, and the source of drinking water.  In this paper, the wealth levels are reduced to two groups: the poorest/poorer/middle are reclassified as poor, and the rest as rich.}, etc.).  The full survey produces 17,710 observations from 810 households.  However, since the majority of girls are circumcised around the age of puberty, only those born before 1996 are considered (ages 12 and above).  The upper plot in figure \ref{fig:fgmagedensity} shows the density distribution of the daughter's sample.  The vertical line shows the cut off age for our sample in order not to bias our estimates with younger girls who have not yet reached the age at which they are risk of FGM.  Another strategy used to address this problem is to do our inference using the mother's response to whether they intend to circumcise the uncircumcised daughters. The lower plot shows the density differentiated by medicalization verus traditional FGM.  Both plot show little different between cohorts or method of circumcision.
+
+% Summary stats
+
+\begin{scriptsize}
+\begin{center}
+\begin{longtable}{lcccc}
+\caption{Summary Statistics\label{tab:sumstat}} \\
+  \hline
+  \hline 
+  & \multicolumn{1}{c}{All} 
+  & \multicolumn{1}{c}{Circumcised}
+  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{N} \\
+  \hline
+\endfirsthead
+
+\multicolumn{5}{c}{{\tablename} \thetable{} -- Continued} \\
+  \hline
+  \hline 
+  & \multicolumn{1}{c}{All} 
+  & \multicolumn{1}{c}{Circumcised}
+  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{N} \\
+  \hline
+\endhead
+
+  \hline
+  \hline 
+\endlastfoot
+
+<<label=sumstat, echo=FALSE, results=tex>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+fgm.circum <- subset(fgm, circum == 1)
+fgm.med <- subset(fgm.circum, med.circum == 1)
+
+circum.frac <- nrow(fgm.circum) / nrow(fgm)
+med.frac <- nrow(fgm.med) / nrow(fgm)
+cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% & %i \\\\ \n", circum.frac * 100, med.frac * 100, nrow(fgm)))
+
+by.cohort <- function (df, total) 
+{
+  if ((length(df) > 1) || (!is.na(df)))
+  {
+    cat(sprintf("~~%s (Age %i) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", 
+               df[1, "birth.year.fac"], 
+               2008 - df[1, "birth.year"],
+               (nrow(df)/total)*100, 
+               (nrow(df[df$circum == 1,])/nrow(df))*100,
+               (nrow(df[(df$circum == 1) & (df$med.circum == 1),])/nrow(df))*100))
+  }
+}
+
+#x <- by(fgm, fgm[,"birth.year.fac"], by.cohort, nrow(fgm))
+
+fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+            nrow(fgm.rich)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.rich)))
+
+#x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
+
+fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+            nrow(fgm.poor)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.poor)))
+
+#x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
+
+fgm.rural <- fgm[fgm$urban.rural == "rural", ]
+
+cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.rural)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.rural)))
+
+#x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
+
+fgm.urban <- fgm[fgm$urban.rural == "urban", ]
+
+cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.urban)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.urban)))
+
+#x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
+
+fgm.christ <- fgm[fgm$religion == "christian", ]
+
+cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.christ)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.christ)))
+
+#x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
+
+fgm.mus <- fgm[fgm$religion == "muslim", ]
+
+cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.mus)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.mus)))
+
+#x <- by(fgm.mus, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.mus))
+@
+
+\end{longtable}
+\end{center}
+\end{scriptsize}
+
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households. In figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with some fluctuation in the rate of medicalization.
+
+% FGM, Med. proportions
+
+\begin{figure}
+\begin{center}
+<<label=fgmprop, echo=FALSE, fig=TRUE>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
+fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
+
+prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+
+circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
+med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+
+plot(circum.bc, split = c(1, 1, 1, 2))
+plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
+@
+\end{center}
+\caption{FGM Proportions by Cohort}
+\label{fig:fgmprop}
+\end{figure}
+
+% Governorate Summary
+
+%\begin{landscape}
+\begin{scriptsize}
+\begin{center}
+\begin{longtable}{*{10}{l}}
+\caption{Governorate Summary Statistics\label{governsumstat}} \\
+\hline
+\hline
+& \begin{sideways}Circumcized\end{sideways}
+& \begin{sideways}Medicalization\end{sideways}
+& \begin{sideways}Wealth Index (Rich)\end{sideways}
+& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Mother Circumcized\end{sideways}
+& \begin{sideways}Mother's Marital Age\end{sideways}
+& \begin{sideways}Age of Circumcision\end{sideways} 
+& N \\
+\hline
+\endfirsthead
+\multicolumn{10}{c}{{\tablename} \thetable{} -- Continued} \\
+\hline
+\hline
+& \begin{sideways}Circumcized\end{sideways}
+& \begin{sideways}Medicalization\end{sideways}
+& \begin{sideways}Wealth Index (Rich)\end{sideways}
+& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Mother Circumcized\end{sideways}
+& \begin{sideways}Mother's Marital Age\end{sideways}
+& \begin{sideways}Age of Circumcision\end{sideways}
+& N \\
+\hline
+\endhead
+\hline
+\hline
+\endlastfoot
+
+<<label=governsumstat, echo=FALSE, results=tex>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+govern.names <- levels(fgm$ADM1NAME)
+
+cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+            nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
+            nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
+            nrow(fgm[fgm$urban.rural == "rural",])/nrow(fgm)*100,
+            nrow(fgm[fgm$religion == "christian",])/nrow(fgm)*100,
+            nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
+            mean(fgm$marital.age), sd(fgm$marital.age),
+            mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+            nrow(fgm)))
+
+for (n in govern.names)
+{
+  fgm.govern <- fgm[fgm$ADM1NAME == n,]
+  cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+              n,
+              nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
+              nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
+              mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
+              mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+                sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+              nrow(fgm.govern)))
+}
+@
+\footnotetext[1]{Standard deviation is reported between parenthesis}
+\end{longtable}
+\end{center}
+\end{scriptsize}
+%\end{landscape}
+
+\section{Methodology}
+
+\subsection{Linear-in-means Model}
+The \citet{Blume2010} model of social interaction is 
+\begin{equation}
+  \omega_{ig} = k + c \cdot x_i + d \cdot y_g + J \cdot m^e_{ig} + \varepsilon_{ig}. \label{eqn:main}
+\end{equation}
+$i$ is an individual's index, and $g$ is a reference group's index (an individual's peer group). $\omega_{ig}$ is the dependent variable representing individual action or behavior, and 
+\begin{itemize}
+  \item $x_i$ are individual controls
+  \item $y_g$ are group level contextual controls
+  \item $m^e_{ig}$ denotes the group's average behavior.  In Manski's \citeyearpar{Manski} notation it would be $E[\omega_{ig}|g]$. It can be should to be 
+    \begin{equation}
+      m^e_{ig} = m_g \equiv \frac{k + c \cdot \bar{x}_g + d \cdot y_g}{1 - J} \label{eqn:m_e}
+    \end{equation}
+\end{itemize}
+
+Substituting equation \ref{eqn:m_e} into \ref{eqn:main} we get the reduced form
+\begin{equation}
+  \omega_{ig} = \frac{k}{1-J} + c \cdot x_i + \frac{Jc}{1-J} \cdot\bar{x}_g + \frac{d}{1-J} \cdot y_g + \varepsilon_{ig}.
+\end{equation}
+However, in \citep{Manski} it is assumed that $y_g = \bar{x}_g$ which makes it impossible to separate the endogenous and contextual effects since
+\begin{equation}
+  m^e_{ig} = m_g \equiv \frac{k + (c + d) \cdot \bar{x}_g}{1 - J}.
+\end{equation}
+\citep{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term, that if it is not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
+\[proj(\bar{\omega}_g|1, y_g, \bar{x}_g) - proj(\bar{\omega}_g|1, y_g) \ne 0.\]
+then it is possible to identify endogenous and contextual effects.
+
+\subsection{Implementation}
+
+\subsubsection{Instrumental Variables}
+
+In our context we want to be able to identify the endogenous social effect of FGM.  Our model is
+\begin{align}
+  f_{ijht} &= k_t + c\cdot x_{ijht} + d_j + J \cdot f^e_{jht} + \varepsilon_{ijht}.
+\end{align}
+The indices in this model are:
+\begin{itemize}
+  \item $i$: index for daughters
+  \item $j$: index for region (governorate)
+  \item $h$: index for household
+  \item $t$: daughter $i$'s cohort
+\end{itemize}
+And the variables are:
+\begin{itemize}
+  \item $f$ is a binary variable indicating the household's decision to opt for FGM
+  \item $x$ is a vector of individual controls
+  \item $f^e$ is the group averge decision
+  \item $k_t$ and $d_j$ are fixed effects for the daughter's cohort and the household's governorate, respectively.  In our model they capture contextual effects.
+\end{itemize}
+Similar to \citep{Blume2010} we solve for $f^e$
+\begin{equation}
+  f^e_{jht} = \bar{f}_{jt} \equiv \frac{k_t + c \cdot \bar{x}_{jt} + d_j}{1 - J}. \label{eqn:f_e}
+\end{equation}
+If we are able to show that some of the group averages of $x$ contribute to predicting $\bar{f}_{jt}$ beyond $(1, t, j)$, we can use them to instrument $\bar{f}_{jt}$, and hence be able to identify the endogenous effect of FGM.  The below results show that the group averages for urban residence, the mother having received primary education and secondary education, and the mother's having FGM status are significant.  Therefore, we use them as instruments for $\bar{f}_{jt}$.
+
+<<echo=TRUE>>=
+r0$regress.formula
+r0$summary()
+@
+
+\subsubsection{FGM Endogenous Effects}
+
+Below are the results for the IV regression.  They show a positive and significant endogenous effect.
+
+<<echo=TRUE>>=
+r1.instr.2$regress.formula
+r1.instr.2$summary()
+@
+
+Additionally, we use the different daughters in the same household to run a panel data regression to eliminate unobservable household effects.  The results again show a positive and significant endogenous effect.
+
+<<echo=TRUE>>=
+r2.instr.2$regress.formula
+r2.instr.2$summary()
+@
+
+\subsubsection{Medicalization Effects}
+
+The second model we consider incorporates the effect of medicatization of FGM.
+\begin{align}
+  f_{ijht} &= k_t + d_j + c\cdot x_{ijht} + J \cdot f^e_{jht} + L \cdot m^e_{jht} + \varepsilon_{ijht} \\
+  m_{ijht} &= k^m_t + d^m_j + c^{m}\cdot x_{ijht} + J^m \cdot m^e_{jht} + L^m \cdot f^e_{jht} + \nu_{ijht} 
+\end{align}
+where $m$ is a binary variable indicating the household's decision to opt for medicalized FGM as opposed to traditional.  \emph{If} we can make the assumption that $L^m = 0$, we can define
+    \[m^e_{jht} = \bar{m}_{(-i)jt}.\]
+(We exclude the $i^{th}$ observation to avoid possible endogeneity).
+
+Below are the results of the same IV regression as above but including medicalization.  As shown, there is no significant effect to either medicalization or FGM.
+
+<<echo=TRUE>>=
+r3.instr.2$regress.formula
+r3.instr.2$summary()
+@
+
+However, if we run a panel data regression, as shown below, we see they both become significant, and most interestingly, medicalization has a negative effect on the FGM decision.
+
+<<echo=TRUE>>=
+r4.instr.2$regress.formula
+r4.instr.2$summary()
+@
+
+\nocite{Refaat}
+\nocite{Yount}
+\nocite{Hoodfar1997}
+\nocite{El-Gibaly2002}
+\nocite{R}
+
+\bibliographystyle{plainnat}
+\bibliography{$HOME/Documents/library}
+
+\end{document} 
