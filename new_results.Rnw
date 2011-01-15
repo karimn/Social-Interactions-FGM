@@ -323,7 +323,7 @@ $i$ is an individual's index, and $g$ is a reference group's index (an individua
 \begin{itemize}
   \item $x_i$ are individual controls
   \item $y_g$ are group level contextual controls
-  \item $m^e_{ig}$ denotes the group's average behavior.  In Manski's \citeyearpar{Manski} notation it would be $E[\omega_{ig}|g]$. It can be should to be 
+  \item $m^e_{ig}$ denotes the group's average behavior.  In Manski's \citeyearpar{Manski} notation it would be $E[\omega_{ig}|g]$. It can be shown to be 
     \begin{equation}
       m^e_{ig} = m_g \equiv \frac{k + c \cdot \bar{x}_g + d \cdot y_g}{1 - J} \label{eqn:m_e}
     \end{equation}
@@ -337,8 +337,8 @@ However, in \citep{Manski} it is assumed that $y_g = \bar{x}_g$ which makes it i
 \begin{equation}
   m^e_{ig} = m_g \equiv \frac{k + (c + d) \cdot \bar{x}_g}{1 - J}.
 \end{equation}
-\citep{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term, that if it is not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
-\[proj(\bar{\omega}_g|1, y_g, \bar{x}_g) - proj(\bar{\omega}_g|1, y_g) \ne 0.\]
+\citep{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term which, if not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
+\[proj(\bar{\omega}_g|1, y_g, \bar{x}_g) - proj(\bar{\omega}_g|1, y_g) \ne 0\]
 then it is possible to identify endogenous and contextual effects.
 
 \subsection{Implementation}
