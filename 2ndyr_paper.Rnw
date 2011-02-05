@@ -23,6 +23,9 @@ library(car)
 
 load("final.results.RData")
 source("final.reg.R")
+
+source("BaseFgmDataRef.R")
+source("DaughterFgmDataRef.R")
 @
 
 \newtheorem{prop}{Proposition}
