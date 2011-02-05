@@ -7,19 +7,35 @@ library(plm)
 library(AER)
 
 calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE,
-                        range.type = c("both", "older"))
+                        range.type = c("both", "older"), other.network.reg = NULL)
 {
   #print(sprintf("calc.grpavg: size = %i", nrow(df)))
   current.birth.year <- df$birth.year[1] - lag
   current.governorate <- df$governorate[1]
 
-  grp <- switch(match.arg(range.type),
-                both = total.df[(total.df[["birth.year"]] <= current.birth.year + cohort.range) & 
-                                (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
-                                (total.df[["governorate"]] == current.governorate), ],
-                older = total.df[(total.df[["birth.year"]] <= current.birth.year) & 
-                                 (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
-                                 (total.df[["governorate"]] == current.governorate), ]) 
+  if (!is.null(other.network.reg))
+  {
+    current.other.network <- df[1, other.network.reg]
+    grp <- switch(match.arg(range.type),
+                  both = total.df[(total.df[["birth.year"]] <= current.birth.year + cohort.range) & 
+                                  (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                  (total.df[["governorate"]] == current.governorate) &
+                                  (total.df[[other.network.reg]] == current.other.network), ],
+                  older = total.df[(total.df[["birth.year"]] <= current.birth.year) & 
+                                   (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                   (total.df[["governorate"]] == current.governorate) &
+                                   (total.df[[other.network.reg]] == current.other.network), ])
+  }
+  else
+  {
+    grp <- switch(match.arg(range.type),
+                  both = total.df[(total.df[["birth.year"]] <= current.birth.year + cohort.range) & 
+                                  (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                  (total.df[["governorate"]] == current.governorate), ],
+                  older = total.df[(total.df[["birth.year"]] <= current.birth.year) & 
+                                   (total.df[["birth.year"]] >= current.birth.year - cohort.range) &
+                                   (total.df[["governorate"]] == current.governorate), ]) 
+  }
 
   if (length(regs) > 0)
     for (col.name in regs)
@@ -156,18 +172,32 @@ RegressionResults <- setRefClass("RegressionResults",
     lht = function(hypothesis)
     {
       linearHypothesis(.lm, hypothesis, vcov = if (!is.empty(vcov)) vcov)
-    })
+    },
+
+    adj.r.squared = function()
+    {
+      return(base::summary(.lm)$adj.r.squared)
+    },
+
+    r.squared = function()
+    {
+      return(base::summary(.lm)$r.squared)
+    }
+    )
 )
 
 DaughterFgmData$methods(
-  generate.reg.means = function(cohort.range = 1, regs = c(individual.controls, other.grpavg.controls), exclude.self = FALSE,
+  generate.reg.means = function(cohort.range = 1, 
+                                regs = c(individual.controls, other.grpavg.controls), 
+                                other.network.reg = NULL, 
+                                exclude.self = FALSE,
                                 range.type = c("both", "older"))
   {
     spdf@data <<- do.call(rbind, 
-                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs, 
+                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
                           lag = 0, exclude.self = exclude.self))
     spdf@data <<- do.call(rbind, 
-                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.grpavg, spdf@data, cohort.range, regs, 
+                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
                           lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self))
   }
 )
