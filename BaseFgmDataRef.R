@@ -311,7 +311,53 @@ BaseFgmData$methods(
     r <- plm::plm(formula, effect = effect, model = model, index = index, data = spdf@data)
     v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
     
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
+    PlmRegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
   }
 )
 
+RegressionResults <- setRefClass("RegressionResults",
+  fields = list(
+    .lm = "ANY", 
+    vcov = "matrix",
+    regress.formula = "formula",
+    instruments = "formula",
+    data = "BaseFgmData"),
+
+  methods = list(
+    summary = function()
+    {
+      coeftest(.lm, vcov = vcov)
+    },
+    
+    lht = function(hypothesis)
+    {
+      linearHypothesis(.lm, hypothesis, vcov = if (!is.empty(vcov)) vcov)
+    },
+
+    adj.r.squared = function()
+    {
+      return(base::summary(.lm)$adj.r.squared)
+    },
+
+    r.squared = function()
+    {
+      return(base::summary(.lm)$r.squared)
+    }
+    )
+)
+
+PlmRegressionResults <- setRefClass("PlmRegressionResults",
+  contains = "RegressionResults",
+
+  methods = list(
+    r.squared = function()
+    {
+      return(base::summary(.lm)$r.squared["rsq"])
+    },
+
+    adj.r.squared = function()
+    {
+      return(base::summary(.lm)$r.squared["adjrsq"])
+    }
+    )
+)

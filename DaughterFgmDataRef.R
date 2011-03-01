@@ -71,7 +71,7 @@ cleanup.by.hh <- function(df) {
 }
 
 
-DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex")
+DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "med.help.distance.fac")
                                          
 #DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", 
 #                                         "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "religion", 
@@ -155,36 +155,6 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
     }
 ))
 
-RegressionResults <- setRefClass("RegressionResults",
-  fields = list(
-    .lm = "ANY", 
-    vcov = "matrix",
-    regress.formula = "formula",
-    instruments = "formula",
-    data = "DaughterFgmData"),
-
-  methods = list(
-    summary = function()
-    {
-      coeftest(.lm, vcov = vcov)
-    },
-    
-    lht = function(hypothesis)
-    {
-      linearHypothesis(.lm, hypothesis, vcov = if (!is.empty(vcov)) vcov)
-    },
-
-    adj.r.squared = function()
-    {
-      return(base::summary(.lm)$adj.r.squared)
-    },
-
-    r.squared = function()
-    {
-      return(base::summary(.lm)$r.squared)
-    }
-    )
-)
 
 DaughterFgmData$methods(
   generate.reg.means = function(cohort.range = 1, 
@@ -315,11 +285,7 @@ DaughterFgmData$methods(
     #regress.formula <- get.regress.formula.panel(dep.var, interact.govern.cohort, instr.grpavg) 
     regress.formula <- get.regress.formula(dep.var, TRUE, interact.govern.cohort, instr.grpavg, instr.regs) 
 
-    r <- plm(formula(regress.formula), index = c("hh.id", "order.fac"), effects = "individual", model = "within", data = spdf@data)
-
-    v <- if (gen.vcov) tryCatch(vcovHC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula(regress.formula))
+    return (.self$plm(formula(regress.formula), index = c("hh.id", "order.fac"), effects = "individual", model = "within", gen.vcov = gen.vcov))
   }
 )
 
