@@ -98,8 +98,9 @@ BaseFgmData <- setRefClass("BaseFgmData",
                           col.names = FgmData.col.names, 
                           dhs.year = 2008, ...)
     {
+      initFields(...)
       if (is.empty(ir.file) | is.empty(gps.file))
-        return(initFields(...))
+        return(.self)
 
       ir <- read.dta(ir.file, convert.underscore = TRUE)
       fgm.data <- base::subset(ir, select = eval(cols))

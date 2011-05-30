@@ -94,7 +94,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
 
       if (!is.empty(ir.file) & !is.empty(gps.file))
       {
-        num.col <- length(FgmData.col.names)
+        num.col <- length(FgmData.col.names) + 1
 
         spdf@data <<- reshape(spdf@data, 
                              varying = list(get.names()[(num.col + 1):(num.col + 7)], 
