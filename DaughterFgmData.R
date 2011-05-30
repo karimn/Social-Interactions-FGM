@@ -115,7 +115,7 @@ setMethod("generate.reg.means",
           }
 )
 
-if (!isGeneric("get.regress.formula")) setGeneric("get.regress.formula")
+if (!isGeneric("get.regress.formula")) setGeneric("get.regress.formula", function(self, dep.var, include.grpavg = FALSE) standardGeneric("get.regress.formula"))
 setMethod("get.regress.formula",
           c("DaughterFgmData", "character", "logical"),
           function(self, dep.var, include.grpavg = FALSE) 
@@ -130,7 +130,7 @@ setMethod("get.regress.formula",
           }
 )
 
-if (!isGeneric("regress")) setGeneric("regress")
+if (!isGeneric("regress")) setGeneric("regress", function(self, dep.var, include.grpavg = FALSE) standardGeneric("regress"))
 setMethod("regress",
           c("DaughterFgmData", "character", "logical"),
           function(self, dep.var, include.grpavg = FALSE) 
