@@ -1,0 +1,1 @@
+At this point, the main file to look at are regress2.R, which relies on the *Ref.R files.  This script generates the regression results which are in turn used in the se_fgm_egypt.Rnw file.
