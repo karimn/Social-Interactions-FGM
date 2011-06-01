@@ -64,6 +64,8 @@ cleanup.by.hh <- function(df) {
 
   n <- nrow(df)
 
+  df <- df[order(df$age, decreasing = TRUE),]
+
   df$n.ord <- n
   df$order <- 1:n
 
@@ -132,7 +134,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
           med.circum <- ifelse(circum == 1 & (who.circum %in% c(1, 2)), 1, 0)
           year.circum <- ifelse(circum == 1 & age.circum <= 19, birth.year + age.circum, NA)
           year.circum.fac <- factor(year.circum)
-          order.fac <- factor(order)
+          #order.fac <- factor(order)
           married <- ifelse(mar.status == 1, 1, 0)
           birth.year.fac <- factor(birth.year)
         })
@@ -141,6 +143,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
           spdf@data <<- base::subset(spdf@data, birth.year <= youngest.cohort)
 
         spdf@data <<- do.call(rbind, base::by(spdf@data, spdf@data$hh.id, cleanup.by.hh))
+	spdf@data$order.fac <<- factor(spdf@data$order)
         spdf@data <<- spdf@data[ order(spdf@data$hh.id, spdf@data$birth.year), ]
 
         spdf@data <<- base::subset(spdf@data, circum <= 1)
@@ -151,6 +154,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
           spdf@data <<- base::subset(spdf@data, birth.year <= youngest.cohort)
       }
 
+      spdf@data$hh.id <<- spdf@data$hh.id[,drop = TRUE]
       return(.self)
     }
 ))
@@ -176,6 +180,7 @@ DaughterFgmData$methods(
   rm.by.grp.size = function(min.grp.size)
   {
     spdf@data <<- spdf@data[spdf@data$grp.size >= min.grp.size, ]
+    spdf@data$hh.id <<- spdf@data$hh.id[,drop = TRUE]
   }
 )
 
@@ -184,6 +189,7 @@ DaughterFgmData$methods(
   {
     if (min.res.years > 95) min.res.years <- 95
     spdf@data <<- spdf@data[(spdf@data$years.lived.res >= min.res.years) & (spdf@data$years.lived.res <= 95), ]
+    spdf@data$hh.id <<- spdf@data$hh.id[,drop = TRUE]
   }
 )
 
@@ -192,6 +198,7 @@ DaughterFgmData$methods(
   {
     dup <- if (is.null(rm.by)) duplicated(spdf@data) else duplicated(spdf@data[rm.by])
     spdf@data <<- spdf@data[!dup,]
+    spdf@data$hh.id <<- spdf@data$hh.id[,drop = TRUE]
   }
 )
 
