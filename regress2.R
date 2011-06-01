@@ -2,6 +2,8 @@ source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 
 original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))
+original.data$spdf@data$urban.rural <- relevel(original.data$spdf@data$urban.rural, ref = "rural")
+original.data$spdf@data$med.help.distance.fac <- relevel(original.data$spdf@data$med.help.distance.fac, ref = "not big problem")
 #original.data <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, youngest.cohort = 2000, other.grpavg.controls = "med.circum")
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
