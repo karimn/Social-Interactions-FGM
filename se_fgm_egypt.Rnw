@@ -26,6 +26,7 @@ library(car)
 
 source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
+source("print.results.R")
 
 load("new_results.RData")
 
@@ -42,28 +43,28 @@ youngest.cohort <- 1996
 \maketitle
 
 \begin{abstract}
-Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons.  It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal.  It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure.  This paper attempts to identify the social or peer effects of both FGM and its medicalization---the shift from traditional practitioners to professional health providers---on a household's decision to opt for FGM.  What is found is that FGM itself has a strong social effect, while medicalization has a significant negative effect in urban areas and a significant but weaker postive effect in rural areas with poor access to medical facilities.  Additionally, several direct effects are identified.
+Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons---typically as a signal of ``quality'' in the marriage market. It has been found by the World Health Organization to be harmful to the health of women, and is internationally considered illegal. It is mostly prevalent in Africa and the Middle East with between 100 to 140 million girls estimated to have undergone the procedure. This paper attempts to identify the social or peer effects of both FGM and its medicalization---the shift from traditional practitioners to professional health providers---on a household's decision to opt for FGM. What is found is that FGM itself has a strong social effect, while medicalization has a significant negative effect in urban areas. Additionally, several direct effects are identified.
 \end{abstract}
 
 \section{Introduction}
 
-Female genital mutilation (FGM) \footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. I use all these terms synonymously.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from infancy to 15 years of age, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \citep{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt \citep{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \citep{whofs241}.
-The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth.  No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \citep{whofs241}. It has been compared to foot-binding in being a harmful traditional practice, ethically indefensible due to its permanent physical and psychological damage \citep{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \citep{whofs241}. In addition to health-related or ethical objections to FGM, it has been estimated, in a study conducted by the WHO, that the cost of obstetric complications caused by FGM to be \$ 3.7 million (PPP) \citep{Bishai2010}.
+Female genital mutilation (FGM)\footnote{This is sometimes referred to with the less judgemental terms like ``circumcision'' and ``cutting''. I use all these terms synonymously.} is the traditional practice in some cultures of removing the whole or part of the external female genitalia of girls, from infancy to 15 years of age, for non-medical reasons. Some forms of the practice also seal the vaginal opening. It is mostly done as a rite of passage into female adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \citep{whofs241}. It is prevalent to different degrees in western, eastern and northern Africa; its occurrence could be as high as 91\% of women between the ages of 15 and 49, in countries like Egypt \citep{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \citep{whofs241}. The FGM procedure has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth. No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \citep{whofs241}. It has been compared to foot-binding in being a harmful traditional practice, ethically indefensible due to its permanent physical and psychological damage \citep{Mackie1996}. The WHO has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments that have attempted a variety of policy interventions \citep{whofs241}. In addition to health-related or ethical objections to FGM, it has been estimated, in a study conducted by the WHO, that the cost of obstetric complications caused by FGM to be \$ 3.7 million (PPP) \citep{Bishai2010}.
 
-Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it.  This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place.  Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}.  
+Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it. This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place. Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}.  
 
-Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine.  It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds.  Another contributing factor to this possible story is the unobservable nature of FGM in the marriage before and after marriage, and hence the possible reliance on \emph{dayas} as certifiers of ``quality.''  As FGM is increasingly done in government clinics by professional health providers, who are less connected to the marriage market in local communities, it loses its effectiveness as a signal of ``quality.''
+Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine. It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds. Another contributing factor to this possible story is the unobservable nature of FGM in the marriage before and after marriage, and hence the possible reliance on \emph{dayas} as certifiers of ``quality''. As FGM is increasingly done in government clinics by professional health providers, who are less connected to the marriage market in local communities, it loses its effectiveness as a signal of ``quality''.
 
-This paper investigates the social effects of both circumcision and medicalization.  It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention.  The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices.  Recently, economists have taken a strong interest in studying such nonmarket interactions between agents.  There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior.  Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.  A major challenge in this literature is the reflection problem which confounds the identification of endogenous social effects, those that area response the peer group's decision, as opposed to their exogenous characteristics and other contextual influences \citep{Manski}.  In this investigation, we rely on an instrumental variable approach suggested by \citet{Blume2010}.
+This paper investigates the social effects of both circumcision and medicalization. It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention. The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices. Recently, economists have taken a strong interest in studying such nonmarket interactions between agents. There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior. Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.  A major challenge in this literature is the reflection problem which confounds the identification of endogenous social effects, those that area response the peer group's decision, as opposed to their exogenous characteristics and other contextual influences \citep{Manski}.  In this investigation, we rely on an instrumental variable approach suggested by \citet{Blume2010}.
 
 This paper also follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society, using DHS data from Burkina Faso. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability.  Another work this paper follows is \citep{Hayford} that considers the ``convention'' model\footnote{She also considers two other often cited models: the modernization model and the feminist model.} to explain the persistence of FGM in Kenya.  The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}.  In terms of methodology, this work is inspired by \citet{Blume2010} which in turn follows the work of \citet{Manski}.
 
-What is found is that the FGM decision is strongly influenced by the decision of a household's peers.  This is not unexpected considering previous investigations, and the strong link between FGM and the marriage market.  What is an interesting contribution of this paper is the finding that the choice of medicalization by a household's peers has a negative influence on the FGM decision in urban areas.  While we cannot identify the mechanism by which negative influence operates, it might be explained by the move of FGM from the traditional marriage market to the professional health domain. 
+What is found is that the FGM decision is strongly influenced by the decision of a household's peers. This is not unexpected considering previous investigations, and the strong link between FGM and the marriage market. What is an interesting contribution of this paper is the finding that the choice of medicalization by a household's peers has a negative influence on the FGM decision in urban areas. While we cannot identify the mechanism by which negative influence operates, it might be explained by the move of FGM from the traditional marriage market to the professional health domain.
+
+This paper is organized as follows: In section \ref{sec:data} the data used to produce our results is described, in section \ref{sec:method} our empirical strategy is presented, in section \ref{sec:results} our results are presented, and finally we conclude with section \ref{sec:conclusion}.
 
 \section{Data}\label{sec:data}
 
-In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008).  This is the ninth such survey in Egypt, conducted every two or three years since 1988.  The survey focuses on a wide set of population, health, fertility, and nutrition indicators.  In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households.  Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure was done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. 
-DHS survey design standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \citep{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
+In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008). This is the ninth such survey in Egypt, conducted every two or three years since 1988. The survey focuses on a wide set of population, health, fertility, and nutrition indicators. In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households. Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom was the procedure was done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \citep{El-Zanat}. The DHS survey design standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \citep{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
 
 The survey sample was selected over three stages: 
 \begin{inparaenum}[1)]
@@ -137,7 +138,7 @@ fgm.circum <- subset(fgm, circum == 1)
 fgm.med <- subset(fgm.circum, med.circum == 1)
 
 circum.frac <- nrow(fgm.circum) / nrow(fgm)
-med.frac <- nrow(fgm.med) / nrow(fgm)
+med.frac <- nrow(fgm.med) / nrow(fgm.circum)
 cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% & %i \\\\ \n", circum.frac * 100, med.frac * 100, nrow(fgm)))
 
 by.cohort <- function (df, total) 
@@ -160,7 +161,7 @@ fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
 cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
             nrow(fgm.rich)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
             nrow(fgm.rich)))
 
 #x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
@@ -170,7 +171,7 @@ fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
 cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
             nrow(fgm.poor)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
             nrow(fgm.poor)))
 
 #x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
@@ -180,7 +181,7 @@ fgm.rural <- fgm[fgm$urban.rural == "rural", ]
 cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.rural)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.circum[fgm.circum$urban.rural == "rural",])*100,
             nrow(fgm.rural)))
 
 #x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
@@ -190,7 +191,7 @@ fgm.urban <- fgm[fgm$urban.rural == "urban", ]
 cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.urban)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.circum[fgm.circum$urban.rural == "urban",])*100,
             nrow(fgm.urban)))
 
 #x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
@@ -210,7 +211,7 @@ fgm.mus <- fgm[fgm$religion == "muslim", ]
 cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
             nrow(fgm.mus)/nrow(fgm)*100,
             nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
-            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
             nrow(fgm.mus)))
 
 #x <- by(fgm.mus, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.mus))
@@ -220,7 +221,7 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
 \end{center}
 \end{scriptsize}
 
-Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households.  Also is noticeable a greater tendency for medicalization for poorer, urban, and Muslim households. In figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with some fluctuation in the rate of medicalization.
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also is noticeable a greater tendency for medicalization for richer, urban, and Muslim households. In \ref{fig:prop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
 
 % FGM, Med. proportions
 
@@ -231,8 +232,10 @@ fgm <- subset(spdf@data, birth.year <= youngest.cohort)
 fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
 fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
 
+fgm.circum.only <- subset(fgm, circum.fac == "yes")
+
 prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
-prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
 
 circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
 med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
@@ -302,18 +305,19 @@ cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\
 for (n in govern.names)
 {
   fgm.govern <- fgm[fgm$ADM1NAME == n,]
-  cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
-              n,
-              nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
-              nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
-              nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
-              nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
-              nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
-              nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
-              mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
-              mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
-                sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
-              nrow(fgm.govern)))
+  if (nrow(fgm.govern) > 0) 
+    cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+		n,
+		nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
+		mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
+		mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+		  sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+		nrow(fgm.govern)))
 }
 @
 \footnotetext[1]{Standard deviation is reported between parenthesis}
@@ -322,7 +326,7 @@ for (n in govern.names)
 \end{scriptsize}
 %\end{landscape}
 
-\section{Methodology}
+\section{Methodology}\label{sec:method}
 
 \subsection{Linear-in-means Model}
 The \citet{Blume2010} model of social interaction is 
@@ -347,7 +351,7 @@ However, in \citep{Manski} it is assumed that $y_g = \bar{x}_g$ which makes it i
 \begin{equation}
   m^e_{ig} = m_g \equiv \frac{k + (c + d) \cdot \bar{x}_g}{1 - J}.
 \end{equation}
-\citep{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term which, if not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
+\citet{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term which, if not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
 \[proj(\bar{\omega}_g|1, y_g, \bar{x}_g) - proj(\bar{\omega}_g|1, y_g) \ne 0\]
 then it is possible to identify endogenous and contextual effects.
 
@@ -369,7 +373,7 @@ Of the household characteristics we are interested in we use:
 
 \subsubsection{Reference Group}
 
-In our implementation, the reference or peer group is defined on spatial terms, a household's governorate, and on a daughter's cohort group.  This means the FGM decision for a particular daughter is influenced by the decision by all other daughters in the same governorate and that are same age, a year younger, or a year older.  As mentioned earlier, we focused on daughters of age twelve or older.  We also eliminated from consideration households that have not been resident in their current address for ten years or longer, and daughters with fewer than 24 reference group peers.  We alternatively tried to restrict further the reference group to have similar urban/rural residence, have the same religion, or of the same wealth level.  We found only similar or weaker results than what is presented here\footnote{Other reference group results not shown}.
+In our implementation, the reference or peer group is defined on spatial terms---a household's governorate---and on a daughter's cohort group. This means the FGM decision for a particular daughter is influenced by the decision by all other daughters in the same governorate and that are the same age, a year younger, or a year older. As mentioned earlier, we focused on daughters of age twelve or older. We also eliminated from consideration households that have not been resident in their current address for ten years or longer, and daughters with fewer than 24 reference group peers. We alternatively tried to restrict further the reference group to have similar urban/rural residence, have the same religion, or of the same wealth level. We found only similar or weaker results than what is presented here\footnote{Other reference group results not shown}.
 
 \subsubsection{Instrumental Variables}
 
@@ -395,7 +399,8 @@ Similar to \citep{Blume2010} we solve for $f^e$
 \begin{equation}
   f^e_{jht} = \bar{f}_{jt} \equiv \frac{k_t + c \cdot \bar{x}_{jt} + d_j}{1 - J}. \label{eqn:f_e}
 \end{equation}
-If we are able to show that some of the group averages of $x$ contribute to predicting $\bar{f}_{jt}$ beyond $(1, t, j)$, we can use them to instrument $\bar{f}_{jt}$, and hence be able to identify the endogenous effect of FGM.  The below results show that the group averages for urban residence, the mother having received primary education and secondary education, and the mother's having FGM status are significant.  In order to identify the endogenous effect of FGM, we make the assumption that these group averages are not part of contextual effects---they do not influence the FGM decision directly---and hence we can them as instruments for $\bar{f}_{jt}$.  This is based on the reasoning that FGM status of mothers is typically unobservable to other households, and this also applies to the mothers' primary and secondary level education. Finally, whether a household's neighbors are residents in rural or urban areas should have no direct influence on the FGM decision. 
+
+If we are able to show that some of the group averages of $x$ contribute to predicting $\bar{f}_{jt}$ beyond $(1, t, j)$, we can use them to instrument $\bar{f}_{jt}$, and hence be able to identify the endogenous effect of FGM. The below results show that the group averages for urban residence, the mother having received primary education and secondary education, and the mother's having FGM status are significant. In order to identify the endogenous effect of FGM, we make the assumption that these group averages are not part of the contextual effects---they do not influence the FGM decision directly---and hence we can use them as instruments for $\bar{f}_{jt}$. This is based on the reasoning that FGM status of mothers is typically unobservable to other households, and this also applies to the mothers' primary and secondary level education. The apparent contradiction in assuming that mothers' FGM status is unobservable while the daughters' is, can be explained as a difference between discussing a taboo subject concerning adult women and the observable celebrations held for girls on having undergone the FGM procedure. Finally, whether a household's neighbors are residents in rural or urban areas should also have no direct influence on the FGM decision.
 
 The last instrument is somewhat complicated to interpret; in Table \ref{tab:direct_effects} we observe a significant negative direct effect to urban residence on FGM, while in Table \ref{tab:fgmgrpavg} the FGM group average responds positively to average urban residence in a governorate.  It is difficult to figure out the exact mechanism by which this effect changes direction in this manner, but considering that it is unlikely that a household would both be less likely to opt for FGM when in an urban region \emph{and} simultaneously be more likely to choose FGM in response to a greater fraction of urban peer households, we assume the group average urban residence to be exogenous to equation (\ref{eqn:endo_model}).
 
@@ -421,14 +426,8 @@ The last instrument is somewhat complicated to interpret; in Table \ref{tab:dire
                grpavg.hh.head.sex_female = "$\\overline{female\\_head\\_hh}_{jt}$",
                grpavg.med.help.distance.fac_big_problem = "$\\overline{med\\_help\\_distance}_{jt}$")
 
-  for (reg.name in names(regs))
-  {
-    cat(sprintf("%s & %.3f%s \\\\ \n", regs[[reg.name]],
-                                       r0.1$summary()[reg.name, 1], 
-                                       symnum(r0.1$summary()[reg.name, 4], 
-                                              corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    cat(sprintf("& (%.3f) \\\\ \n", r0.1$summary()[reg.name, 2]))
-  }
+  print.reg.list(c(r0.1), regs, cutpoints, symbols) #, last.tex.newline = FALSE)
+
   cat("\\hline\n")
   cat("\n")
   cat(sprintf(" $N$ & %i\\\\\n", r0.1$data$nrow()))
@@ -456,7 +455,7 @@ We can thus difference out this fixed effect giving us the regression
 \end{equation}
 We continue to use the same instrumental variables as above.
 
-\section{Results}
+\section{Results}\label{sec:results}
 
 \subsection{Direct Effects}
 
@@ -464,7 +463,7 @@ The first regression results to consider are those direct effects only, with no 
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|cc}
+\begin{longtable}{l|ccc}
   \caption{Direct Effects Only \label{tab:direct_effects}} \\
   \hline\hline
   & \multicolumn{2}{c}{Estimate} \\
@@ -482,72 +481,23 @@ The first regression results to consider are those direct effects only, with no 
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
-               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)")
+               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance",
+	       order = "Birth Order")
 
-  cat("\\emph{Cohort} & \\\\\n")
-  for (birth.year in seq(1989, 1996))
-  {
-    cohort.reg.name <- sprintf("birth.year.fac%d", birth.year)
-    cat(sprintf("~~%d & %.3f%s & %.3f%s \\\\\n", birth.year,
-                                                 r5$summary()[cohort.reg.name, 1], 
-                                                 symnum(r5$summary()[cohort.reg.name, 4], 
-                                                        corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                                                 r6$summary()[cohort.reg.name, 1],
-                                                 symnum(r6$summary()[cohort.reg.name, 4], 
-                                                        corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  results <- c(r5, r6, r7)
 
-    cat(sprintf("& (%.3f) & (%.3f)\\\\\n", r5$summary()[cohort.reg.name, 2], r6$summary()[cohort.reg.name, 2]))
-  }
+  print.cohorts(results, 1989:1996, cutpoints, symbols)
 
-  for (reg.name in names(regs))
-  {
-    cat(sprintf("%s & %.3f%s &", regs[[reg.name]],
-                r5$summary()[reg.name, 1], 
-                symnum(r5$summary()[reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  print.reg.list(results, regs, cutpoints, symbols)
 
-    if (reg.name %in% rownames(r6$summary()))
-    {
-      cat(sprintf("%.3f%s", 
-                  r6$summary()[reg.name, 1], 
-                  symnum(r6$summary()[reg.name, 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    }
-
-    cat("\\\\\n")
-
-    cat(sprintf("& (%.3f) &", r5$summary()[reg.name, 2]))
-
-    if (reg.name %in% rownames(r6$summary()))
-    {
-      cat(sprintf("(%.3f)", r6$summary()[reg.name, 2]))
-    }
-
-    cat("\\\\\n")
-  }
-
-  cat("\\emph{Education Level} & \\\\\n")
-
-  educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
-
-  for (educ.lvl in names(educ.regs))
-  {
-    cat(sprintf("~~%s & %.3f%s &  %.3f%s\\\\\n", educ.regs[[educ.lvl]],
-                r5$summary()[educ.lvl, 1], 
-                symnum(r5$summary()[educ.lvl, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r6$summary()[educ.lvl, 1], 
-                symnum(r6$summary()[educ.lvl, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-    cat(sprintf("& (%.3f) & (%.3f) \\\\\n", r5$summary()[educ.lvl, 2], r6$summary()[educ.lvl, 2]))
-  }
+  print.educlvl(results, cutpoints, symbols) #, FALSE)
 
   cat("\\hline\n")
-  cat(sprintf(" $N$ & %i & %i\\\\\n", r5$data$nrow(), r6$data$nrow()))
+  cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r5$data$nrow(), r6$data$nrow(), r7$data$nrow()))
   cat("\\hline\n")
-  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r5$r.squared(), r6$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r5$adj.r.squared(), r6$adj.r.squared()))
+  cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5$r.squared(), r6$r.squared(), r7$r.squared()))
+  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5$adj.r.squared(), r6$adj.r.squared(), r7$adj.r.squared()))
 @
   \hline\hline
 \footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
@@ -941,7 +891,7 @@ Below are the results of the IV regression: the first column is for model (\ref{
 
 In the first column there are no cohort effects all and in the second we do not detect a trend.  Otherwise, the direct household effects are no different than what has previously been observed.  In terms of social effects, in the first column we find no endogenous social effect of FGM or medicalization.  However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a \emph{negative} and significant endogenous effect to medicalization.  On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households and to a greater extent for households with difficulty accessing medical assistance due to distance.  For rural households we see a positive influence of medicalization on households with difficulty accessing medical assistance due to distance, and no effect otherwise.
 
-\section{Conclusion}
+\section{Conclusion}\label{sec:conclusion}
 
 As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters.  Households tended to follow the same behavior as other members of their community.  However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group.  This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}.  These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics.  Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other.  This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns.  The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.
 
