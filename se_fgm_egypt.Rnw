@@ -31,12 +31,15 @@ source("print.results.R")
 load("new_results.RData")
 
 youngest.cohort <- 1996
+
+cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
+symbols <- c("***", "**", "*", "$\\cdot$", " ")
 @
 
 \newtheorem{prop}{Proposition}
 
-\title{The Effects of Social Interactions on\\Female Genital Mutilation in Egypt}
-\author{Karim Nagib}
+\title{The Effects of Social Interactions on\\Female Genital Mutilation in Egypt\footnote{Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, and Wesley Yin for their advice and suggestions. I'm also grateful to Emily Gee for reviewing this paper and suggesting corrections.}}
+\author{Karim Nagib\footnote{Boston University. Email: \protect\url{karimn@bu.edu}}}
 
 \begin{document}
 
@@ -221,7 +224,7 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
 \end{center}
 \end{scriptsize}
 
-Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also is noticeable a greater tendency for medicalization for richer, urban, and Muslim households. In \ref{fig:prop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also is noticeable a greater tendency for medicalization for richer, urban, and Muslim households. In Figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
 
 % FGM, Med. proportions
 
@@ -463,7 +466,7 @@ The first regression results to consider are those direct effects only, with no 
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|ccc}
+\begin{longtable}{l|cc}
   \caption{Direct Effects Only \label{tab:direct_effects}} \\
   \hline\hline
   & \multicolumn{2}{c}{Estimate} \\
@@ -481,11 +484,12 @@ The first regression results to consider are those direct effects only, with no 
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
+	       order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$",
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
-               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance",
-	       order = "Birth Order")
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  results <- c(r5, r6, r7)
+  results <- c(r5, r6)
 
   print.cohorts(results, 1989:1996, cutpoints, symbols)
 
@@ -494,10 +498,10 @@ The first regression results to consider are those direct effects only, with no 
   print.educlvl(results, cutpoints, symbols) #, FALSE)
 
   cat("\\hline\n")
-  cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r5$data$nrow(), r6$data$nrow(), r7$data$nrow()))
+  cat(sprintf(" $N$ & %i & %i\\\\\n", r5$data$nrow(), r6$data$nrow()))
   cat("\\hline\n")
-  cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5$r.squared(), r6$r.squared(), r7$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5$adj.r.squared(), r6$adj.r.squared(), r7$adj.r.squared()))
+  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r5$r.squared(), r6$r.squared()))
+  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r5$adj.r.squared(), r6$adj.r.squared()))
 @
   \hline\hline
 \footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
@@ -526,99 +530,30 @@ Below are the results for the IV regression.  In the first column we see the res
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
   symbols <- c("***", "**", "*", "$\\cdot$", " ")
 
+  results <- c(r1.instr.5, r2.instr.5)
+
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
                marital.age = "Marital Age",
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
-               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)")
+	       order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$",
+               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  cat("\\emph{Cohort} & & \\\\\n")
-  for (birth.year in seq(1989, 1996))
-  {
-    cohort.reg.name <- sprintf("birth.year.fac%d", birth.year)
-    cat(sprintf("~~%d & %.3f%s & %.3f%s\\\\\n", birth.year,
-                r1.instr.5$summary()[cohort.reg.name, 1], 
-                symnum(r1.instr.5$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r2.instr.5$summary()[cohort.reg.name, 1], 
-                symnum(r2.instr.5$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  print.cohorts(results, 1989:1996, cutpoints, symbols)
 
-    cat(sprintf("& (%.3f) & (%.3f) \\\\\n", r1.instr.5$summary()[cohort.reg.name, 2],
-                                            r2.instr.5$summary()[cohort.reg.name, 2]))
-  }
-
-  for (reg.name in names(regs))
-  {
-    cat(sprintf("%s & %.3f%s  & ", regs[[reg.name]],
-                r1.instr.5$summary()[reg.name, 1], 
-                symnum(r1.instr.5$summary()[reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-    if (reg.name %in% rownames(r2.instr.5))
-    {
-      cat(sprintf("%.3f%s (%.3f)",
-                  r2.instr.5$summary()[reg.name, 1], 
-                  symnum(r2.instr.5$summary()[reg.name, 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    }
-
-    cat("\\\\\n")
-
-    cat(sprintf("& (%.3f) & ", r1.instr.5$summary()[reg.name, 2]))
-    if (reg.name %in% rownames(r2.instr.5))
-    {
-      cat(sprintf("(%.3f)", r2.instr.5$summary()[reg.name, 2]))
-    }
-
-    cat("\\\\\n")
-  }
-
-  cat("\\emph{Education Level} & & \\\\\n")
+  print.reg.list(results, regs, cutpoints, symbols)
 
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 
-  for (educ.lvl in names(educ.regs))
-  {
-    cat(sprintf("~~%s & %.3f%s & ", educ.regs[[educ.lvl]],
-                r1.instr.5$summary()[educ.lvl, 1], 
-                symnum(r1.instr.5$summary()[educ.lvl, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  print.educlvl(results, cutpoints, symbols) #, FALSE)
 
-    if (educ.lvl %in% rownames(r2.instr.5))
-    {
-      cat(sprintf("%.3f%s ",
-                  r2.instr.5$summary()[educ.lvl, 1], 
-                  symnum(r2.instr.5$summary()[educ.lvl, 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    }
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$")
 
-    cat("\\\\\n")
-
-    cat(sprintf("& (%.3f) & ", r1.instr.5$summary()[educ.lvl, 2]))
-
-    if (reg.name %in% rownames(r2.instr.5))
-    {
-      cat(sprintf("(%.3f)", r2.instr.5$summary()[educ.lvl, 2]))
-    }
-
-    cat("\\\\\n")
-  }
-
-  cat(sprintf("$\\overline{fgm}_{jt}$ & %.3f%s  & %.3f%s  \\\\\n", 
-              r1.instr.5$summary()["grpavg.circum", 1], 
-              symnum(r1.instr.5$summary()["grpavg.circum", 4], 
-                     corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-              r2.instr.5$summary()["grpavg.circum", 1], 
-              symnum(r2.instr.5$summary()["grpavg.circum", 4], 
-                     corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-              r2.instr.5$summary()["grpavg.circum", 2]))
-
-  cat(sprintf(" & (%.3f) & (%.3f) \\\\\n", 
-              r1.instr.5$summary()["grpavg.circum", 2],
-              r2.instr.5$summary()["grpavg.circum", 2]))
+  print.reg.list(results, grpavg.regs, cutpoints, symbols)
 
   cat("\\hline\n")
   cat(sprintf(" $N$ & %i & %i\\\\\n", r1.instr.5$data$nrow(), r2.instr.5$data$nrow()))
@@ -651,17 +586,17 @@ Below are the results of the IV regression: the first column is for model (\ref{
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|cccccc}
-  \caption{FGM Endogenous Effects Regression} \\
+\begin{longtable}{l|ccccc}
+  \caption{FGM Endogenous Effects and Medicalization Effects Regression\label{tab:endo_med_results}} \\
   \hline\hline
-  & \multicolumn{6}{c}{Estimate} \\
-  & \multicolumn{6}{c}{(Standard Error)} \\
+  & \multicolumn{5}{c}{Estimate} \\
+  & \multicolumn{5}{c}{(Standard Error)} \\
   \hline
-  & (1) & (2) & (3) & (4) & (5) & (6)\\
+  & (1) & (2) & (3) & (4) & (5) \\
   \hline
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-  cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-  symbols <- c("***", "**", "*", "$\\cdot$", " ")
+
+  results <- c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -669,200 +604,29 @@ Below are the results of the IV regression: the first column is for model (\ref{
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
-               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)")
+               hh.head.sexfemale = "HH Head Sex (Female)",
+	       order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$",
+               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  cat("\\emph{Cohort} & & & & & & \\\\\n")
-  for (birth.year in seq(1989, 1996))
-  {
-    cohort.reg.name <- sprintf("birth.year.fac%d", birth.year)
-    cat(sprintf("~~%d & %.3f%s  & %.3f%s & %.3f%s  & %.3f%s & %.3f%s  & %.3f%s \\\\\n", birth.year,
-                r3.instr.5$summary()[cohort.reg.name, 1], 
-                symnum(r3.instr.5$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r4.instr.5$summary()[cohort.reg.name, 1], 
-                symnum(r4.instr.5$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r4.instr.7$summary()[cohort.reg.name, 1], 
-                symnum(r4.instr.7$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r4.instr.8$summary()[cohort.reg.name, 1], 
-                symnum(r4.instr.8$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r4.instr.9$summary()[cohort.reg.name, 1], 
-                symnum(r4.instr.9$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-                r4.instr.10$summary()[cohort.reg.name, 1], 
-                symnum(r4.instr.10$summary()[cohort.reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  print.cohorts(results, 1989:1996, cutpoints, symbols)
 
-    cat(sprintf("& (%.3f) & (%.3f) & (%.3f) & (%.3f) & (%.3f) & (%.3f) \\\\\n", 
-                r3.instr.5$summary()[cohort.reg.name, 2],
-                r4.instr.5$summary()[cohort.reg.name, 2],
-                r4.instr.7$summary()[cohort.reg.name, 2],
-                r4.instr.8$summary()[cohort.reg.name, 2],
-                r4.instr.9$summary()[cohort.reg.name, 2],
-                r4.instr.10$summary()[cohort.reg.name, 2]))
-  }
-
-  for (reg.name in names(regs))
-  {
-    cat(sprintf("%s & %.3f%s & ", regs[[reg.name]],
-                r3.instr.5$summary()[reg.name, 1], 
-                symnum(r3.instr.5$summary()[reg.name, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-    if (reg.name %in% rownames(r4.instr.5))
-    {
-      cat(sprintf("%.3f%s ",
-                  r4.instr.5$summary()[reg.name, 1], 
-                  symnum(r4.instr.5$summary()[reg.name, 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    }
-    cat(" & & & & \\\\\n")
-
-    cat(sprintf("& (%.3f) & ", r3.instr.5$summary()[reg.name, 2]))
-
-    if (reg.name %in% rownames(r4.instr.5))
-    {
-      cat(sprintf("(%.3f)", r4.instr.5$summary()[reg.name, 2]))
-    }
-
-    cat("& & & & \\\\\n")
-  }
-
-  cat("\\emph{Education Level} & & & & & & \\\\\n")
+  print.reg.list(results, regs, cutpoints, symbols)
 
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 
-  for (educ.lvl in names(educ.regs))
-  {
-    cat(sprintf("~~%s & %.3f%s & ", educ.regs[[educ.lvl]],
-                r3.instr.5$summary()[educ.lvl, 1], 
-                symnum(r3.instr.5$summary()[educ.lvl, 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+                      grpavg.med.circum = "$\\overline{med}_{jt}$",
+                      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
+		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Distance}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Distance}$")
 
-    if (educ.lvl %in% rownames(r4.instr.5))
-    {
-      cat(sprintf("%.3f%s ",
-                  r4.instr.5$summary()[educ.lvl, 1], 
-                  symnum(r4.instr.5$summary()[educ.lvl, 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    }
-    cat(" & & & & \\\\\n")
-
-    cat(sprintf("& (%.3f) & ", r3.instr.5$summary()[educ.lvl, 2]))
-
-    if (reg.name %in% rownames(r4.instr.5))
-    {
-      cat(sprintf("(%.3f)", r4.instr.5$summary()[educ.lvl, 2]))
-    }
-
-    cat(" & & & & \\\\\n")
-  }
-
-  cat("$\\overline{fgm}_{jt}$")
-
-  for (r in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-  {
-    cat(sprintf(" & %.3f%s", 
-                r$summary()["grpavg.circum", 1], 
-                symnum(r$summary()["grpavg.circum", 4], corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-  }
-
-  cat(" \\\\\n")
-
-  for (r in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-  {
-    cat(sprintf("& (%.3f) ", r$summary()["grpavg.circum", 2]))
-  }
-
-  cat(" \\\\\n")
-
-  cat("$\\overline{med}_{jt}$ ")
-
-  for (r in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-  {
-    cat(sprintf("& %.3f%s ", 
-                r$summary()["grpavg.med.circum", 1], 
-                symnum(r$summary()["grpavg.med.circum", 4], 
-                       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-  }
-
-  cat(" \\\\\n")
-
-  for (r in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-  {
-    cat(sprintf("& (%.3f) ", r$summary()["grpavg.med.circum", 2]))
-  }
-
-  cat(" \\\\\n")
-
-  cat("$\\overline{med}_{jt} \\times \\text{Urban}$ & & ") 
-
-  for (r in c(r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-  {
-    if ("grpavg.med.circum:urban.ruralurban" %in% rownames(r$summary()))
-    {
-      cat(sprintf("& %.3f%s ", 
-                  r$summary()["grpavg.med.circum:urban.ruralurban", 1], 
-                  symnum(r$summary()["grpavg.med.circum:urban.ruralurban", 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    } else {
-      cat("& ")
-    }
-  }
-
-  cat("\\\\\n")
-
-  cat("& & ")
-
-  for (r in c(r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-    if ("grpavg.med.circum:urban.ruralurban" %in% rownames(r$summary()))
-    {
-      cat(sprintf("& (%.3f) ", r$summary()["grpavg.med.circum:urban.ruralurban", 2]))
-    } else {
-      cat("& ")
-    }
-
-  cat(" \\\\\n")
-
-  cat("$\\overline{med}_{jt} \\times \\text{Medical Help Distance}$ & & ") 
-
-  for (r in c(r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-    if ("grpavg.med.circum:med.help.distance.facbig problem" %in% rownames(r$summary()))
-    {
-      cat(sprintf("& %.3f%s ", 
-                  r$summary()["grpavg.med.circum:med.help.distance.facbig problem", 1], 
-                  symnum(r$summary()["grpavg.med.circum:med.help.distance.facbig problem", 4], 
-                         corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-    } else {
-      cat("& ")
-    }
-
-  cat("\\\\\n")
-
-  cat("& & ")
-
-  for (r in c(r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
-    if ("grpavg.med.circum:med.help.distance.facbig problem" %in% rownames(r$summary()))
-    {
-      cat(sprintf("& (%.3f) ", r$summary()["grpavg.med.circum:med.help.distance.facbig problem", 2]))
-    } else {
-      cat("& ")
-    }
-
-  cat(" \\\\\n")
-
-  cat(sprintf("$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Distance}$ & & & & & & %.3f%s \\\\\n", 
-              r4.instr.10$summary()["grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem", 1], 
-              symnum(r4.instr.10$summary()["grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem", 4], 
-                     corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-  cat(sprintf("& & & & & & (%.3f) \\\\\n", r4.instr.10$summary()["grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem", 2]))
+  print.reg.list(results, grpavg.regs, cutpoints, symbols)
 
   cat("\\hline\n")
   cat(" $N$ ")
-  for (r1 in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
+  for (r1 in results)
   {
     cat(sprintf(" & %i ", r1$data$nrow()))
   }
@@ -870,13 +634,14 @@ Below are the results of the IV regression: the first column is for model (\ref{
   cat("\\hline\n")
   cat(" $R^2$ ")
 
-  for (r2 in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
+  for (r2 in results)
   {
     cat(sprintf(" & %.3f ", r2$r.squared()))
   }
   cat(" \\\\\n")
   cat(" Adjusted $R^2$ ")
-  for (r3 in c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.9, r4.instr.10))
+
+  for (r3 in results)
   {
     cat(sprintf(" & %.3f ", r3$adj.r.squared()))
   }
@@ -891,13 +656,57 @@ Below are the results of the IV regression: the first column is for model (\ref{
 
 In the first column there are no cohort effects all and in the second we do not detect a trend.  Otherwise, the direct household effects are no different than what has previously been observed.  In terms of social effects, in the first column we find no endogenous social effect of FGM or medicalization.  However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a \emph{negative} and significant endogenous effect to medicalization.  On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households and to a greater extent for households with difficulty accessing medical assistance due to distance.  For rural households we see a positive influence of medicalization on households with difficulty accessing medical assistance due to distance, and no effect otherwise.
 
+In the first column there are no cohort effects all and in the second we do not detect a trend. Otherwise, the direct household effects are no different than what has previously been observed. In terms of social effects, in the first column we find endogenous social effect of FGM only at the 10\% significance level, and we don't find a significant effect to medicalization. However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a negative and significant endogenous effect to medicalization. On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households (see Table \ref{tab:interact}). No significant different was found between households with difficulty accessing medical assistance due to distance and those without.
+\begin{table}
+  \centering
+  \caption{Urban/Rural and Medical Help Interactions\label{tab:interact}}
+  \begin{tabular}{l|cc}
+    \hline
+    \hline
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    \cline{2-3}
+    & Rural & Urban \\
+    \hline
+<<echo=FALSE,results=tex>>=
+summary <- r4.instr.10$summary()
+
+lht.noprob.urban <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:urban.ruralurban")
+lht.prob.rural <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:med.help.distance.facbig problem")
+lht.prob.urban <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:med.help.distance.facbig problem + grpavg.med.circum:urban.ruralurban + grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem")
+
+cat(sprintf("Medical Help Distance (No Problem) & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n", 
+           summary["grpavg.med.circum",1],
+	   symnum(summary["grpavg.med.circum", 4], 
+		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:urban.ruralurban",1],
+	   symnum(lht.noprob.urban[2,4],
+		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+
+cat(sprintf("& & (%.3f) \\\\\n", lht.noprob.urban[2, 3]))
+
+cat(sprintf("Medical Help Distance (Problem) & %.3f%s & %.3f%s \\\\\n", 
+           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:med.help.distance.facbig problem",1],
+	   symnum(lht.prob.rural[2,4],
+		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:urban.ruralurban",1] + summary["grpavg.med.circum:med.help.distance.facbig problem",1] + summary["grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem", 1],
+	   symnum(lht.prob.urban[2,4],
+		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+
+cat(sprintf("& (%.3f) & (%.3f) \\\\\n", lht.prob.rural[2, 3], lht.prob.urban[2, 3]))
+@
+    \hline
+    \hline
+  \end{tabular}
+\end{table}
+
 \section{Conclusion}\label{sec:conclusion}
 
-As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters.  Households tended to follow the same behavior as other members of their community.  However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group.  This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}.  These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics.  Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other.  This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns.  The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.
+As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters. Households tended to follow the same behavior as other members of their community. However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group. This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}. These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics. Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other. This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns. The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.
 
-One proposed story explaining these findings, is related to the pernicious nature of the marriage market social network in which \emph{dayas} play the role of ``quality certifiers''.  Due to the unobservable and unverifiable nature of FGM, reputation plays a critical role here.  As the FGM procedure moves away from the traditional sphere into that of professional healthcare its links to the marriage market is weakened, as healthcare providers are less likely to play a role in the marriage market. We might also be observing a modernization scenario, in which the endogenous social effect of medicalization is a proxy for a move away from traditional practices across all households in a particular area, irrespective of the other observed household characteristics.  In that case, it is not clear what government policy targeting medicalization might result in.
+One proposed story explaining these findings, is related to the pernicious nature of the marriage market social network in which \emph{dayas} play the role of ``quality certifiers''.  Due to the unobservable and unverifiable nature of FGM, reputation plays a critical role here. As the FGM procedure moves away from the traditional sphere into that of professional healthcare its links to the marriage market is weakened, as healthcare providers are less likely to play a role in the marriage market. We might also be observing a modernization scenario, in which the endogenous social effect of medicalization is a proxy for a move away from traditional practices across all households in a particular area, irrespective of the other observed household characteristics. In that case, it is not clear what government policy targeting medicalization might result in.
 
-Additionally, we must be cautious in making any recommendations calling for a roll back in the elimination for FGM in medical facilities.  There is always the danger that such a reversal of policy might give the impression of greater legitimacy, and households that were previously indecisive would regard such a move as approving of the procedure.  With the positive effect of medicalization on rural households with poor access to medical assistance due to distance, we might be witnessing a legitimization effect; these household observe increased medicalization and respond with greater likelihood of opting for FGM.
+Additionally, we must be cautious in making any recommendations calling for a roll back in the elimination for FGM in medical facilities. There is always the danger that such a reversal of policy might give the impression of greater legitimacy, and households that were previously indecisive would regard such a move as approving of the procedure. With the positive effect of medicalization on rural households with poor access to medical assistance due to distance, we might be witnessing a legitimization effect; these household observe increased medicalization and respond with greater likelihood of opting for FGM.
 
 \nocite{Refaat}
 \nocite{Yount}

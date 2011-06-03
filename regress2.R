@@ -106,7 +106,7 @@ r1.instr.3 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + u
 
 r1.instr.4 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.circum | grpavg.mother.circum.fac_yes + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex, gen.vcov = TRUE)
 
-r1.instr.5 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + grpavg.circum | grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + grpavg.religion_christian, gen.vcov = TRUE)
+r1.instr.5 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.circum + order + I(order^2) | grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.religion_christian + order + I(order^2), gen.vcov = TRUE)
 
 r1.instr.6 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.circum | grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.religion_christian, gen.vcov = TRUE)
 
@@ -127,7 +127,7 @@ r2.instr.3 <- x$plm(circum ~ birth.year.fac + grpavg.circum | . - grpavg.circum 
 
 r2.instr.4 <- x$plm(circum ~ birth.year.fac + grpavg.circum | . - grpavg.circum + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r2.instr.5 <- x$plm(circum ~ birth.year.fac + grpavg.circum | . - grpavg.circum + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r2.instr.5 <- x$plm(circum ~ birth.year.fac + order + I(order^2) + grpavg.circum | . - grpavg.circum + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 r2.instr.6 <- x$plm(circum ~ birth.year.fac + grpavg.circum | . - grpavg.circum + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
@@ -150,7 +150,7 @@ r3.instr.4 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + u
 
 r3.instr.6 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.circum + grpavg.med.circum | grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + grpavg.med.circum, gen.vcov = TRUE)
 
-r3.instr.5 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + grpavg.circum + grpavg.med.circum | grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + grpavg.med.circum, gen.vcov = TRUE)
+r3.instr.5 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.circum + grpavg.med.circum + order + I(order^2) | grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.med.circum + order + I(order^2), gen.vcov = TRUE)
 
 r3.instr.7 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + grpavg.circum + urban.rural * grpavg.med.circum | grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac + urban.rural * grpavg.med.circum, gen.vcov = TRUE)
 
@@ -183,20 +183,22 @@ r4.instr.4 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum 
 
 r4.instr.6 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.5 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r4.instr.5 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.7 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * urban.rural + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r4.instr.7 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * urban.rural + grpavg.circum  + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.8 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.distance.fac + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r4.instr.8 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.distance.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.9 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.distance.fac + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+#r4.instr.9 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.distance.fac + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.10 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.distance.fac + grpavg.med.circum : urban.rural : med.help.distance.fac + grpavg.circum | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r4.instr.10 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.distance.fac + grpavg.med.circum : urban.rural : med.help.distance.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 # No social effects regression; direct only
 
-r5 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + med.help.distance.fac, gen.vcov = TRUE)
+r5 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), gen.vcov = TRUE)
 
-r6 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + urban.rural + educ.lvl + marital.age + religion + hh.head.sex + med.help.distance.fac, gen.vcov = TRUE)
+r6 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), gen.vcov = TRUE)
 
-save(list = c(ls(pattern = "r\\d(\\.instr\\.\\d{1,2})?$"), "x", "y", "z", "spdf", "r0.1", "r0.neg"), file = "new_results.RData")
+spdf <- x$spdf
+
+save(list = c(ls(pattern = "r\\d(\\.instr\\.\\d{1,2})?$"), "x", "y", "spdf", "r0.1", "r0.neg"), file = "new_results.RData")
