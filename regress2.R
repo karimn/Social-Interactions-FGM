@@ -197,6 +197,8 @@ r4.instr.10 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.ci
 
 r5 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), gen.vcov = TRUE)
 
+r5.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), index = c("hh.id", "order.fac"), effect = "individual", model = "pooling", gen.vcov = TRUE)
+
 r6 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), gen.vcov = TRUE)
 
 spdf <- x$spdf
