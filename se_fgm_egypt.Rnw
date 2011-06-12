@@ -530,7 +530,7 @@ Below are the results for the IV regression.  In the first column we see the res
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
   symbols <- c("***", "**", "*", "$\\cdot$", " ")
 
-  results <- c(r1.instr.5, r2.instr.5)
+  results <- c(r1.instr.5.pooled, r2.instr.5)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -596,7 +596,7 @@ Below are the results of the IV regression: the first column is for model (\ref{
   \hline
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
 
-  results <- c(r3.instr.5, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10)
+  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
