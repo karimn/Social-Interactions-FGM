@@ -4,6 +4,8 @@ source("DaughterFgmDataRef.R")
 original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))
 original.data$spdf@data$urban.rural <- relevel(original.data$spdf@data$urban.rural, ref = "rural")
 original.data$spdf@data$med.help.distance.fac <- relevel(original.data$spdf@data$med.help.distance.fac, ref = "not big problem")
+original.data$spdf@data$med.help.money.fac <- relevel(original.data$spdf@data$med.help.money.fac, ref = "not big problem")
+original.data$spdf@data$med.help.transportation.fac <- relevel(original.data$spdf@data$med.help.transportation.fac, ref = "not big problem")
 #original.data <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, youngest.cohort = 2000, other.grpavg.controls = "med.circum")
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
@@ -123,6 +125,14 @@ r4.instr.12 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.ci
 r4.instr.13 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : received.info.circum.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 r4.instr.14 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : received.info.circum.fac + grpavg.med.circum : urban.rural : received.info.circum.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.15 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.money.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.16 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.money.fac + grpavg.med.circum : urban.rural : med.help.money.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.17 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.transportation.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.18 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.transportation.fac + grpavg.med.circum : urban.rural : med.help.transportation.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 # No social effects regression; direct only
 

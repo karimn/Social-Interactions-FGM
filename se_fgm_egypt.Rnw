@@ -14,6 +14,7 @@
 \usepackage{rotating}
 \usepackage{multirow}
 \usepackage{paralist}
+%\usepackage[landscape]{geometry}
 \usepackage{Sweave}
 
 %\renewcommand{\baselinestretch}{2}
@@ -157,8 +158,6 @@ by.cohort <- function (df, total)
   }
 }
 
-#x <- by(fgm, fgm[,"birth.year.fac"], by.cohort, nrow(fgm))
-
 fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
 
 cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
@@ -166,8 +165,6 @@ cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i 
             nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
             nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
             nrow(fgm.rich)))
-
-#x <- by(fgm.rich, fgm.rich[,"birth.year.fac"], by.cohort, nrow(fgm.rich))
 
 fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
 
@@ -177,8 +174,6 @@ cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i 
             nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
             nrow(fgm.poor)))
 
-#x <- by(fgm.poor, fgm.poor[,"birth.year.fac"], by.cohort, nrow(fgm.poor))
-
 fgm.rural <- fgm[fgm$urban.rural == "rural", ]
 
 cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
@@ -186,8 +181,6 @@ cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n
             nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
             nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.circum[fgm.circum$urban.rural == "rural",])*100,
             nrow(fgm.rural)))
-
-#x <- by(fgm.rural, fgm.rural[,"birth.year.fac"], by.cohort, nrow(fgm.rural))
 
 fgm.urban <- fgm[fgm$urban.rural == "urban", ]
 
@@ -197,8 +190,6 @@ cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n
             nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.circum[fgm.circum$urban.rural == "urban",])*100,
             nrow(fgm.urban)))
 
-#x <- by(fgm.urban, fgm.urban[,"birth.year.fac"], by.cohort, nrow(fgm.urban))
-
 fgm.christ <- fgm[fgm$religion == "christian", ]
 
 cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
@@ -207,8 +198,6 @@ cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i
             nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100,
             nrow(fgm.christ)))
 
-#x <- by(fgm.christ, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.christ))
-
 fgm.mus <- fgm[fgm$religion == "muslim", ]
 
 cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
@@ -216,8 +205,6 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
             nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
             nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
             nrow(fgm.mus)))
-
-#x <- by(fgm.mus, fgm.christ[,"birth.year.fac"], by.cohort, nrow(fgm.mus))
 @
 
 \end{longtable}
@@ -594,18 +581,12 @@ where $m$ is a binary variable indicating the household's decision to opt for me
 Below are the results of the IV regression: the first column is for model (\ref{eqn:endo_med_model}) and the second column is for the unobservable household fixed effects regression.  The last four columns show the results for the unobservable household fixed effects regression with different forms of interaction of the group average of medicalization with urban residence and difficulty in getting medical help due to distance.
 
 
+\begin{sidewaystable}
 \begin{scriptsize}
 \begin{centering}
-%\begin{longtable}{l|ccccccc}
-%  \caption{FGM Endogenous Effects and Medicalization Effects Regression\label{tab:endo_med_results}} \\
-%  \hline\hline
-%  & \multicolumn{7}{c}{Estimate} \\
-%  & \multicolumn{7}{c}{(Standard Error)} \\
-%  \hline
-%  & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
-%  \hline
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, r4.instr.11, r4.instr.12, r4.instr.13, r4.instr.14)
+  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, # r4.instr.11, r4.instr.12, 
+               r4.instr.15, r4.instr.16, r4.instr.17, r4.instr.18) #r4.instr.13, r4.instr.14)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -615,60 +596,39 @@ Below are the results of the IV regression: the first column is for model (\ref{
                hh.head.sexfemale = "HH Head Sex (Female)",
 	       order = "Birth Order",
 	       "I(order^2)" = "$(\\text{Birth Order})^2$",
-               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
-               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
+               "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Dist.")
 
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
-
-  #print.cohorts(results, 1989:1996, cutpoints, symbols)
-
-  #print.reg.list(results, regs, cutpoints, symbols)
 
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
                       grpavg.med.circum = "$\\overline{med}_{jt}$",
                       "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
-		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Distance}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Distance}$",
-		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
-		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$")
+		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Cost}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$",
+		      "grpavg.med.circum:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Transport}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Transport}$")
+#		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
+#		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$",
+#		      "grpavg.med.circum:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Received Info on FGM}$",
+#		      "grpavg.med.circum:urban.ruralurban:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Received Info on FGM}$")
 
-  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects and Medicalization Effects Regression", label = "tab:endo_med_results")
+  print.results.table(results, regs, NULL, #l1989:1996, 
+                      educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects and Medicalization Effects Regression", label = "tab:endo_med_results")
 
-  #print.reg.list(results, grpavg.regs, cutpoints, symbols)
-
-#  cat("\\hline\n")
-#  cat(" $N$ ")
-#  for (r1 in results)
-#  {
-#    cat(sprintf(" & %i ", r1$data$nrow()))
-#  }
-#  cat(" \\\\\n")
-#  cat("\\hline\n")
-#  cat(" $R^2$ ")
-#
-#  for (r2 in results)
-#  {
-#    cat(sprintf(" & %.3f ", r2$r.squared()))
-#  }
-#  cat(" \\\\\n")
-#  cat(" Adjusted $R^2$ ")
-#
-#  for (r3 in results)
-#  {
-#    cat(sprintf(" & %.3f ", r3$adj.r.squared()))
-#  }
-#  cat(" \\\\\n")
 @
-%\hline\hline
 %\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
 %\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-%\end{longtable}
 \end{centering}
 \end{scriptsize}
+\end{sidewaystable}
 
 In the first column there are no cohort effects all and in the second we do not detect a trend.  Otherwise, the direct household effects are no different than what has previously been observed.  In terms of social effects, in the first column we find no endogenous social effect of FGM or medicalization.  However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a \emph{negative} and significant endogenous effect to medicalization.  On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households and to a greater extent for households with difficulty accessing medical assistance due to distance.  For rural households we see a positive influence of medicalization on households with difficulty accessing medical assistance due to distance, and no effect otherwise.
 
 In the first column there are no cohort effects all and in the second we do not detect a trend. Otherwise, the direct household effects are no different than what has previously been observed. In terms of social effects, in the first column we find endogenous social effect of FGM only at the 10\% significance level, and we don't find a significant effect to medicalization. However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a negative and significant endogenous effect to medicalization. On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households (see Table \ref{tab:interact}). No significant different was found between households with difficulty accessing medical assistance due to distance and those without.
+
 \begin{table}
   \centering
   \caption{Urban/Rural and Medical Help Interactions\label{tab:interact}}
@@ -682,15 +642,24 @@ In the first column there are no cohort effects all and in the second we do not 
     \hline
 <<echo=FALSE,results=tex>>=
 print.interact.table(r4.instr.10, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.16, "grpavg.med.circum", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
 @
     \hline
     \hline
   \end{tabular}
 \end{table}
 
+\begin{comment}
 \begin{table}
   \centering
-  \caption{Urban/Rural and Discussion of FGM Interactions\label{tab:interact}}
+  \caption{Urban/Rural and Discussion of FGM Interactions\label{tab:interact2}}
   \begin{tabular}{l|cc}
     \hline
     \hline
@@ -706,6 +675,27 @@ print.interact.table(r4.instr.12, "grpavg.med.circum", "discuss.circum.facyes", 
     \hline
   \end{tabular}
 \end{table}
+
+\begin{table}
+  \centering
+  \caption{Urban/Rural and Having Received Info on FGM Interactions\label{tab:interact3}}
+  \begin{tabular}{l|cc}
+    \hline
+    \hline
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    \cline{2-3}
+    & Rural & Urban \\
+    \hline
+<<echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.14, "grpavg.med.circum", "received.info.circum.facyes", "urban.ruralurban", c("Did Not Receive Info on FGM", "Received Info on FGM"), cutpoints, symbols)
+@
+    \hline
+    \hline
+  \end{tabular}
+\end{table}
+\end{comment} 
+
 \section{Conclusion}\label{sec:conclusion}
 
 As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters. Households tended to follow the same behavior as other members of their community. However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group. This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}. These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics. Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other. This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns. The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.

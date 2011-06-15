@@ -90,11 +90,13 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
   cat(sprintf("& \\multicolumn{%d}{c}{Estimate} \\\\\n", num.col))
   cat(sprintf("& \\multicolumn{%d}{c}{(Standard Error)} \\\\\n", num.col))
   cat("\\hline\n")
-  cat(paste(sprintf("& (%d)", 1:7), collapse = " "))
+  cat(paste(sprintf("& (%d)", 1:num.col), collapse = " "))
   cat("\\\\\n")
   cat("\\hline\n")
 
-  print.cohorts(results, cohort.range, cutpoints, symbols)
+  if (!is.null(cohort.range))
+    print.cohorts(results, cohort.range, cutpoints, symbols)
+
   print.reg.list(results, reg.dict, cutpoints, symbols)
   print.educlvl(results, cutpoints, symbols)
 
@@ -119,6 +121,7 @@ print.interact.table <- function(result, base.reg, v.reg, h.reg, v.names, cutpoi
   lht.v0.h1 <- result$lht(sprintf("%s + %s:%s", base.reg, base.reg, h.reg))
   lht.v1.h0 <- result$lht(sprintf("%s + %s:%s", base.reg, base.reg, v.reg))
   lht.v1.h1 <- result$lht(sprintf("%s + %s:%s + %s:%s + %s:%s:%s", base.reg, base.reg, h.reg, base.reg, v.reg, base.reg, h.reg, v.reg))
+  lht.vdiff.h1 <- result$lht(sprintf("%s:%s + %s:%s:%s", base.reg, v.reg, base.reg, h.reg, v.reg))
 
   cat(sprintf("%s & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n",
 	     v.names[1],
@@ -140,4 +143,14 @@ print.interact.table <- function(result, base.reg, v.reg, h.reg, v.names, cutpoi
 		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
 
   cat(sprintf("& (%.3f) & (%.3f) \\\\\n", lht.v1.h0[2, 3], lht.v1.h1[2, 3]))
+  cat("\\hline\n")
+  cat(sprintf(" & %.3f%s & %.3f%s \\\\\n",
+              - summary[sprintf("%s:%s", base.reg, v.reg), 1],
+	      symnum(summary[sprintf("%s:%s", base.reg, v.reg), 4], 
+	 	     corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+              - summary[sprintf("%s:%s", base.reg, v.reg), 1] - summary[sprintf("%s:%s:%s", base.reg, h.reg, v.reg), 1],
+	     symnum(lht.vdiff.h1[2,4],
+		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+
+  cat(sprintf("& & (%.3f) \\\\\n", lht.vdiff.h1[2, 3]))
 }
