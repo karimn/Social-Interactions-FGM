@@ -41,7 +41,7 @@ factor.mean <- function(df, grp, col.name, prefix, exclude.self = FALSE)
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
                                                v511, v704, v705, v714, v716, v717, v719, v721, v729, v730,
-                                               g102, g106, g107, g118, g119, sgovern, s103g, s912, s915,
+                                               g102, g106, g107, g118, g119, sgovern, s103g, s912, s915, s916,
                                                v394,
                                                s917a:s917x,
                                                v3a08j, v3a08q))
@@ -60,7 +60,7 @@ FgmData.col.names <- c(
                'phase', 'cluster', 'hh', 'respond', 'area.unit', 'wt', 'domain', 'region', 'urban.rural', 'years.lived.res', 
                'religion', 'hh.head.sex', 'wealth.index', 'intends.circum', 'educ.lvl', 'literacy', 'med.help.permission', 'med.help.money', 'med.help.distance', 'med.help.transportation',
                'marital.age', 'partner.occupation.1', 'partner.occupation.2', 'working', 'occupation.1', 'occupation.2', 'work.for.whom', 'work.home', 'partner.educlvl', 'partner.age',
-               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governorate', 'prev.governate', 'num.not.circum', 'discuss.circum',
+               'mother.circum', 'mother.circum.age', 'mother.circum.bywhom', 'circum.byreligion', 'circum.continue', 'governorate', 'prev.governate', 'num.not.circum', 'discuss.circum', 'received.info.circum',
                'visit.health.facil.12mon',
                FgmData.circum.info,
                'nofpuse.husbandopposed', 'nofpuse.noaccess.toofar' 
@@ -147,6 +147,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
         wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
 
         discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
+	received.info.circum.fac <- factor(received.info.circum, level = 0:1, labels = c("no", "yes"))
         visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
       })
 
