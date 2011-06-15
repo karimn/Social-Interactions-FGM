@@ -466,13 +466,13 @@ The first regression results to consider are those direct effects only, with no 
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|cc}
+\begin{longtable}{l|ccc}
   \caption{Direct Effects Only \label{tab:direct_effects}} \\
   \hline\hline
-  & \multicolumn{2}{c}{Estimate} \\
-  & \multicolumn{2}{c}{(Standard Error)} \\
-  \cline{2-3}
-  & (1) & (2) \\
+  & \multicolumn{3}{c}{Estimate} \\
+  & \multicolumn{3}{c}{(Standard Error)} \\
+  \cline{2-4}
+  & (1) & (2) & (3) \\
   \hline
 <<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
@@ -487,9 +487,11 @@ The first regression results to consider are those direct effects only, with no 
 	       order = "Birth Order",
 	       "I(order^2)" = "$(\\text{Birth Order})^2$",
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
+	       discuss.circum.facyes = "Discussed FGM",
+	       received.info.circum.facyes = "Received Info on FGM",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  results <- c(r5, r6)
+  results <- c(r5.pooled, r6.pooled, r7.pooled)
 
   print.cohorts(results, 1989:1996, cutpoints, symbols)
 
@@ -498,10 +500,13 @@ The first regression results to consider are those direct effects only, with no 
   print.educlvl(results, cutpoints, symbols) #, FALSE)
 
   cat("\\hline\n")
-  cat(sprintf(" $N$ & %i & %i\\\\\n", r5$data$nrow(), r6$data$nrow()))
+  #cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r5.pooled$data$nrow(), r6.pooled$data$nrow(), r7.pooled$nrow()))
+  print.nrow(results)
   cat("\\hline\n")
-  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r5$r.squared(), r6$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r5$adj.r.squared(), r6$adj.r.squared()))
+  #cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5.pooled$r.squared(), r6.pooled$r.squared(), r7.pooled$nrow()))
+  print.r.squared(results)
+  #cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5.pooled$adj.r.squared(), r6.pooled$adj.r.squared(), r7.pooled$adj.r.squared()))
+  print.adj.r.squared(results)
 @
   \hline\hline
 \footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
@@ -518,19 +523,16 @@ Below are the results for the IV regression.  In the first column we see the res
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|cc}
-  \caption{FGM Endogenous Effects Regression\label{tab}} \\
-  \hline\hline
-  & \multicolumn{2}{c}{Estimate} \\
-  & \multicolumn{2}{c}{(Standard Error)} \\
-  \hline
-  & (1) & (2)\\
-  \hline
+%\begin{longtable}{l|ccccc}
+%  \caption{FGM Endogenous Effects Regression\label{tab}} \\
+%  \hline\hline
+%  & \multicolumn{5}{c}{Estimate} \\
+%  & \multicolumn{5}{c}{(Standard Error)} \\
+%  \hline
+%  & (1) & (2) & (3) & (4) & (5) \\
+%  \hline
 <<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
-  cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-  symbols <- c("***", "**", "*", "$\\cdot$", " ")
-
-  results <- c(r1.instr.5.pooled, r2.instr.5)
+  results <- c(r1.instr.5.pooled, r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -543,28 +545,36 @@ Below are the results for the IV regression.  In the first column we see the res
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  print.cohorts(results, 1989:1996, cutpoints, symbols)
+  #print.cohorts(results, 1989:1996, cutpoints, symbols)
 
-  print.reg.list(results, regs, cutpoints, symbols)
+  #print.reg.list(results, regs, cutpoints, symbols)
 
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 
-  print.educlvl(results, cutpoints, symbols) #, FALSE)
+  #print.educlvl(results, cutpoints, symbols) #, FALSE)
 
-  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$")
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+                      "grpavg.circum:urban.ruralurban" = "$\\overline{fgm}_{jt} \\times$ Urban",
+                      "grpavg.circum:discuss.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Discussed FGM",
+                      "grpavg.circum:received.info.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Received Info on FGM")
 
-  print.reg.list(results, grpavg.regs, cutpoints, symbols)
+  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects Regression")
 
-  cat("\\hline\n")
-  cat(sprintf(" $N$ & %i & %i\\\\\n", r1.instr.5$data$nrow(), r2.instr.5$data$nrow()))
-  cat("\\hline\n")
-  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r1.instr.5$r.squared(), r2.instr.5$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r1.instr.5$adj.r.squared(), r2.instr.5$adj.r.squared()))
+  #print.reg.list(results, grpavg.regs, cutpoints, symbols)
+
+  #cat("\\hline\n")
+  #cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r1.instr.5.pooled$data$nrow(), r2.instr.5$data$nrow(), r2.instr.6$data$nrow()))
+  #print.nrow(results)
+  #cat("\\hline\n")
+  #cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r1.instr.5$r.squared(), r2.instr.5$r.squared(), r2.instr.6$r.squared()))
+  #print.r.squared(results)
+  #cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r1.instr.5$adj.r.squared(), r2.instr.5$adj.r.squared(), r2.instr.6$adj.r.squared()))
+  #print.adj.r.squared(results)
 @
-\hline\hline
-\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-\end{longtable}
+%\hline\hline
+%\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
+%\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
+%\end{longtable}
 \end{centering}
 \end{scriptsize}
 
@@ -586,17 +596,16 @@ Below are the results of the IV regression: the first column is for model (\ref{
 
 \begin{scriptsize}
 \begin{centering}
-\begin{longtable}{l|ccccc}
-  \caption{FGM Endogenous Effects and Medicalization Effects Regression\label{tab:endo_med_results}} \\
-  \hline\hline
-  & \multicolumn{5}{c}{Estimate} \\
-  & \multicolumn{5}{c}{(Standard Error)} \\
-  \hline
-  & (1) & (2) & (3) & (4) & (5) \\
-  \hline
+%\begin{longtable}{l|ccccccc}
+%  \caption{FGM Endogenous Effects and Medicalization Effects Regression\label{tab:endo_med_results}} \\
+%  \hline\hline
+%  & \multicolumn{7}{c}{Estimate} \\
+%  & \multicolumn{7}{c}{(Standard Error)} \\
+%  \hline
+%  & (1) & (2) & (3) & (4) & (5) & (6) & (7) \\
+%  \hline
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-
-  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10)
+  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, r4.instr.11, r4.instr.12, r4.instr.13, r4.instr.14)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -604,53 +613,56 @@ Below are the results of the IV regression: the first column is for model (\ref{
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
-               hh.head.sexfemale = "HH Head Sex (Female)",
 	       order = "Birth Order",
 	       "I(order^2)" = "$(\\text{Birth Order})^2$",
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  print.cohorts(results, 1989:1996, cutpoints, symbols)
-
-  print.reg.list(results, regs, cutpoints, symbols)
-
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
+
+  #print.cohorts(results, 1989:1996, cutpoints, symbols)
+
+  #print.reg.list(results, regs, cutpoints, symbols)
 
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
                       grpavg.med.circum = "$\\overline{med}_{jt}$",
                       "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
 		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Distance}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Distance}$")
+		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Distance}$",
+		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
+		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$")
 
-  print.reg.list(results, grpavg.regs, cutpoints, symbols)
+  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects and Medicalization Effects Regression", label = "tab:endo_med_results")
 
-  cat("\\hline\n")
-  cat(" $N$ ")
-  for (r1 in results)
-  {
-    cat(sprintf(" & %i ", r1$data$nrow()))
-  }
-  cat(" \\\\\n")
-  cat("\\hline\n")
-  cat(" $R^2$ ")
+  #print.reg.list(results, grpavg.regs, cutpoints, symbols)
 
-  for (r2 in results)
-  {
-    cat(sprintf(" & %.3f ", r2$r.squared()))
-  }
-  cat(" \\\\\n")
-  cat(" Adjusted $R^2$ ")
-
-  for (r3 in results)
-  {
-    cat(sprintf(" & %.3f ", r3$adj.r.squared()))
-  }
-  cat(" \\\\\n")
+#  cat("\\hline\n")
+#  cat(" $N$ ")
+#  for (r1 in results)
+#  {
+#    cat(sprintf(" & %i ", r1$data$nrow()))
+#  }
+#  cat(" \\\\\n")
+#  cat("\\hline\n")
+#  cat(" $R^2$ ")
+#
+#  for (r2 in results)
+#  {
+#    cat(sprintf(" & %.3f ", r2$r.squared()))
+#  }
+#  cat(" \\\\\n")
+#  cat(" Adjusted $R^2$ ")
+#
+#  for (r3 in results)
+#  {
+#    cat(sprintf(" & %.3f ", r3$adj.r.squared()))
+#  }
+#  cat(" \\\\\n")
 @
-\hline\hline
-\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-\end{longtable}
+%\hline\hline
+%\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
+%\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
+%\end{longtable}
 \end{centering}
 \end{scriptsize}
 
@@ -669,37 +681,31 @@ In the first column there are no cohort effects all and in the second we do not 
     & Rural & Urban \\
     \hline
 <<echo=FALSE,results=tex>>=
-summary <- r4.instr.10$summary()
-
-lht.noprob.urban <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:urban.ruralurban")
-lht.prob.rural <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:med.help.distance.facbig problem")
-lht.prob.urban <- r4.instr.10$lht("grpavg.med.circum + grpavg.med.circum:med.help.distance.facbig problem + grpavg.med.circum:urban.ruralurban + grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem")
-
-cat(sprintf("Medical Help Distance (No Problem) & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n", 
-           summary["grpavg.med.circum",1],
-	   symnum(summary["grpavg.med.circum", 4], 
-		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:urban.ruralurban",1],
-	   symnum(lht.noprob.urban[2,4],
-		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-cat(sprintf("& & (%.3f) \\\\\n", lht.noprob.urban[2, 3]))
-
-cat(sprintf("Medical Help Distance (Problem) & %.3f%s & %.3f%s \\\\\n", 
-           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:med.help.distance.facbig problem",1],
-	   symnum(lht.prob.rural[2,4],
-		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-           summary["grpavg.med.circum",1] + summary["grpavg.med.circum:urban.ruralurban",1] + summary["grpavg.med.circum:med.help.distance.facbig problem",1] + summary["grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem", 1],
-	   symnum(lht.prob.urban[2,4],
-		  corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-
-cat(sprintf("& (%.3f) & (%.3f) \\\\\n", lht.prob.rural[2, 3], lht.prob.urban[2, 3]))
+print.interact.table(r4.instr.10, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 @
     \hline
     \hline
   \end{tabular}
 \end{table}
 
+\begin{table}
+  \centering
+  \caption{Urban/Rural and Discussion of FGM Interactions\label{tab:interact}}
+  \begin{tabular}{l|cc}
+    \hline
+    \hline
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    \cline{2-3}
+    & Rural & Urban \\
+    \hline
+<<echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.12, "grpavg.med.circum", "discuss.circum.facyes", "urban.ruralurban", c("Does Not Discuss FGM", "Discusses FGM"), cutpoints, symbols)
+@
+    \hline
+    \hline
+  \end{tabular}
+\end{table}
 \section{Conclusion}\label{sec:conclusion}
 
 As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters. Households tended to follow the same behavior as other members of their community. However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group. This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}. These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics. Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other. This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns. The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.
