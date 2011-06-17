@@ -119,38 +119,50 @@ print.interact.table <- function(result, base.reg, v.reg, h.reg, v.names, cutpoi
   summary <- result$summary()  
 
   lht.v0.h1 <- result$lht(sprintf("%s + %s:%s", base.reg, base.reg, h.reg))
-  lht.v1.h0 <- result$lht(sprintf("%s + %s:%s", base.reg, base.reg, v.reg))
-  lht.v1.h1 <- result$lht(sprintf("%s + %s:%s + %s:%s + %s:%s:%s", base.reg, base.reg, h.reg, base.reg, v.reg, base.reg, h.reg, v.reg))
-  lht.vdiff.h1 <- result$lht(sprintf("%s:%s + %s:%s:%s", base.reg, v.reg, base.reg, h.reg, v.reg))
 
-  cat(sprintf("%s & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n",
-	     v.names[1],
-	     summary[base.reg, 1],
-	     symnum(summary[base.reg, 4], 
-		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-	     summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, h.reg), 1],
-	     symnum(lht.v0.h1[2,4],
-		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
-  cat(sprintf("& & (%.3f) \\\\\n", lht.v0.h1[2, 3]))
+  if (is.null(v.reg)) {
+    cat(sprintf(" & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n",
+	       summary[base.reg, 1],
+	       symnum(summary[base.reg, 4], 
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+	       summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, h.reg), 1],
+	       symnum(lht.v0.h1[2,4],
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+    cat(sprintf("& & (%.3f) \\\\\n", lht.v0.h1[2, 3]))
+  } else {
+    lht.v1.h0 <- result$lht(sprintf("%s + %s:%s", base.reg, base.reg, v.reg))
+    lht.v1.h1 <- result$lht(sprintf("%s + %s:%s + %s:%s + %s:%s:%s", base.reg, base.reg, h.reg, base.reg, v.reg, base.reg, h.reg, v.reg))
+    lht.vdiff.h1 <- result$lht(sprintf("%s:%s + %s:%s:%s", base.reg, v.reg, base.reg, h.reg, v.reg))
 
-  cat(sprintf("%s & %.3f%s & %.3f%s \\\\\n", 
-             v.names[2],
-	     summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, v.reg), 1],
-	     symnum(lht.v1.h0[2,4],
-		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-	     summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, h.reg), 1] + summary[sprintf("%s:%s", base.reg, v.reg), 1] + summary[sprintf("%s:%s:%s", base.reg, h.reg, v.reg), 1],
-	     symnum(lht.v1.h1[2,4],
-		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+    cat(sprintf("%s & %.3f%s\\footnote{See $t$-statistic and standard error in Table \\ref{tab:endo_med_results}} & %.3f%s \\\\\n",
+	       v.names[1],
+	       summary[base.reg, 1],
+	       symnum(summary[base.reg, 4], 
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+	       summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, h.reg), 1],
+	       symnum(lht.v0.h1[2,4],
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+    cat(sprintf("& & (%.3f) \\\\\n", lht.v0.h1[2, 3]))
 
-  cat(sprintf("& (%.3f) & (%.3f) \\\\\n", lht.v1.h0[2, 3], lht.v1.h1[2, 3]))
-  cat("\\hline\n")
-  cat(sprintf(" & %.3f%s & %.3f%s \\\\\n",
-              - summary[sprintf("%s:%s", base.reg, v.reg), 1],
-	      symnum(summary[sprintf("%s:%s", base.reg, v.reg), 4], 
-	 	     corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
-              - summary[sprintf("%s:%s", base.reg, v.reg), 1] - summary[sprintf("%s:%s:%s", base.reg, h.reg, v.reg), 1],
-	     symnum(lht.vdiff.h1[2,4],
-		    corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+    cat(sprintf("%s & %.3f%s & %.3f%s \\\\\n", 
+	       v.names[2],
+	       summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, v.reg), 1],
+	       symnum(lht.v1.h0[2,4],
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+	       summary[base.reg, 1] + summary[sprintf("%s:%s", base.reg, h.reg), 1] + summary[sprintf("%s:%s", base.reg, v.reg), 1] + summary[sprintf("%s:%s:%s", base.reg, h.reg, v.reg), 1],
+	       symnum(lht.v1.h1[2,4],
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
 
-  cat(sprintf("& & (%.3f) \\\\\n", lht.vdiff.h1[2, 3]))
+    cat(sprintf("& (%.3f) & (%.3f) \\\\\n", lht.v1.h0[2, 3], lht.v1.h1[2, 3]))
+    cat("\\hline\n")
+    cat(sprintf(" & %.3f%s & %.3f%s \\\\\n",
+		- summary[sprintf("%s:%s", base.reg, v.reg), 1],
+		symnum(summary[sprintf("%s:%s", base.reg, v.reg), 4], 
+		       corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols),
+		- summary[sprintf("%s:%s", base.reg, v.reg), 1] - summary[sprintf("%s:%s:%s", base.reg, h.reg, v.reg), 1],
+	       symnum(lht.vdiff.h1[2,4],
+		      corr = FALSE, na = FALSE, cutpoints = cutpoints, symbols = symbols)))
+
+    cat(sprintf("& & (%.3f) \\\\\n", lht.vdiff.h1[2, 3]))
+  }
 }
