@@ -641,6 +641,10 @@ In the first column there are no cohort effects all and in the second we do not 
     & Rural & Urban \\
     \hline
 <<echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.7, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
 print.interact.table(r4.instr.10, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 
 cat("\\hline\\hline\n")
@@ -650,6 +654,38 @@ print.interact.table(r4.instr.16, "grpavg.med.circum", "med.help.money.facbig pr
 cat("\\hline\\hline\n")
 
 print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
+@
+    \hline
+    \hline
+  \end{tabular}
+\end{table}
+
+\begin{table}
+  \centering
+  \caption{Wealth Level and Medical Help Interactions\label{tab:interact_wealth}}
+  \begin{tabular}{l|cc}
+    \hline
+    \hline
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    \cline{2-3}
+    & Poor & Rich \\
+    \hline
+<<echo=FALSE,results=tex>>=
+h.reg <- "wealth.index.2rich"
+print.interact.table(r4.instr.19, "grpavg.med.circum", NULL, h.reg, NULL, cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.20, "grpavg.med.circum", "med.help.distance.facbig problem", h.reg, c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.21, "grpavg.med.circum", "med.help.money.facbig problem", h.reg, c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.22, "grpavg.med.circum", "med.help.transportation.facbig problem", h.reg, c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
 @
     \hline
     \hline
