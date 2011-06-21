@@ -41,7 +41,7 @@ symbols <- c("***", "**", "*", "$\\cdot$", " ")
 
 \newtheorem{prop}{Proposition}
 
-\title{The Effects of Social Interactions on\\Female Genital Mutilation in Egypt\footnote{Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, and Wesley Yin for their advice and suggestions. I'm also grateful to Emily Gee for reviewing this paper and suggesting corrections.} \footnote{Awarded the 2011 Rosenstein-Rodan Prize}}
+\title{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt\footnote{Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, and Wesley Yin for their advice and suggestions. I'm also grateful to Emily Gee for reviewing this paper and suggesting corrections.} \footnote{Awarded the 2011 Rosenstein-Rodan Prize}}
 \author{Karim Nagib\footnote{Boston University. Email: \protect\url{karimn@bu.edu}}}
 
 \begin{document}
