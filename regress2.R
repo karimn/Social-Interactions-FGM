@@ -142,6 +142,14 @@ r4.instr.21 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.ci
 
 r4.instr.22 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : wealth.index.2 + grpavg.med.circum : med.help.transportation.fac + grpavg.med.circum : wealth.index.2 : med.help.transportation.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
+r4.instr.23 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * religion + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.24 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : religion + grpavg.med.circum : med.help.distance.fac + grpavg.med.circum : religion : med.help.distance.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.25 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : religion + grpavg.med.circum : med.help.money.fac + grpavg.med.circum : religion : med.help.money.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.26 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : religion + grpavg.med.circum : med.help.transportation.fac + grpavg.med.circum : religion : med.help.transportation.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
 # No social effects regression; direct only
 
 #r5 <- x$lm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + order + I(order^2), gen.vcov = TRUE)

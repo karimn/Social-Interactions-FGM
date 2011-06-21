@@ -2,6 +2,8 @@
 
 \usepackage{fullpage}
 \usepackage{longtable}
+\usepackage{threeparttable}
+\usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{amssymb} 
 \usepackage{amsthm}
@@ -109,32 +111,17 @@ The primary data survey used in this paper is actually that of the unmarried dau
 
 % Summary stats
 
-\begin{scriptsize}
-\begin{center}
-\begin{longtable}{lcccc}
-\caption{Summary Statistics\label{tab:sumstat}} \\
-  \hline
-  \hline 
+\begin{table}
+\scriptsize
+\centering
+\caption{Summary Statistics}\label{tab:sumstat}
+\begin{tabular}{lcccc}
+  \toprule
   & \multicolumn{1}{c}{All} 
   & \multicolumn{1}{c}{Circumcised}
   & \multicolumn{1}{c}{Medicalization} 
   & \multicolumn{1}{c}{N} \\
-  \hline
-\endfirsthead
-
-\multicolumn{5}{c}{{\tablename} \thetable{} -- Continued} \\
-  \hline
-  \hline 
-  & \multicolumn{1}{c}{All} 
-  & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization} 
-  & \multicolumn{1}{c}{N} \\
-  \hline
-\endhead
-
-  \hline
-  \hline 
-\endlastfoot
+  \cmidrule{2-5}
 
 <<label=sumstat, echo=FALSE, results=tex>>=
 fgm <- subset(spdf@data, birth.year <= youngest.cohort)
@@ -206,10 +193,9 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
             nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
             nrow(fgm.mus)))
 @
-
-\end{longtable}
-\end{center}
-\end{scriptsize}
+  \bottomrule
+\end{tabular}
+\end{table}
 
 Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also is noticeable a greater tendency for medicalization for richer, urban, and Muslim households. In Figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
 
@@ -241,12 +227,13 @@ plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
 % Governorate Summary
 
 %\begin{landscape}
-\begin{scriptsize}
-\begin{center}
-\begin{longtable}{*{10}{l}}
-\caption{Governorate Summary Statistics\label{governsumstat}} \\
-\hline
-\hline
+\begin{table}
+\scriptsize
+\centering
+\begin{threeparttable}
+\caption{Governorate Summary Statistics}\label{governsumstat}
+\begin{tabular}{*{10}{l}}
+\toprule
 & \begin{sideways}Circumcized\end{sideways}
 & \begin{sideways}Medicalization\end{sideways}
 & \begin{sideways}Wealth Index (Rich)\end{sideways}
@@ -256,25 +243,7 @@ plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
 & \begin{sideways}Mother's Marital Age\end{sideways}
 & \begin{sideways}Age of Circumcision\end{sideways} 
 & N \\
-\hline
-\endfirsthead
-\multicolumn{10}{c}{{\tablename} \thetable{} -- Continued} \\
-\hline
-\hline
-& \begin{sideways}Circumcized\end{sideways}
-& \begin{sideways}Medicalization\end{sideways}
-& \begin{sideways}Wealth Index (Rich)\end{sideways}
-& \begin{sideways}Rural Residence\end{sideways}
-& \begin{sideways}Religion (Christian)\end{sideways}
-& \begin{sideways}Mother Circumcized\end{sideways}
-& \begin{sideways}Mother's Marital Age\end{sideways}
-& \begin{sideways}Age of Circumcision\end{sideways}
-& N \\
-\hline
-\endhead
-\hline
-\hline
-\endlastfoot
+\cmidrule{2-10}
 
 <<label=governsumstat, echo=FALSE, results=tex>>=
 fgm <- subset(spdf@data, birth.year <= youngest.cohort)
@@ -310,10 +279,13 @@ for (n in govern.names)
 		nrow(fgm.govern)))
 }
 @
-\footnotetext[1]{Standard deviation is reported between parenthesis}
-\end{longtable}
-\end{center}
-\end{scriptsize}
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item[1] Standard deviation is reported between parenthesis
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 %\end{landscape}
 
 \section{Methodology}\label{sec:method}
@@ -394,14 +366,16 @@ If we are able to show that some of the group averages of $x$ contribute to pred
 
 The last instrument is somewhat complicated to interpret; in Table \ref{tab:direct_effects} we observe a significant negative direct effect to urban residence on FGM, while in Table \ref{tab:fgmgrpavg} the FGM group average responds positively to average urban residence in a governorate.  It is difficult to figure out the exact mechanism by which this effect changes direction in this manner, but considering that it is unlikely that a household would both be less likely to opt for FGM when in an urban region \emph{and} simultaneously be more likely to choose FGM in response to a greater fraction of urban peer households, we assume the group average urban residence to be exogenous to equation (\ref{eqn:endo_model}).
 
-\begin{scriptsize}
-\begin{centering}
-\begin{longtable}{l|c}
-  \caption{FGM Group Average Regression\label{tab:fgmgrpavg}} \\
-  \hline\hline
+\begin{table}
+\centering
+\scriptsize
+\begin{threeparttable}
+\caption{FGM Group Average Regression}\label{tab:fgmgrpavg} 
+\begin{tabular}{lc}
+  \toprule
   & Estimate \\
   & (Standard Error) \\
-  \hline
+  \cmidrule{2-2}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
   symbols <- c("***", "**", "*", "$\\cdot$", " ")
@@ -418,20 +392,20 @@ The last instrument is somewhat complicated to interpret; in Table \ref{tab:dire
 
   print.reg.list(c(r0.1), regs, cutpoints, symbols) #, last.tex.newline = FALSE)
 
-  cat("\\hline\n")
-  cat("\n")
+  cat("\\midrule\n")
   cat(sprintf(" $N$ & %i\\\\\n", r0.1$data$nrow()))
-  cat("\\hline\n")
-  cat("\n")
+  cat("\\midrule\n")
   cat(sprintf(" $R^2$ & %.3f\\\\\n", r0.1$r.squared()))
   cat(sprintf(" Adjusted $R^2$ & %.3f\\\\\n", r0.1$adj.r.squared()))
 @
-\hline\hline
-\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-\end{longtable}
-\end{centering}
-\end{scriptsize}
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 \subsubsection{Unobservable Household Fixed Effects}
 
@@ -451,16 +425,18 @@ We continue to use the same instrumental variables as above.
 
 The first regression results to consider are those direct effects only, with no social effects.
 
-\begin{scriptsize}
-\begin{centering}
-\begin{longtable}{l|ccc}
-  \caption{Direct Effects Only \label{tab:direct_effects}} \\
-  \hline\hline
+\begin{table}
+\scriptsize
+\centering
+\begin{threeparttable}
+\caption{Direct Effects Only}\label{tab:direct_effects}
+\begin{tabular}{lccc}
+  \toprule
   & \multicolumn{3}{c}{Estimate} \\
   & \multicolumn{3}{c}{(Standard Error)} \\
-  \cline{2-4}
+  \cmidrule{2-4}
   & (1) & (2) & (3) \\
-  \hline
+  \cmidrule{2-4}
 <<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
   symbols <- c("***", "**", "*", "$\\cdot$", " ")
@@ -486,21 +462,20 @@ The first regression results to consider are those direct effects only, with no 
 
   print.educlvl(results, cutpoints, symbols) #, FALSE)
 
-  cat("\\hline\n")
-  #cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r5.pooled$data$nrow(), r6.pooled$data$nrow(), r7.pooled$nrow()))
+  cat("\\midrule\n")
   print.nrow(results)
-  cat("\\hline\n")
-  #cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5.pooled$r.squared(), r6.pooled$r.squared(), r7.pooled$nrow()))
+  cat("\\midrule\n")
   print.r.squared(results)
-  #cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r5.pooled$adj.r.squared(), r6.pooled$adj.r.squared(), r7.pooled$adj.r.squared()))
   print.adj.r.squared(results)
 @
-  \hline\hline
-\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-\end{longtable}
-\end{centering}
-\end{scriptsize}
+  \bottomrule
+\end{tabular}
+\begin{tablenotes}
+  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 What we observe is a trend of decreasing likelihood of FGM with younger cohorts; a significant negative effect for being wealthy, urban, and Christian household; and a significant negative effect if the mother has secondary or higher level education. A significant and negative effect is found for the mother's marital age, which seems intuitive: the younger a mother was married, the more likely she would value improving her daughter's prospects in the marriage market as opposed to investing in her education, for example.  None of these results are particularly surprising and change very little we try different specifications. We do observe a negative effect to having a female head of the household, however it is not significant.
 
@@ -508,16 +483,11 @@ What we observe is a trend of decreasing likelihood of FGM with younger cohorts;
 
 Below are the results for the IV regression.  In the first column we see the results for model (\ref{eqn:endo_model}), while in second column we see the unobservable household fixed effects regression results (model (\ref{eqn:endo_pd_model})). 
 
-\begin{scriptsize}
-\begin{centering}
-%\begin{longtable}{l|ccccc}
-%  \caption{FGM Endogenous Effects Regression\label{tab}} \\
-%  \hline\hline
-%  & \multicolumn{5}{c}{Estimate} \\
-%  & \multicolumn{5}{c}{(Standard Error)} \\
-%  \hline
-%  & (1) & (2) & (3) & (4) & (5) \\
-%  \hline
+\begin{table}
+\scriptsize
+\centering
+\begin{threeparttable}
+\caption{FGM Endogenous Effects Regression}
 <<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
   results <- c(r1.instr.5.pooled, r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8)
 
@@ -532,38 +502,21 @@ Below are the results for the IV regression.  In the first column we see the res
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  #print.cohorts(results, 1989:1996, cutpoints, symbols)
-
-  #print.reg.list(results, regs, cutpoints, symbols)
-
   educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
-
-  #print.educlvl(results, cutpoints, symbols) #, FALSE)
 
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
                       "grpavg.circum:urban.ruralurban" = "$\\overline{fgm}_{jt} \\times$ Urban",
                       "grpavg.circum:discuss.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Discussed FGM",
                       "grpavg.circum:received.info.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Received Info on FGM")
 
-  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects Regression")
-
-  #print.reg.list(results, grpavg.regs, cutpoints, symbols)
-
-  #cat("\\hline\n")
-  #cat(sprintf(" $N$ & %i & %i & %i\\\\\n", r1.instr.5.pooled$data$nrow(), r2.instr.5$data$nrow(), r2.instr.6$data$nrow()))
-  #print.nrow(results)
-  #cat("\\hline\n")
-  #cat(sprintf(" $R^2$ & %.3f & %.3f & %.3f\\\\\n", r1.instr.5$r.squared(), r2.instr.5$r.squared(), r2.instr.6$r.squared()))
-  #print.r.squared(results)
-  #cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f & %.3f\\\\\n", r1.instr.5$adj.r.squared(), r2.instr.5$adj.r.squared(), r2.instr.6$adj.r.squared()))
-  #print.adj.r.squared(results)
+  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols)
 @
-%\hline\hline
-%\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-%\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-%\end{longtable}
-\end{centering}
-\end{scriptsize}
+\begin{tablenotes}
+  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 Compared to the direct effects only regression, the decreasing likelihood of FGM cohort trend disappears for both regressions (for the unobservable household fixed effects regression we see some significant influence to the older cohorts).  In the OLS regression we see no change in the influence of the household direct effects.  In terms of social effects we see a strong, significant, positive endogenous effect of FGM---households strongly mimic their peers in deciding whether to opt for FGM for their daughters---with a stronger effect in the unobservable household fixed effect regression results.
 
@@ -581,12 +534,15 @@ where $m$ is a binary variable indicating the household's decision to opt for me
 Below are the results of the IV regression: the first column is for model (\ref{eqn:endo_med_model}) and the second column is for the unobservable household fixed effects regression.  The last four columns show the results for the unobservable household fixed effects regression with different forms of interaction of the group average of medicalization with urban residence and difficulty in getting medical help due to distance.
 
 
-\begin{sidewaystable}
-\begin{scriptsize}
-\begin{centering}
+\begin{table}
+\scriptsize
+\centering
+%\begin{sidewaystable}
+\begin{threeparttable}
+\caption{FGM Endogenous Effects and Medicalization Effects Regression}\label{tab:endo_med_results}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
   results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, # r4.instr.11, r4.instr.12, 
-               r4.instr.15, r4.instr.16, r4.instr.17, r4.instr.18) #r4.instr.13, r4.instr.14)
+               r4.instr.15, r4.instr.16) #, r4.instr.17, r4.instr.18) #r4.instr.13, r4.instr.14)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -607,23 +563,25 @@ Below are the results of the IV regression: the first column is for model (\ref{
 		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Dist.}$",
 		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Dist.}$",
 		      "grpavg.med.circum:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Cost}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$",
-		      "grpavg.med.circum:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Transport}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Transport}$")
+		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$")
+		      #"grpavg.med.circum:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Transport}$",
+		      #"grpavg.med.circum:urban.ruralurban:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Transport}$")
 #		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
 #		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$",
 #		      "grpavg.med.circum:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Received Info on FGM}$",
 #		      "grpavg.med.circum:urban.ruralurban:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Received Info on FGM}$")
 
   print.results.table(results, regs, NULL, #l1989:1996, 
-                      educ.regs, grpavg.regs, cutpoints, symbols, caption = "FGM Endogenous Effects and Medicalization Effects Regression", label = "tab:endo_med_results")
+                      educ.regs, grpavg.regs, cutpoints, symbols)
 
 @
-%\footnotetext[1]{Asterisks indicate significance levels: `.' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.}
-%\footnotetext[2]{Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.}
-\end{centering}
-\end{scriptsize}
-\end{sidewaystable}
+\begin{tablenotes}
+  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
+\end{tablenotes}
+\end{threeparttable}
+%\end{sidewaystable}
+\end{table}
 
 In the first column there are no cohort effects all and in the second we do not detect a trend.  Otherwise, the direct household effects are no different than what has previously been observed.  In terms of social effects, in the first column we find no endogenous social effect of FGM or medicalization.  However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a \emph{negative} and significant endogenous effect to medicalization.  On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households and to a greater extent for households with difficulty accessing medical assistance due to distance.  For rural households we see a positive influence of medicalization on households with difficulty accessing medical assistance due to distance, and no effect otherwise.
 
@@ -631,35 +589,41 @@ In the first column there are no cohort effects all and in the second we do not 
 
 \begin{table}
   \centering
-  \caption{Urban/Rural and Medical Help Interactions\label{tab:interact}}
-  \begin{tabular}{l|cc}
-    \hline
-    \hline
+  \caption{Urban/Rural and Medical Help Interactions}\label{tab:interact}
+  \begin{threeparttable}
+  \begin{tabular}{lcc}
+    \toprule
     & \multicolumn{2}{c}{Estimate} \\
     & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
-    \cline{2-3}
+    \cmidrule{2-3}
     & Rural & Urban \\
-    \hline
+    \cmidrule{2-3}
 <<echo=FALSE,results=tex>>=
 print.interact.table(r4.instr.7, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
 
-cat("\\hline\\hline\n")
+cat("\\midrule\n")
 
 print.interact.table(r4.instr.10, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 
-cat("\\hline\\hline\n")
+cat("\\midrule\n")
 
 print.interact.table(r4.instr.16, "grpavg.med.circum", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
 
-cat("\\hline\\hline\n")
+#cat("\\midrule\n")
 
-print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
+#print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
 @
-    \hline
-    \hline
+    \bottomrule
   \end{tabular}
+  \begin{tablenotes}
+    \item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
+    \item[2] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+    \item[3] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
+  \end{tablenotes}
+  \end{threeparttable}
 \end{table}
 
+\begin{comment}
 \begin{table}
   \centering
   \caption{Wealth Level and Medical Help Interactions\label{tab:interact_wealth}}
@@ -683,14 +647,49 @@ cat("\\hline\\hline\n")
 
 print.interact.table(r4.instr.21, "grpavg.med.circum", "med.help.money.facbig problem", h.reg, c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
 
-cat("\\hline\\hline\n")
+#cat("\\hline\\hline\n")
 
-print.interact.table(r4.instr.22, "grpavg.med.circum", "med.help.transportation.facbig problem", h.reg, c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
+#print.interact.table(r4.instr.22, "grpavg.med.circum", "med.help.transportation.facbig problem", h.reg, c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
 @
     \hline
     \hline
   \end{tabular}
 \end{table}
+\end{comment}
+
+\begin{comment}
+\begin{table}
+  \centering
+  \caption{Religion and Medical Help Interactions\label{tab:interact_religion}}
+  \begin{tabular}{l|cc}
+    \hline
+    \hline
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    \cline{2-3}
+    & Muslim & Christian \\
+    \hline
+<<echo=FALSE,results=tex>>=
+h.reg <- "religionchristian"
+print.interact.table(r4.instr.23, "grpavg.med.circum", NULL, h.reg, NULL, cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.24, "grpavg.med.circum", "med.help.distance.facbig problem", h.reg, c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+
+cat("\\hline\\hline\n")
+
+print.interact.table(r4.instr.25, "grpavg.med.circum", "med.help.money.facbig problem", h.reg, c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+
+#cat("\\hline\\hline\n")
+
+#print.interact.table(r4.instr.26, "grpavg.med.circum", "med.help.transportation.facbig problem", h.reg, c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
+@
+    \hline
+    \hline
+  \end{tabular}
+\end{table}
+\end{comment}
 
 \begin{comment}
 \begin{table}
