@@ -58,9 +58,9 @@ Female genital mutilation (FGM)\footnote{This is sometimes referred to with the 
 
 Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it. This is referred to as the ``medicalization'' of FGM and it has become a major concern for the WHO and many anti-FGM activists. The WHO's declares that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \citep{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place. Such a view, regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care at the hands of professional health provider \citep{Shell-Duncan2001}.  
 
-Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine. It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds. Another contributing factor to this possible story is the unobservable nature of FGM in the marriage before and after marriage, and hence the possible reliance on \emph{dayas} as certifiers of ``quality''. As FGM is increasingly done in government clinics by professional health providers, who are less connected to the marriage market in local communities, it loses its effectiveness as a signal of ``quality''.
+Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine. It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds. Another contributing factor to this possible story is the unobservable nature of FGM in the marriage before and after marriage, and hence the possible reliance on traditional circumcisers as certifiers of ``quality''. Thus, as FGM is increasingly done in government clinics by professional health providers, who are less connected to the marriage market in local communities, it loses its effectiveness as a signal of ``quality''.
 
-This paper investigates the social effects of both circumcision and medicalization. It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention. The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices. Recently, economists have taken a strong interest in studying such nonmarket interactions between agents. There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior. Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.  A major challenge in this literature is the reflection problem which confounds the identification of endogenous social effects, those that area response the peer group's decision, as opposed to their exogenous characteristics and other contextual influences \citep{Manski}.  In this investigation, we rely on an instrumental variable approach suggested by \citet{Blume2010}.
+This paper investigates the social effects of both circumcision and medicalization. It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention. The aim of this is to aid policy makers in understanding the mechanisms that sustain such ostensibly banned practices. Recently, economists have taken a strong interest in studying such nonmarket interactions between agents. There's now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior. Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \citep{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \citep{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \citep{Case1991, Crane1991, Evans1992}.  A major challenge in this literature is the reflection problem which confounds the identification of endogenous social effects, those that are a response to the peer group's decision, as opposed to their exogenous characteristics and other contextual influences \citep{Manski}.  In this investigation, we rely on an instrumental variable approach suggested by \citet{Blume2010}.
 
 This paper also follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few independent employment opportunities outside the role of wife and mother. This paper was also inspired by Chesnokova and Vaithianathan's \citeyearpar{Chesnokova2007} work on the persistence of FGM as an equilibrium in society, using DHS data from Burkina Faso. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability.  Another work this paper follows is \citep{Hayford} that considers the ``convention'' model\footnote{She also considers two other often cited models: the modernization model and the feminist model.} to explain the persistence of FGM in Kenya.  The paper also follows the literature on pre-marital investment \citep{Burdett2001, Peters2002}.  In terms of methodology, this work is inspired by \citet{Blume2010} which in turn follows the work of \citet{Manski}.
 
@@ -364,18 +364,20 @@ Similar to \citep{Blume2010} we solve for $f^e$
 
 If we are able to show that some of the group averages of $x$ contribute to predicting $\bar{f}_{jt}$ beyond $(1, t, j)$, we can use them to instrument $\bar{f}_{jt}$, and hence be able to identify the endogenous effect of FGM. The below results show that the group averages for urban residence, the mother having received primary education and secondary education, and the mother's having FGM status are significant. In order to identify the endogenous effect of FGM, we make the assumption that these group averages are not part of the contextual effects---they do not influence the FGM decision directly---and hence we can use them as instruments for $\bar{f}_{jt}$. This is based on the reasoning that FGM status of mothers is typically unobservable to other households, and this also applies to the mothers' primary and secondary level education. The apparent contradiction in assuming that mothers' FGM status is unobservable while the daughters' is, can be explained as a difference between discussing a taboo subject concerning adult women and the observable celebrations held for girls on having undergone the FGM procedure. Finally, whether a household's neighbors are residents in rural or urban areas should also have no direct influence on the FGM decision.
 
-The last instrument is somewhat complicated to interpret; in Table \ref{tab:direct_effects} we observe a significant negative direct effect to urban residence on FGM, while in Table \ref{tab:fgmgrpavg} the FGM group average responds positively to average urban residence in a governorate.  It is difficult to figure out the exact mechanism by which this effect changes direction in this manner, but considering that it is unlikely that a household would both be less likely to opt for FGM when in an urban region \emph{and} simultaneously be more likely to choose FGM in response to a greater fraction of urban peer households, we assume the group average urban residence to be exogenous to equation (\ref{eqn:endo_model}).
+The last instrument is difficult to interpret; in Table \ref{tab:direct_effects} we observe a significant negative direct effect to urban residence on FGM, while in Table \ref{tab:fgmgrpavg} the FGM group average responds positively to average urban residence in a governorate.  It is difficult to figure out the exact mechanism by which this effect changes direction in this manner, but considering that it is unlikely that a household would both be less likely to opt for FGM when in an urban region \emph{and} simultaneously be more likely to choose FGM in response to a greater fraction of urban peer households, we assume the group average urban residence to be exogenous to equation (\ref{eqn:endo_model}).
 
 \begin{table}
 \centering
 \scriptsize
 \begin{threeparttable}
 \caption{FGM Group Average Regression}\label{tab:fgmgrpavg} 
-\begin{tabular}{lc}
+\begin{tabular}{lcc}
   \toprule
-  & Estimate \\
-  & (Standard Error) \\
-  \cmidrule{2-2}
+  & \multicolumn{2}{c}{Estimate} \\
+  & \multicolumn{2}{c}{(Standard Error)} \\
+  \cmidrule{2-3}
+  & (1) & (2) \\
+  \cmidrule{2-3}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
   cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
   symbols <- c("***", "**", "*", "$\\cdot$", " ")
@@ -390,13 +392,13 @@ The last instrument is somewhat complicated to interpret; in Table \ref{tab:dire
                grpavg.hh.head.sex_female = "$\\overline{female\\_head\\_hh}_{jt}$",
                grpavg.med.help.distance.fac_big_problem = "$\\overline{med\\_help\\_distance}_{jt}$")
 
-  print.reg.list(c(r0.1), regs, cutpoints, symbols) #, last.tex.newline = FALSE)
+  print.reg.list(c(r0.1, r0.2), regs, cutpoints, symbols) #, last.tex.newline = FALSE)
 
   cat("\\midrule\n")
-  cat(sprintf(" $N$ & %i\\\\\n", r0.1$data$nrow()))
+  cat(sprintf(" $N$ & %i & %i\\\\\n", r0.1$data$nrow(), r0.2$data$nrow()))
   cat("\\midrule\n")
-  cat(sprintf(" $R^2$ & %.3f\\\\\n", r0.1$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f\\\\\n", r0.1$adj.r.squared()))
+  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r0.1$r.squared(), r0.2$r.squared()))
+  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r0.1$adj.r.squared(), r0.2$adj.r.squared()))
 @
 \bottomrule
 \end{tabular}
@@ -594,7 +596,7 @@ In the first column there are no cohort effects all and in the second we do not 
   \begin{tabular}{lcc}
     \toprule
     & \multicolumn{2}{c}{Estimate} \\
-    & \multicolumn{2}{c}{($\chi^2$-statistic)} \\
+    & \multicolumn{2}{c}{($p$-value)} \\
     \cmidrule{2-3}
     & Rural & Urban \\
     \cmidrule{2-3}
@@ -616,9 +618,9 @@ print.interact.table(r4.instr.16, "grpavg.med.circum", "med.help.money.facbig pr
     \bottomrule
   \end{tabular}
   \begin{tablenotes}
-    \item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
-    \item[2] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
-    \item[3] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
+    %\item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
+    \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+    \item[2] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
   \end{tablenotes}
   \end{threeparttable}
 \end{table}

@@ -88,6 +88,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
                           dhs.year = 2008, 
                           individual.controls = DaughterFgmData.individual.controls, 
                           other.grpavg.controls = character(0),
+			  birth.data = "data.frame",
                           ...)
     {
       cols <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
@@ -119,8 +120,16 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
                                circum.yesno = ifelse(circum == 1, 1, 0))
 
         br <- read.dta(br.file, convert.underscore = TRUE)
-        br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno))
-        spdf@data <<- merge(spdf@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'))
+        br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno, m3g, m15))
+	br$delivery.location <- factor(br$m15 %/% 10, labels = c("home", "public sector", "private sector", "other", "missing"))
+	br$delivered.by.daya <- factor(br$m3g, labels = c("no", "yes"), levels = 0:1)
+
+        spdf@data <<- merge(spdf@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
+
+	br <- merge(br, spdf@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
+
+	birth.data <<- br
+		    
         rm(br)
         
         names(spdf@data)[names(spdf@data) == 'v437'] <<- 'weight'

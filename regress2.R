@@ -83,6 +83,8 @@ x$spdf@data$grpavg.mother.circum.fac_yes_neg <- - x$spdf@data$grpavg.mother.circ
 
 r0.1 <- y$lm(grpavg.circum ~ governorate + birth.year.fac + grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, gen.vcov = TRUE)
 
+r0.2 <- y$plm(grpavg.circum ~ grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, effect = "twoways", model = "within", index = c("governorate", "birth.year.fac"), gen.vcov = TRUE)
+
 # pooled model 1
 
 #r1.instr.5 <- x$ivreg(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.circum + order + I(order^2) | grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.religion_christian + order + I(order^2), gen.vcov = TRUE)
@@ -166,4 +168,4 @@ r8.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ
 
 spdf <- x$spdf
 
-save(list = c(ls(pattern = "r\\d(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "spdf", "r0.1", "r0.neg"), file = "new_results.RData")
+save(list = c(ls(pattern = "r\\d(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "spdf", "r0.1", "r0.2", "r0.neg"), file = "new_results.RData")
