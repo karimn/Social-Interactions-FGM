@@ -733,13 +733,103 @@ print.interact.table(r4.instr.14, "grpavg.med.circum", "received.info.circum.fac
 \end{table}
 \end{comment} 
 
+The remains a concern that these estimations suffer from omitted variable bias; there might be an unobservable influence of ``modernization'' in medical care on the FGM decision.  As different areas become more modernized they would perhaps become less likely to opt for a traditional practice such as FGM, and should they decide to have it done they would seek a medical practitioner rather than a traditional \emph{daya}---it would be correlated with the $\overline{med}$.  In order to control for this, we attempt to control for this unobservable modernization using a proxy, $\overline{daya}$, the fraction of households in the peer group that decided to have their child delivered by a \emph{daya} as opposed to a medical practitioner, during the same period the FGM decision is made\footnote{Data is only available for child births preceding the time of survey by six years, therefore reducing our sample size}.  Results are shown in Tables \ref{tab:endo_med2_results} and \ref{tab:interact2}. 
+
+The effects of medicalization remain negative in all the specifications considered, while some of the previous results are no longer significant.  In comparing rural and urban areas, we see that the effect on rural areas is still insignificant and only significant at the 10\% level for urban areas. In interacting with the distance to medical help, effects are slightly weakened to being significant at the 10\% and 5\% levels for those who have are not distant from medical help and those who are, respectively. In interacting with the cost of medical help, effects are weakened to being insignificant and significant at the 5\% levels for those who have don't have a problem paying from medical help and those who do, respectively.
+
+
+\begin{table}
+\scriptsize
+\centering
+%\begin{sidewaystable}
+\begin{threeparttable}
+\caption{FGM Endogenous Effects and Medicalization Effects Regression (Controlling for Modernization)}\label{tab:endo_med2_results}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r3.instr.6.pooled, r4.instr.27, r4.instr.28, r4.instr.29, r4.instr.30, r4.instr.31, r4.instr.32)
+
+  regs <- list(wealth.index.2rich = "Wealth (Rich)",
+               urban.ruralurban = "Residence (Urban)",
+               marital.age = "Marital Age",
+               mother.circum.facyes = "Mother FGM",
+               religionchristian = "Religion (Christian)",
+               hh.head.sexfemale = "HH Head Sex (Female)",
+	       order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$",
+               "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Dist.")
+
+  educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
+
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+		      grpavg.delivered.by.daya_yes = "$\\overline{daya}_{jt}$",
+                      grpavg.med.circum = "$\\overline{med}_{jt}$",
+                      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
+		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Cost}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$")
+		      #"grpavg.med.circum:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Transport}$",
+		      #"grpavg.med.circum:urban.ruralurban:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Transport}$")
+#		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
+#		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$",
+#		      "grpavg.med.circum:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Received Info on FGM}$",
+#		      "grpavg.med.circum:urban.ruralurban:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Received Info on FGM}$")
+
+  print.results.table(results, regs, NULL, #l1989:1996, 
+                      educ.regs, grpavg.regs, cutpoints, symbols)
+
+@
+\begin{tablenotes}
+  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
+\end{tablenotes}
+\end{threeparttable}
+%\end{sidewaystable}
+\end{table}
+
+\begin{table}
+  \centering
+  \caption{Urban/Rural and Medical Help Interactions (Controlling for Modernization)}\label{tab:interact2}
+  \begin{threeparttable}
+  \begin{tabular}{lcc}
+    \toprule
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($p$-value)} \\
+    \cmidrule{2-3}
+    & Rural & Urban \\
+    \cmidrule{2-3}
+<<echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.28, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
+
+cat("\\midrule\n")
+
+print.interact.table(r4.instr.30, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+
+cat("\\midrule\n")
+
+print.interact.table(r4.instr.32, "grpavg.med.circum", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+
+#cat("\\midrule\n")
+
+#print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
+@
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    %\item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
+    \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+    \item[2] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
+  \end{tablenotes}
+  \end{threeparttable}
+\end{table}
+
 \section{Conclusion}\label{sec:conclusion}
 
 As has been demonstrated by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters. Households tended to follow the same behavior as other members of their community. However, in terms of medicalization, there appeared to be a negative social effect in urban areas; households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group. This effectively answers the question of whether increased medicalization would result in legitimizing it, and effectively strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \citep{Shell-Duncan2001}. These results are also a call on policy makers who seek to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics. Our results point to directly influencing households' FGM decision as a more fruitful possible policy, since we see a strong multiplier effect as households have a very strong endogenous influence on each other. This could be done be increasing awareness in communities of the harmful nature of this practice, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns. The further negative influence on urban households with poor access to medical assistance due to distance is likely due to the lack of the traditional circumcisers as an alternative.
 
 One proposed story explaining these findings, is related to the pernicious nature of the marriage market social network in which \emph{dayas} play the role of ``quality certifiers''.  Due to the unobservable and unverifiable nature of FGM, reputation plays a critical role here. As the FGM procedure moves away from the traditional sphere into that of professional healthcare its links to the marriage market is weakened, as healthcare providers are less likely to play a role in the marriage market. We might also be observing a modernization scenario, in which the endogenous social effect of medicalization is a proxy for a move away from traditional practices across all households in a particular area, irrespective of the other observed household characteristics. In that case, it is not clear what government policy targeting medicalization might result in.
 
-Additionally, we must be cautious in making any recommendations calling for a roll back in the elimination for FGM in medical facilities. There is always the danger that such a reversal of policy might give the impression of greater legitimacy, and households that were previously indecisive would regard such a move as approving of the procedure. With the positive effect of medicalization on rural households with poor access to medical assistance due to distance, we might be witnessing a legitimization effect; these household observe increased medicalization and respond with greater likelihood of opting for FGM.
+Additionally, we must be cautious in making any recommendations calling for a roll back in the elimination for FGM in medical facilities. There is always the danger that such a reversal of policy might give the impression of greater legitimacy, and households that were previously indecisive would regard such a move as approving of the procedure. With the positive effect of medicalization on rural households with poor access to medical assistance due to distance, we might be witnessing a legitimization effect; these household observe increased medicalization and respond with greater likelihood of opting for FGM\footnote{Such fears were raised in response to Indonesia's Ministry of Health publishing guidelines for conduction FGM \citep{IndoFGM2011}}.
 
 \nocite{Refaat}
 \nocite{Yount}

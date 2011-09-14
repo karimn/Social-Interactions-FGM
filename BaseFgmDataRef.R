@@ -10,7 +10,7 @@ grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = 
   if (exclude.self)
     grp.data <- grp.data[-rowid,]
   
-  if (nrow(grp.data) == 0)
+  if ((nrow(grp.data) == 0) | all(is.na(grp.data[, column])))
     return(NA)
 
   if (is.null(column.lvl))
@@ -323,7 +323,8 @@ RegressionResults <- setRefClass("RegressionResults",
     vcov = "matrix",
     regress.formula = "formula",
     instruments = "formula",
-    data = "BaseFgmData"),
+    data = "BaseFgmData",
+    na.action = function(val) { return(.lm$na.action) }),
 
   methods = list(
     summary = function()
@@ -331,9 +332,9 @@ RegressionResults <- setRefClass("RegressionResults",
       coeftest(.lm, vcov = vcov)
     },
     
-    lht = function(hypothesis)
+    lht = function(hypothesis, test = c("Chisq", "F"))
     {
-      linearHypothesis(.lm, hypothesis, vcov = if (!is.empty(vcov)) vcov)
+      linearHypothesis(.lm, hypothesis, test = test, vcov = if (!is.empty(vcov)) vcov)
     },
 
     adj.r.squared = function()

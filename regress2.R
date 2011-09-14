@@ -45,6 +45,7 @@ y$spdf@data$grpavg.mother.circum.fac_yes_neg <- - y$spdf@data$grpavg.mother.circ
 #y.wealth$rm.by.grp.size(24)
 #y.wealth$rm.duplicate(c("governorate", "birth.year.fac", "wealth.index.2"))
 
+x$generate.delivery.means()
 x$rm.by.res.years(10)
 x$generate.reg.means(exclude.self = TRUE)
 x$rm.by.grp.size(24)
@@ -108,11 +109,13 @@ r2.instr.8 <- x$plm(circum ~ birth.year.fac + order + I(order^2) + grpavg.circum
 
 r3.instr.5.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.circum + grpavg.med.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), gen.vcov = TRUE)
 
+r3.instr.6.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural * med.help.distance.fac + grpavg.circum + grpavg.med.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), gen.vcov = TRUE)
+
 # panel model 2
 
 r4.instr.5 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
-r4.instr.7 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * urban.rural + grpavg.circum  + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+r4.instr.7 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * urban.rural + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 r4.instr.8 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.distance.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
@@ -151,6 +154,18 @@ r4.instr.24 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.ci
 r4.instr.25 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : religion + grpavg.med.circum : med.help.money.fac + grpavg.med.circum : religion : med.help.money.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 r4.instr.26 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : religion + grpavg.med.circum : med.help.transportation.fac + grpavg.med.circum : religion : med.help.transportation.fac + grpavg.circum + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.27 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.educ.lvl_secondary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.28 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum * urban.rural + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.29 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.distance.fac + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.30 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.distance.fac + grpavg.med.circum : urban.rural : med.help.distance.fac + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.31 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : med.help.money.fac + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
+
+r4.instr.32 <- x$plm(circum ~ birth.year.fac + grpavg.med.circum + grpavg.med.circum : urban.rural + grpavg.med.circum : med.help.money.fac + grpavg.med.circum : urban.rural : med.help.money.fac + grpavg.circum + grpavg.delivered.by.daya_yes + order + I(order^2) | . - grpavg.circum + grpavg.educ.lvl_primary_neg + grpavg.urban.rural_urban + grpavg.mother.circum.fac_yes, index = c("hh.id", "order.fac"), model = "within", effect = "individual", gen.vcov = TRUE)
 
 # No social effects regression; direct only
 

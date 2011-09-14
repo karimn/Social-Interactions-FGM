@@ -63,7 +63,8 @@ print.reg.list <- function(results, reg.dict, cutpoints, symbols, last.tex.newli
 print.nrow <- function(results) {
   cat(" N ")
   for (r in results) {
-    cat(sprintf("& %i", r$data$nrow()))
+    #cat(sprintf("& %i", r$data$nrow()))
+    cat(sprintf("& %i", r$na.action))
   }
   cat("\\\\\n")
 }
@@ -99,7 +100,8 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
   if (!is.null(cohort.range))
     print.cohorts(results, cohort.range, cutpoints, symbols)
 
-  print.reg.list(results, reg.dict, cutpoints, symbols, inter.results.space = inter.results.space)
+  if (!is.null(reg.dict))
+    print.reg.list(results, reg.dict, cutpoints, symbols, inter.results.space = inter.results.space)
 
   if (!is.null(educ.reg.dict))
     print.educlvl(results, educ.reg.dict, cutpoints, symbols)
@@ -108,12 +110,12 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
     print.reg.list(results, grpavg.reg.dict, cutpoints, symbols)
 
   cat("\\midrule\n")
-  if (!is.null(results$data)) {
-    print.nrow(results)
+  #if (any(sapply(c(results), function(r) !is.null(r$data)))) {
+    print.nrow(c(results))
     cat("\\midrule\n")
-  }
-  print.r.squared(results)
-  print.adj.r.squared(results)
+  #}
+  print.r.squared(c(results))
+  print.adj.r.squared(c(results))
   
   cat("\\bottomrule\n")
   cat(sprintf("\\end{%s}\n", table.type))

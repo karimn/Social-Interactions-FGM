@@ -57,6 +57,39 @@ calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpav
   return(df)
 }
 
+calc.delivery.avgs <- function(df, total.df, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
+  current.circum.year <- df$birth.year[1] + year.offset
+  current.governorate <- df$governorate[1]
+
+
+  grp <- switch(match.arg(range.type),
+	  both = total.df[(total.df[["birth.year"]] <= current.circum.year + year.range) & 
+			  (total.df[["birth.year"]] >= current.circum.year - year.range) &
+			  (total.df[["governorate"]] == current.governorate), ],
+	  older = total.df[(total.df[["birth.year"]] <= current.circum.year) & 
+			   (total.df[["birth.year"]] >= current.circum.year - year.range) &
+			   (total.df[["governorate"]] == current.governorate), ]) 
+
+  #browser(condition = current.circum.year, expr = nrow(grp) > 0)
+
+  if (length(regs) > 0)
+    for (col.name in regs)
+    {
+      if (is.factor(df[, col.name]))
+      {
+        df <- factor.mean(df, grp, col.name, prefix)
+      }
+      else
+      {
+        new.col.name <- paste(prefix, col.name, sep = '.')
+        #df[, new.col.name] <- if (nrow(grp) != 0) mean(grp[, col.name], na.rm = TRUE) else NA
+        df[, new.col.name] <- vapply(1:nrow(df), grp.mean, 0, grp, col.name, NULL)
+      }
+    }
+
+  return(df)
+}
+
 cleanup.by.hh <- function(df) {
   # Removing birth.year duplicates
   dup <- duplicated(df$birth.year)
@@ -81,6 +114,10 @@ DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.
 
 DaughterFgmData <- setRefClass("DaughterFgmData", 
   contains = "BaseFgmData",
+
+  fields = list(
+    all.cohorts.spdf = "SpatialPointsDataFrame",
+    birth.data = "data.frame"),
 
   methods = list(
     initialize = function(ir.file = character(0), br.file, gps.file = character(0), 
@@ -148,10 +185,13 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
           birth.year.fac <- factor(birth.year)
         })
 
+	all.cohorts.spdf <<- spdf
+
         if (!is.null(youngest.cohort))
           spdf@data <<- base::subset(spdf@data, birth.year <= youngest.cohort)
 
         spdf@data <<- do.call(rbind, base::by(spdf@data, spdf@data$hh.id, cleanup.by.hh))
+
 	spdf@data$order.fac <<- factor(spdf@data$order)
         spdf@data <<- spdf@data[ order(spdf@data$hh.id, spdf@data$birth.year), ]
 
@@ -159,6 +199,8 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
       }
       else
       {
+	all.cohorts.spdf <<- spdf
+
         if (!is.null(youngest.cohort) & !is.empty(spdf@data))
           spdf@data <<- base::subset(spdf@data, birth.year <= youngest.cohort)
       }
@@ -182,6 +224,17 @@ DaughterFgmData$methods(
     spdf@data <<- do.call(rbind, 
                           base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
                           lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self))
+  }
+)
+
+DaughterFgmData$methods(
+  generate.delivery.means = function(year.range = 1, 
+		    	             year.offset = 12,  
+				     regs = c("delivery.location", "delivered.by.daya"),
+				     range.type = c("both", "older"))
+  {
+    spdf@data <<- do.call(rbind, 
+                          base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.delivery.avgs, all.cohorts.spdf@data, year.range, year.offset, regs))
   }
 )
 
@@ -211,12 +264,12 @@ DaughterFgmData$methods(
   }
 )
 
-DaughterFgmData$methods(
-  copy = function()
-  {
-    DaughterFgmData$new(spdf = spdf, cluster.info = cluster.info, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls)
-  }
-)
+#DaughterFgmData$methods(
+#  copy = function()
+#  {
+#    DaughterFgmData$new(spdf = spdf, cluster.info = cluster.info, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls)
+#  }
+#)
 
 DaughterFgmData$methods(
   get.regress.formula = function(dep.var, 
