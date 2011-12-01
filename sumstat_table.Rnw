@@ -1,0 +1,103 @@
+<<label=init, echo=FALSE, results=hide>>=
+load("new_results.RData")
+
+youngest.cohort <- 1996
+@
+
+\begin{table}
+\centering
+\caption{Summary Statistics}\label{tab:sumstat}
+\begin{tabular}{lcccc}
+  \toprule
+  & \multicolumn{1}{c}{All} 
+  & \multicolumn{1}{c}{Circumcised}
+  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{N} \\
+  \cmidrule{2-5}
+
+<<label=sumstat, echo=FALSE, results=tex>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+fgm.circum <- subset(fgm, circum == 1)
+fgm.med <- subset(fgm.circum, med.circum == 1)
+
+circum.frac <- nrow(fgm.circum) / nrow(fgm)
+med.frac <- nrow(fgm.med) / nrow(fgm.circum)
+cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% & %i \\\\ \n", circum.frac * 100, med.frac * 100, nrow(fgm)))
+
+by.cohort <- function (df, total) 
+{
+  if ((length(df) > 1) || (!is.na(df)))
+  {
+    cat(sprintf("~~%s (Age %i) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", 
+               df[1, "birth.year.fac"], 
+               2008 - df[1, "birth.year"],
+               (nrow(df)/total)*100, 
+               (nrow(df[df$circum == 1,])/nrow(df))*100,
+               (nrow(df[(df$circum == 1) & (df$med.circum == 1),])/nrow(df))*100))
+  }
+}
+
+fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+            nrow(fgm.rich)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
+            nrow(fgm.rich)))
+
+fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
+
+cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+            nrow(fgm.poor)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
+            nrow(fgm.poor)))
+
+educ.dict <- list("no education" = "None", primary = "Primary", secondary = "Secondary", higher = "Higher")
+
+for (educ.lvl in names(educ.dict)) {
+  fgm.educ <- fgm[fgm$educ.lvl == educ.lvl,]
+
+  cat(sprintf("\\\\\nBy Education (%s) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+	      educ.dict[[educ.lvl]],
+	      nrow(fgm.educ)/nrow(fgm)*100,
+	      nrow(fgm.circum[fgm.circum$educ.lvl == educ.lvl,])/nrow(fgm.educ)*100,
+	      nrow(fgm.med[fgm.med$educ.lvl == educ.lvl,])/nrow(fgm.circum[fgm.circum$educ.lvl == educ.lvl,])*100,
+	      nrow(fgm.educ)))
+}
+
+fgm.rural <- fgm[fgm$urban.rural == "rural", ]
+
+cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.rural)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.circum[fgm.circum$urban.rural == "rural",])*100,
+            nrow(fgm.rural)))
+
+fgm.urban <- fgm[fgm$urban.rural == "urban", ]
+
+cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.urban)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
+            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.circum[fgm.circum$urban.rural == "urban",])*100,
+            nrow(fgm.urban)))
+
+fgm.christ <- fgm[fgm$religion == "christian", ]
+
+cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.christ)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100,
+            nrow(fgm.christ)))
+
+fgm.mus <- fgm[fgm$religion == "muslim", ]
+
+cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
+            nrow(fgm.mus)/nrow(fgm)*100,
+            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
+            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
+            nrow(fgm.mus)))
+@
+  \bottomrule
+\end{tabular}
+\end{table}

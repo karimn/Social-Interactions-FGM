@@ -1,0 +1,196 @@
+<<label=init, echo=FALSE, print=FALSE, results=hide>>=
+library(lattice)
+library(car)
+
+source("BaseFgmDataRef.R")
+source("DaughterFgmDataRef.R")
+source("print.results.R")
+
+load("new_results.RData")
+
+youngest.cohort <- 1996
+
+cutpoints <- c(0, 0.01, 0.05, 0.1, 1)
+symbols <- c("***", "**", "*", " ")
+
+educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
+@
+
+\SweaveOpts{width=8, height=6, strip.white=FALSE}
+
+\begin{frame}{Direct Effects Only}
+  \begin{table}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r5.pooled, r7.pooled, r8.pooled, r9.pooled, r11.pooled, r12.pooled)
+
+  regs <- list(wealth.index.2rich = "Wealth (Rich)",
+	       urban.ruralurban = "Residence (Urban)",
+	       marital.age = "Marital Age",
+	       mother.circum.facyes = "Mother FGM",
+	       religionchristian = "Religion (Christian)",
+	       hh.head.sexfemale = "HH Head Sex (Female)",
+	       order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$")
+
+  print.results.table(results, regs, NULL, educ.regs, NULL, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE, show.r.squared = FALSE, show.n = FALSE) 
+@
+  \end{threeparttable}
+  \end{table}
+  \begin{center}
+    {\tiny continued}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Direct Effects Only (cont.)}
+  \begin{table}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r5.pooled, r7.pooled, r8.pooled, r9.pooled, r11.pooled, r12.pooled)
+
+  regs <- list("med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
+	       "urban.ruralurban:med.help.distance.facbig problem" = "Medical Help Dist. $\\times$ Urban",
+	       "med.help.money.facbig problem" = "Medical Help Cost (Big Problem)",
+	       "urban.ruralurban:med.help.money.facbig problem" = "Medical Help Cost$\\times$ Urban",
+	       discuss.circum.facyes = "Discussed FGM",
+	       received.info.circum.facyes = "Received Info on FGM")
+
+  print.results.table(results, regs, NULL, NULL, NULL, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE) 
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+
+\begin{frame}{FGM Endogenous Effects Regression}
+  \begin{table}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8, r2.instr.9, r2.instr.10)
+
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+		      "grpavg.circum:urban.ruralurban" = "$\\overline{fgm}_{jt} \\times$ Urban",
+		      "grpavg.circum:discuss.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Discussed FGM",
+		      "grpavg.circum:received.info.circum.facyes" = "$\\overline{fgm}_{jt} \\times$ Received Info on FGM",
+		      "grpavg.circum:wealth.index.2rich" = "$\\overline{fgm}_{jt} \\times$ Wealth (Rich)",
+		      "grpavg.circum:educ.lvlprimary" = "$\\overline{fgm}_{jt} \\times$ Education (Primary)",
+		      "grpavg.circum:educ.lvlsecondary" = "$\\overline{fgm}_{jt} \\times$ Education (Secondary)",
+		      "grpavg.circum:educ.lvlhigher" = "$\\overline{fgm}_{jt} \\times$ Education (Higher)")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}{FGM Endogenous Effects and Medicalization Effects Regression}
+  \begin{table}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, r4.instr.15, r4.instr.16) 
+
+  regs <- list(order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$")
+
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+		      grpavg.med.circum = "$\\overline{med}_{jt}$",
+		      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
+		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Dist.}$",
+		      "grpavg.med.circum:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Cost}$",
+		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$")
+
+  print.results.table(results, regs, NULL, NULL, grpavg.regs, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Urban/Rural and Medical Help Interactions}
+  \begin{table}
+    \centering
+    \tiny
+    \begin{threeparttable}
+    \begin{tabular}{lcc}
+      \toprule
+      & \multicolumn{2}{c}{Estimate} \\
+      & \multicolumn{2}{c}{($p$-value)} \\
+      \cmidrule{2-3}
+      & Rural & Urban \\
+      \cmidrule{2-3}
+<<keep.source=TRUE, echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.7, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
+
+cat("\\midrule\n")
+
+print.interact.table(r4.instr.10, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+
+cat("\\midrule\n")
+
+print.interact.table(r4.instr.16, "grpavg.med.circum", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+@
+      \bottomrule
+    \end{tabular}
+    \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}{FGM Endogenous Effects and Medicalization Effects Regression (Controlling for Modernization)}
+  \begin{table}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<keep.source=TRUE, echo=FALSE, results=tex>>=
+  results <- c(r3.instr.6.pooled, r4.instr.27, r4.instr.28) # r4.instr.33) #, r4.instr.29, r4.instr.30, r4.instr.31, r4.instr.32)
+
+  regs <- list(order = "Birth Order",
+	       "I(order^2)" = "$(\\text{Birth Order})^2$")
+
+  grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+
+		      grpavg.delivered.by.daya_yes = "$\\overline{daya}_{jt}$",
+                      "grpavg.delivered.by.daya_yes:urban.ruralurban" = "$\\overline{daya}_{jt} \\times \\text{Urban}$",
+                      grpavg.med.circum = "$\\overline{med}_{jt}$",
+                      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$")
+
+  print.results.table(results, regs, NULL, #l1989:1996, 
+                      educ.regs, grpavg.regs, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{comment}
+\begin{frame}
+  \begin{table}
+    \centering
+    \tiny
+    \begin{threeparttable}
+    \begin{tabular}{lcc}
+      \toprule
+      & \multicolumn{2}{c}{Estimate} \\
+      & \multicolumn{2}{c}{($p$-value)} \\
+      \cmidrule{2-3}
+      & Rural & Urban \\
+      \cmidrule{2-3}
+<<keep.source=TRUE, echo=FALSE,results=tex>>=
+print.interact.table(r4.instr.28, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
+
+cat("\\midrule\n")
+
+print.interact.table(r4.instr.33, "grpavg.med.circum", "discuss.circum.facyes", "urban.ruralurban", c("Did Not Discuss FGM", "Discussed FGM"), cutpoints, symbols)
+@
+      \bottomrule
+    \end{tabular}
+    \end{threeparttable}
+  \end{table}
+\end{frame}
+\end{comment}

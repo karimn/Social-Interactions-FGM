@@ -1,0 +1,65 @@
+<<label=init, echo=FALSE, results=hide>>=
+load("new_results.RData")
+
+youngest.cohort <- 1996
+@
+
+\begin{table}
+\scriptsize
+\centering
+\begin{threeparttable}
+\caption{Governorate Summary Statistics}\label{governsumstat}
+\begin{tabular}{*{10}{l}}
+\toprule
+& \begin{sideways}Circumcized\end{sideways}
+& \begin{sideways}Medicalization\end{sideways}
+& \begin{sideways}Wealth Index (Rich)\end{sideways}
+& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Mother Circumcized\end{sideways}
+& \begin{sideways}Mother's Marital Age\end{sideways}
+& \begin{sideways}Age of Circumcision\end{sideways} 
+& N \\
+\cmidrule{2-10}
+
+<<label=governsumstat, echo=FALSE, results=tex>>=
+fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+govern.names <- levels(fgm$ADM1NAME)
+
+cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+            nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
+            nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
+            nrow(fgm[fgm$urban.rural == "rural",])/nrow(fgm)*100,
+            nrow(fgm[fgm$religion == "christian",])/nrow(fgm)*100,
+            nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
+            mean(fgm$marital.age), sd(fgm$marital.age),
+            mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
+            nrow(fgm)))
+
+for (n in govern.names)
+{
+  fgm.govern <- fgm[fgm$ADM1NAME == n,]
+  if (nrow(fgm.govern) > 0) 
+    cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+		n,
+		nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
+		mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
+		mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+		  sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
+		nrow(fgm.govern)))
+}
+@
+\bottomrule
+\end{tabular}
+\begin{tablenotes}
+\item[1] Standard deviation is reported between parenthesis
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
