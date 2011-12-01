@@ -37,6 +37,8 @@ youngest.cohort <- 1996
 
 cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
 symbols <- c("***", "**", "*", "$\\cdot$", " ")
+
+educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 @
 
 \newtheorem{prop}{Proposition}
@@ -111,91 +113,7 @@ The primary data survey used in this paper is actually that of the unmarried dau
 
 % Summary stats
 
-\begin{table}
-\scriptsize
-\centering
-\caption{Summary Statistics}\label{tab:sumstat}
-\begin{tabular}{lcccc}
-  \toprule
-  & \multicolumn{1}{c}{All} 
-  & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization} 
-  & \multicolumn{1}{c}{N} \\
-  \cmidrule{2-5}
-
-<<label=sumstat, echo=FALSE, results=tex>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
-fgm.circum <- subset(fgm, circum == 1)
-fgm.med <- subset(fgm.circum, med.circum == 1)
-
-circum.frac <- nrow(fgm.circum) / nrow(fgm)
-med.frac <- nrow(fgm.med) / nrow(fgm.circum)
-cat(sprintf("All & 100\\%% & %.2f\\%% & %.2f\\%% & %i \\\\ \n", circum.frac * 100, med.frac * 100, nrow(fgm)))
-
-by.cohort <- function (df, total) 
-{
-  if ((length(df) > 1) || (!is.na(df)))
-  {
-    cat(sprintf("~~%s (Age %i) & %.2f\\%% & %.2f\\%% & %.2f\\%% \\\\ \n", 
-               df[1, "birth.year.fac"], 
-               2008 - df[1, "birth.year"],
-               (nrow(df)/total)*100, 
-               (nrow(df[df$circum == 1,])/nrow(df))*100,
-               (nrow(df[(df$circum == 1) & (df$med.circum == 1),])/nrow(df))*100))
-  }
-}
-
-fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
-
-cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
-            nrow(fgm.rich)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
-            nrow(fgm.rich)))
-
-fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
-
-cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
-            nrow(fgm.poor)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
-            nrow(fgm.poor)))
-
-fgm.rural <- fgm[fgm$urban.rural == "rural", ]
-
-cat(sprintf("\\\\\nRural Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
-            nrow(fgm.rural)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$urban.rural == "rural",])/nrow(fgm.rural)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "rural",])/nrow(fgm.circum[fgm.circum$urban.rural == "rural",])*100,
-            nrow(fgm.rural)))
-
-fgm.urban <- fgm[fgm$urban.rural == "urban", ]
-
-cat(sprintf("\\\\\nUrban Residence & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
-            nrow(fgm.urban)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$urban.rural == "urban",])/nrow(fgm.urban)*100,
-            nrow(fgm.med[fgm.med$urban.rural == "urban",])/nrow(fgm.circum[fgm.circum$urban.rural == "urban",])*100,
-            nrow(fgm.urban)))
-
-fgm.christ <- fgm[fgm$religion == "christian", ]
-
-cat(sprintf("\\\\\nBy Religion (Christian) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
-            nrow(fgm.christ)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$religion == "christian",])/nrow(fgm.christ)*100,
-            nrow(fgm.med[fgm.med$religion == "christian",])/nrow(fgm.christ)*100,
-            nrow(fgm.christ)))
-
-fgm.mus <- fgm[fgm$religion == "muslim", ]
-
-cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\*\n", 
-            nrow(fgm.mus)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
-            nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
-            nrow(fgm.mus)))
-@
-  \bottomrule
-\end{tabular}
-\end{table}
+\input{sumstat_table}
 
 Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also is noticeable a greater tendency for medicalization for richer, urban, and Muslim households. In Figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
 
@@ -213,8 +131,8 @@ fgm.circum.only <- subset(fgm, circum.fac == "yes")
 prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
 prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
 
-circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
-med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
+med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
 
 plot(circum.bc, split = c(1, 1, 1, 2))
 plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
@@ -227,77 +145,19 @@ plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
 % Governorate Summary
 
 %\begin{landscape}
-\begin{table}
-\scriptsize
-\centering
-\begin{threeparttable}
-\caption{Governorate Summary Statistics}\label{governsumstat}
-\begin{tabular}{*{10}{l}}
-\toprule
-& \begin{sideways}Circumcized\end{sideways}
-& \begin{sideways}Medicalization\end{sideways}
-& \begin{sideways}Wealth Index (Rich)\end{sideways}
-& \begin{sideways}Rural Residence\end{sideways}
-& \begin{sideways}Religion (Christian)\end{sideways}
-& \begin{sideways}Mother Circumcized\end{sideways}
-& \begin{sideways}Mother's Marital Age\end{sideways}
-& \begin{sideways}Age of Circumcision\end{sideways} 
-& N \\
-\cmidrule{2-10}
-
-<<label=governsumstat, echo=FALSE, results=tex>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
-govern.names <- levels(fgm$ADM1NAME)
-
-cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
-            nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
-            nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
-            nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
-            nrow(fgm[fgm$urban.rural == "rural",])/nrow(fgm)*100,
-            nrow(fgm[fgm$religion == "christian",])/nrow(fgm)*100,
-            nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
-            mean(fgm$marital.age), sd(fgm$marital.age),
-            mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
-              sd(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
-            nrow(fgm)))
-
-for (n in govern.names)
-{
-  fgm.govern <- fgm[fgm$ADM1NAME == n,]
-  if (nrow(fgm.govern) > 0) 
-    cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
-		n,
-		nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
-		mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
-		mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
-		  sd(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
-		nrow(fgm.govern)))
-}
-@
-\bottomrule
-\end{tabular}
-\begin{tablenotes}
-\item[1] Standard deviation is reported between parenthesis
-\end{tablenotes}
-\end{threeparttable}
-\end{table}
+\input{governsum_table}
 %\end{landscape}
 
 \section{Methodology}\label{sec:method}
 
 \subsection{Linear-in-means Model}
 The \citet{Blume2010} model of social interaction is 
-\begin{equation}
-  \omega_{ig} = k + c \cdot x_i + d \cdot y_g + J \cdot m^e_{ig} + \varepsilon_{ig}. \label{eqn:main}
-\end{equation}
-$i$ is an individual's index, and $g$ is a reference group's index (an individual's peer group). $\omega_{ig}$ is the dependent variable representing individual action or behavior, and 
-\begin{itemize}
-  \item $x_i$ are individual controls
+  \begin{equation}
+    \omega_{ig} = k + c \cdot x_{ig} + d \cdot y_g + J \cdot m^e_{ig} + \varepsilon_{ig}. \label{eqn:main}
+  \end{equation}
+  $i$ is an individual's index, and $g$ is a reference group's index (an individual's peer group). $\omega_{ig}$ is the dependent variable representing individual action or behavior, and 
+  \begin{itemize}
+    \item $x_{ig}$ are individual controls
   \item $y_g$ are group level contextual controls
   \item $m^e_{ig}$ denotes the group's average behavior.  In Manski's \citeyearpar{Manski} notation it would be $E[\omega_{ig}|g]$. It can be shown to be 
     \begin{equation}
@@ -314,8 +174,8 @@ However, in \citep{Manski} it is assumed that $y_g = \bar{x}_g$ which makes it i
   m^e_{ig} = m_g \equiv \frac{k + (c + d) \cdot \bar{x}_g}{1 - J}.
 \end{equation}
 \citet{Blume2010} suggest relaxing the $y_g = \bar{x}_g$ assumption in order to make endogenous and contextual identification possible (to circumvent the reflection problem).  They suggest this could be done because of the $c \cdot \bar{x}_g/(1-J)$ term which, if not linearly dependent on a constant and $y_g$, breaks the reflection problem.  If it can be shown that
-\[proj(\bar{\omega}_g|1, y_g, \bar{x}_g) - proj(\bar{\omega}_g|1, y_g) \ne 0\]
-then it is possible to identify endogenous and contextual effects.
+\[L(\bar{\omega}_g|1, y_g, \bar{x}_g) - L(\bar{\omega}_g|1, y_g) \ne 0\]
+then it is possible to identify endogenous and contextual effects ($L(\cdot)$ is the projection function).
 
 \subsection{Implementation}
 
@@ -354,7 +214,7 @@ And the variables are:
 \begin{itemize}
   \item $f$ is a binary variable indicating the household's decision to opt for FGM
   \item $x$ is a vector of individual controls
-  \item $f^e$ is the group averge decision
+  \item $f^e$ is the group average decision
   \item $k_t$ and $d_j$ are fixed effects for the daughter's cohort and the household's governorate, respectively.  In our model they capture contextual effects.
 \end{itemize}
 Similar to \citep{Blume2010} we solve for $f^e$
@@ -371,16 +231,8 @@ The last instrument is difficult to interpret; in Table \ref{tab:direct_effects}
 \scriptsize
 \begin{threeparttable}
 \caption{FGM Group Average Regression}\label{tab:fgmgrpavg} 
-\begin{tabular}{lcc}
-  \toprule
-  & \multicolumn{2}{c}{Estimate} \\
-  & \multicolumn{2}{c}{(Standard Error)} \\
-  \cmidrule{2-3}
-  & (1) & (2) \\
-  \cmidrule{2-3}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-  cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-  symbols <- c("***", "**", "*", "$\\cdot$", " ")
+  results <- c(r0.1, r0.2)
   regs <- list(grpavg.urban.rural_urban = "$\\overline{urban}_{jt}$",
                grpavg.wealth.index.2_rich = "$\\overline{rich}_{jt}$",
                grpavg.educ.lvl_primary = "$\\overline{primary\\_educ}_{jt}$",
@@ -392,16 +244,8 @@ The last instrument is difficult to interpret; in Table \ref{tab:direct_effects}
                grpavg.hh.head.sex_female = "$\\overline{female\\_head\\_hh}_{jt}$",
                grpavg.med.help.distance.fac_big_problem = "$\\overline{med\\_help\\_distance}_{jt}$")
 
-  print.reg.list(c(r0.1, r0.2), regs, cutpoints, symbols) #, last.tex.newline = FALSE)
-
-  cat("\\midrule\n")
-  cat(sprintf(" $N$ & %i & %i\\\\\n", r0.1$data$nrow(), r0.2$data$nrow()))
-  cat("\\midrule\n")
-  cat(sprintf(" $R^2$ & %.3f & %.3f\\\\\n", r0.1$r.squared(), r0.2$r.squared()))
-  cat(sprintf(" Adjusted $R^2$ & %.3f & %.3f\\\\\n", r0.1$adj.r.squared(), r0.2$adj.r.squared()))
+  print.results.table(results, regs, NULL, NULL, NULL, cutpoints, symbols)
 @
-\bottomrule
-\end{tabular}
 \begin{tablenotes}
   \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
   \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
@@ -417,7 +261,7 @@ Data on the FGM status of daughters was collected by interviewing mothers, and t
 \end{align}
 We can thus difference out this fixed effect giving us the regression
 \begin{equation}
-  \Delta f_{jh} = \Delta k + J \cdot \Delta f^e_{jh} + \Delta\varepsilon_{jh}. \label{eqn:endo_pd_model}
+    \tilde{f}_{ijht} = \tilde{k}_t + J \cdot \tilde{f^e}_{jht} + \tilde{\varepsilon}_{ijht}
 \end{equation}
 We continue to use the same instrumental variables as above.
 
@@ -432,16 +276,8 @@ The first regression results to consider are those direct effects only, with no 
 \centering
 \begin{threeparttable}
 \caption{Direct Effects Only}\label{tab:direct_effects}
-\begin{tabular}{lccc}
-  \toprule
-  & \multicolumn{3}{c}{Estimate} \\
-  & \multicolumn{3}{c}{(Standard Error)} \\
-  \cmidrule{2-4}
-  & (1) & (2) & (3) \\
-  \cmidrule{2-4}
 <<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
-  cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-  symbols <- c("***", "**", "*", "$\\cdot$", " ")
+  results <- c(r5.pooled, r7.pooled, r8.pooled, r9.pooled, r11.pooled, r12.pooled)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -449,29 +285,18 @@ The first regression results to consider are those direct effects only, with no 
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
                hh.head.sexfemale = "HH Head Sex (Female)",
-	       order = "Birth Order",
-	       "I(order^2)" = "$(\\text{Birth Order})^2$",
-               "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
-	       discuss.circum.facyes = "Discussed FGM",
-	       received.info.circum.facyes = "Received Info on FGM",
-               "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
+               order = "Birth Order",
+               "I(order^2)" = "$(\\text{Birth Order})^2$",
+               "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
+               "urban.ruralurban:med.help.distance.facbig problem" = "Medical Help Dist. $\\times$ Urban",
+               "med.help.money.facbig problem" = "Medical Help Cost (Big Problem)",
+               "urban.ruralurban:med.help.money.facbig problem" = "Medical Help Cost$\\times$ Urban",
+               discuss.circum.facyes = "Discussed FGM",
+               received.info.circum.facyes = "Received Info on FGM")
 
-  results <- c(r5.pooled, r6.pooled, r7.pooled)
+  print.results.table(results, regs, NULL, educ.regs, NULL, cutpoints, symbols) 
 
-  print.cohorts(results, 1989:1996, cutpoints, symbols)
-
-  print.reg.list(results, regs, cutpoints, symbols)
-
-  print.educlvl(results, cutpoints, symbols) #, FALSE)
-
-  cat("\\midrule\n")
-  print.nrow(results)
-  cat("\\midrule\n")
-  print.r.squared(results)
-  print.adj.r.squared(results)
 @
-  \bottomrule
-\end{tabular}
 \begin{tablenotes}
   \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
   \item[2] Estimation is done using heteroskedasticity and autocorrelation consistent covariance matrices generated by the \texttt{vcovHAC} R function from the \texttt{sandwich} package \citep{Zeileis2004}.
@@ -491,7 +316,8 @@ Below are the results for the IV regression.  In the first column we see the res
 \begin{threeparttable}
 \caption{FGM Endogenous Effects Regression}
 <<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
-  results <- c(r1.instr.5.pooled, r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8)
+  #results <- c(r1.instr.5.pooled, r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8)
+  results <- c(r2.instr.5, r2.instr.6, r2.instr.7, r2.instr.8, r2.instr.9, r2.instr.10)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -504,7 +330,6 @@ Below are the results for the IV regression.  In the first column we see the res
                "med.help.distance.facbig problem" = "Medical Help Distance (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Distance")
 
-  educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
                       "grpavg.circum:urban.ruralurban" = "$\\overline{fgm}_{jt} \\times$ Urban",
@@ -543,8 +368,8 @@ Below are the results of the IV regression: the first column is for model (\ref{
 \begin{threeparttable}
 \caption{FGM Endogenous Effects and Medicalization Effects Regression}\label{tab:endo_med_results}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, # r4.instr.11, r4.instr.12, 
-               r4.instr.15, r4.instr.16) #, r4.instr.17, r4.instr.18) #r4.instr.13, r4.instr.14)
+  results <- c(r3.instr.5.pooled, r4.instr.5, r4.instr.7, r4.instr.8, r4.instr.10, 
+               r4.instr.15, r4.instr.16) 
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -556,8 +381,6 @@ Below are the results of the IV regression: the first column is for model (\ref{
 	       "I(order^2)" = "$(\\text{Birth Order})^2$",
                "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Dist.")
-
-  educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
                       grpavg.med.circum = "$\\overline{med}_{jt}$",
@@ -585,9 +408,7 @@ Below are the results of the IV regression: the first column is for model (\ref{
 %\end{sidewaystable}
 \end{table}
 
-In the first column there are no cohort effects all and in the second we do not detect a trend.  Otherwise, the direct household effects are no different than what has previously been observed.  In terms of social effects, in the first column we find no endogenous social effect of FGM or medicalization.  However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a \emph{negative} and significant endogenous effect to medicalization.  On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households and to a greater extent for households with difficulty accessing medical assistance due to distance.  For rural households we see a positive influence of medicalization on households with difficulty accessing medical assistance due to distance, and no effect otherwise.
-
-In the first column there are no cohort effects all and in the second we do not detect a trend. Otherwise, the direct household effects are no different than what has previously been observed. In terms of social effects, in the first column we find endogenous social effect of FGM only at the 10\% significance level, and we don't find a significant effect to medicalization. However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a negative and significant endogenous effect to medicalization. On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households (see Table \ref{tab:interact}). No significant different was found between households with difficulty accessing medical assistance due to distance and those without.
+In the first column there are no cohort effects all and in the second we do not detect a trend. Otherwise, the direct household effects are no different than what has previously been observed. In terms of social effects, in the first column we find endogenous social effect of FGM only at the 10\% significance level, and we don't find a significant effect to medicalization. However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a negative and significant endogenous effect to medicalization. On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households (see Table \ref{tab:interact}). No significant different was found between households with difficulty accessing medical assistance due to distance and those without, and it a stronger negative effect is observed for households with no difficulty accessing medical assistance due to cost.
 
 \begin{table}
   \centering
@@ -733,10 +554,12 @@ print.interact.table(r4.instr.14, "grpavg.med.circum", "received.info.circum.fac
 \end{table}
 \end{comment} 
 
-The remains a concern that these estimations suffer from omitted variable bias; there might be an unobservable influence of ``modernization'' in medical care on the FGM decision.  As different areas become more modernized they would perhaps become less likely to opt for a traditional practice such as FGM, and should they decide to have it done they would seek a medical practitioner rather than a traditional \emph{daya}---it would be correlated with the $\overline{med}$.  In order to control for this, we attempt to control for this unobservable modernization using a proxy, $\overline{daya}$, the fraction of households in the peer group that decided to have their child delivered by a \emph{daya} as opposed to a medical practitioner, during the same period the FGM decision is made\footnote{Data is only available for child births preceding the time of survey by six years, therefore reducing our sample size}.  Results are shown in Tables \ref{tab:endo_med2_results} and \ref{tab:interact2}. 
-
-The effects of medicalization remain negative in all the specifications considered, while some of the previous results are no longer significant.  In comparing rural and urban areas, we see that the effect on rural areas is still insignificant and only significant at the 10\% level for urban areas. In interacting with the distance to medical help, effects are slightly weakened to being significant at the 10\% and 5\% levels for those who have are not distant from medical help and those who are, respectively. In interacting with the cost of medical help, effects are weakened to being insignificant and significant at the 5\% levels for those who have don't have a problem paying from medical help and those who do, respectively.
-
+The remains a concern that these estimations suffer from omitted variable bias; there might be an unobservable influence of ``modernization'' in medical care on the FGM decision.  As different areas become more modernized they would perhaps become less likely to opt for a traditional practice such as FGM, and should they decide to have it done they would seek a medical practitioner rather than a traditional \emph{daya}---it would be correlated with the $\overline{med}$.  In order to control for this, we attempt to control for this unobservable modernization using a proxy, $\overline{daya}$, the fraction of households in the peer group that decided to have their child delivered by a \emph{daya} as opposed to a medical practitioner, during the same period the FGM decision is made\footnote{Data is only available for child births preceding the time of survey by six years, therefore reducing our sample size}. In other words, we make the following assumptions
+  \begin{align*}
+      E(f_{ijht}|z_{ijht}, modern_{jt}, \overline{daya}_{jt}) = E(f_{ijht}|z_{ijht}, modern_{jt}) \\
+      L(modern_{jt}|1, z_{ijht}, \overline{daya}_{jt}) = L(modern_{jt}|1, \overline{daya}_{jt})
+    \end{align*}
+where $z_{ijht}$ are all other regressors and $modern_{jt}$ is unobserved modernization. Results are shown in Tables \ref{tab:endo_med2_results}. We see that the effect of medicalization persists, remaining significantly negative in urban areas and insignificantly negative in rural areas.
 
 \begin{table}
 \scriptsize
@@ -745,7 +568,7 @@ The effects of medicalization remain negative in all the specifications consider
 \begin{threeparttable}
 \caption{FGM Endogenous Effects and Medicalization Effects Regression (Controlling for Modernization)}\label{tab:endo_med2_results}
 <<keep.source=TRUE, echo=FALSE, results=tex>>=
-  results <- c(r3.instr.6.pooled, r4.instr.27, r4.instr.28, r4.instr.29, r4.instr.30, r4.instr.31, r4.instr.32)
+  results <- c(r3.instr.6.pooled, r4.instr.27, r4.instr.28) #, r4.instr.29, r4.instr.30, r4.instr.31, r4.instr.32)
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -758,22 +581,13 @@ The effects of medicalization remain negative in all the specifications consider
                "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
                "urban.ruralurban:med.help.distance.facbig problem" = "Urban $\\times$ Medical Help Dist.")
 
-  educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
-
   grpavg.regs <- list(grpavg.circum = "$\\overline{fgm}_{jt}$",
+
 		      grpavg.delivered.by.daya_yes = "$\\overline{daya}_{jt}$",
+                      "grpavg.delivered.by.daya_yes:urban.ruralurban" = "$\\overline{daya}_{jt} \\times \\text{Urban}$",
+
                       grpavg.med.circum = "$\\overline{med}_{jt}$",
-                      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$",
-		      "grpavg.med.circum:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Dist.}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Dist.}$",
-		      "grpavg.med.circum:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Cost}$",
-		      "grpavg.med.circum:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Cost}$")
-		      #"grpavg.med.circum:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Medical Help Transport}$",
-		      #"grpavg.med.circum:urban.ruralurban:med.help.transportation.facbig problem" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Medical Help Transport}$")
-#		      "grpavg.med.circum:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Discuss FGM}$",
-#		      "grpavg.med.circum:urban.ruralurban:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Discuss FGM}$",
-#		      "grpavg.med.circum:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Received Info on FGM}$",
-#		      "grpavg.med.circum:urban.ruralurban:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times \\text{Urban} \\times \\text{Received Info on FGM}$")
+                      "grpavg.med.circum:urban.ruralurban" = "$\\overline{med}_{jt} \\times \\text{Urban}$")
 
   print.results.table(results, regs, NULL, #l1989:1996, 
                       educ.regs, grpavg.regs, cutpoints, symbols)
@@ -787,6 +601,7 @@ The effects of medicalization remain negative in all the specifications consider
 %\end{sidewaystable}
 \end{table}
 
+\begin{comment}
 \begin{table}
   \centering
   \caption{Urban/Rural and Medical Help Interactions (Controlling for Modernization)}\label{tab:interact2}
@@ -800,28 +615,16 @@ The effects of medicalization remain negative in all the specifications consider
     \cmidrule{2-3}
 <<echo=FALSE,results=tex>>=
 print.interact.table(r4.instr.28, "grpavg.med.circum", NULL, "urban.ruralurban", NULL, cutpoints, symbols)
-
-cat("\\midrule\n")
-
-print.interact.table(r4.instr.30, "grpavg.med.circum", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
-
-cat("\\midrule\n")
-
-print.interact.table(r4.instr.32, "grpavg.med.circum", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
-
-#cat("\\midrule\n")
-
-#print.interact.table(r4.instr.18, "grpavg.med.circum", "med.help.transportation.facbig problem", "urban.ruralurban", c("Medical Help Transport (No Problem)", "Medical Help Transport (Problem)"), cutpoints, symbols)
 @
     \bottomrule
   \end{tabular}
   \begin{tablenotes}
-    %\item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
     \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
     \item[2] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
   \end{tablenotes}
   \end{threeparttable}
 \end{table}
+\end{comment}
 
 \section{Conclusion}\label{sec:conclusion}
 

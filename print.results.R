@@ -63,8 +63,8 @@ print.reg.list <- function(results, reg.dict, cutpoints, symbols, last.tex.newli
 print.nrow <- function(results) {
   cat(" N ")
   for (r in results) {
-    #cat(sprintf("& %i", r$data$nrow()))
-    cat(sprintf("& %i", r$na.action))
+    cat(sprintf("& %i", r$data$nrow()))
+    #cat(sprintf("& %i", r$na.action))
   }
   cat("\\\\\n")
 }
@@ -85,17 +85,23 @@ print.adj.r.squared <- function(results) {
   cat("\\\\\n")
 }
 
-print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, table.type = "tabular", inter.results.space = FALSE) {
+print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, table.type = "tabular", inter.results.space = FALSE, est.stderr.header = TRUE, col.num.header = TRUE, show.r.squared = TRUE, show.n = TRUE) {
   num.col <- length(results)
   cat(sprintf("\\begin{%s}{l*{%d}{c}}\n", table.type, num.col))
 
   cat("\\toprule\n")
-  cat(sprintf("& \\multicolumn{%d}{c}{Estimate} \\\\\n", num.col))
-  cat(sprintf("& \\multicolumn{%d}{c}{(Standard Error)} \\\\\n", num.col))
-  cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
-  cat(paste(sprintf("& (%d)", 1:num.col), collapse = " "))
-  cat("\\\\\n")
-  cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
+
+  if (est.stderr.header) {
+    cat(sprintf("& \\multicolumn{%d}{c}{Estimate} \\\\\n", num.col))
+    cat(sprintf("& \\multicolumn{%d}{c}{(Standard Error)} \\\\\n", num.col))
+    cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
+  }
+
+  if (col.num.header) {
+    cat(paste(sprintf("& (%d)", 1:num.col), collapse = " "))
+    cat("\\\\\n")
+    cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
+  }
 
   if (!is.null(cohort.range))
     print.cohorts(results, cohort.range, cutpoints, symbols)
@@ -109,13 +115,16 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
   if (!is.null(grpavg.reg.dict))
     print.reg.list(results, grpavg.reg.dict, cutpoints, symbols)
 
-  cat("\\midrule\n")
-  #if (any(sapply(c(results), function(r) !is.null(r$data)))) {
-    print.nrow(c(results))
+  if (show.n) { 
     cat("\\midrule\n")
-  #}
-  print.r.squared(c(results))
-  print.adj.r.squared(c(results))
+    print.nrow(c(results))
+  }
+
+  if (show.r.squared) {
+    cat("\\midrule\n")
+    print.r.squared(c(results))
+    print.adj.r.squared(c(results))
+  }
   
   cat("\\bottomrule\n")
   cat(sprintf("\\end{%s}\n", table.type))
