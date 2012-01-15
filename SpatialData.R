@@ -15,14 +15,14 @@ SpatialData <- setRefClass("SpatialData",
 
 SpatialData$lock(c("coordinate.names", "proj4string"))
 
-SpatialData$methods(initialize = function(coords, proj4string = "+proj=longlat +ellps=WGS84", ...) {
+SpatialData$methods(initialize = function(coordinate.names, proj4string = "+proj=longlat +ellps=WGS84", ...) {
     callSuper(...)
-    initFields(coordinate.names = coords, proj4string = proj4string)
+    initFields(coordinate.names = coordinate.names, proj4string = proj4string)
 
     temp.data <- data
     data <<- data.frame()
 
-    coordinates(temp.data) <- coords 
+    coordinates(temp.data) <- coordinate.names
     proj4string(temp.data) <- proj4string 
 
     spatial.data <<- temp.data
@@ -37,19 +37,23 @@ SpatialData$methods(subset = function(subset, select, ...) {
     spatial.data <<- temp.data
 }) 
 
+SpatialData$methods(convert.callback = function(df, original.callback, ...) {
+    original.callback(getRefClass()$new(data = df, coordinate.names = coordinate.names, proj4string = proj4string), ...)
+})
+
+SpatialData$methods(aggregate = function(by, FUN, ...) {
+    stats::aggregate(spatial.data@data, spatial.data@data[by], stub.callback, FUN, .self, ...)
+})
+
+SpatialData$methods(tapply = function(by, FUN, ...) {
+    base::tapply(spatial.data@data, spatial.data@data[by], stub.callback, FUN, .self, ...)
+})
+
+SpatialData$methods(split = function(by, ...) {
+    DataCollection$new(coll = base::lapply(base::split(spatial.data@data, by, spatial.data@data[by], ...), 
+                                           function(df) getRefClass()$new(data = df, coordinate.names = coordinate.names, proj4string = proj4string)))
+})
 
 SpatialData$methods(by = function(INDICES, FUN, ...) {
-    convert.FgmData <- function(df, ...)
-    {
-      df <- merge(df, data@cluster.info[, c('DHSYEAR', 'DHSCLUST', 'LONGNUM', 'LATNUM')], by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-      coordinates(df) <- c('LONGNUM', 'LATNUM')
-      proj4string(df) <- CRS("+proj=longlat +ellps=WGS84")
-
-      FUN(getRefClass()$new(
-
-      FUN(new("FgmData", df, cluster.info = data@cluster.info), ...)
-    } 
-
-    by(spdf@data, INDICES, convert.FgmData, ...)
-  }
-)
+    base::by(spatial.data@data, INDICES = eval(substitute(INDICES), envir = spatial.data@data), FUN = stub.callback, FUN, .self, ...) 
+})

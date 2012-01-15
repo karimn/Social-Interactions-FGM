@@ -32,9 +32,29 @@ Data$methods(get.subset = function(...) {
     return(new.data.obj)
 })
 
-Data$methods(by = function(INDICES, ...) {
-    base::by(data, INDICES = eval(substitute(INDICES), envir = data), ...)
-  })
+stub.callback <- function(df, FUN, self.obj, ...) {
+    self.obj$convert.callback(df, FUN, ...)
+}
+
+Data$methods(convert.callback = function(df, original.callback, ...) {
+    original.callback(getRefClass()$new(data = df), ...)
+})
+
+Data$methods(aggregate = function(by, FUN, ...) {
+    stats::aggregate(data, data[by], stub.callback, FUN, .self, ...)
+})
+
+Data$methods(tapply = function(by, FUN, ...) {
+    base::tapply(data, data[by], stub.callback, FUN, .self, ...)
+})
+
+Data$methods(split = function(by, ...) {
+    DataCollection$new(coll = base::lapply(base::split(data, by, data[by], ...), function(df) getRefClass()$new(data = df)))
+})
+
+Data$methods(by = function(INDICES, FUN, ...) {
+    base::by(data, INDICES = eval(substitute(INDICES), envir = data), FUN = stub.callback, FUN, .self, ...)
+})
 
 Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
     r <- stats::lm(formula, data = data)
