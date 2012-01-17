@@ -10,7 +10,7 @@ Data <- setRefClass("Data",
         ncol = function(value) base::ncol(data)))
 
 Data$methods(init.from.list = function(obj.list) {
-    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))))
+    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) | is.empty(obj.list))
 
     data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$data))
 })
@@ -30,7 +30,7 @@ Data$methods(initialize = function(columns, new.column.names, collection, ...) {
         stopifnot(length(new.column.names) <= ncol(data))
         names[1:length(new.column.names)] <<- new.column.names
     }
-  })
+})
 
 
 Data$methods(change.column.names = function(old.names, new.names) {
@@ -51,7 +51,7 @@ Data$methods(get.subset = function(...) {
     return(new.data.obj)
 })
 
-Data$methods(exclude.rows = function(rows) {
+Data$methods(remove.rows = function(rows) {
     data <<- data[-rows, ]
 })
 
@@ -108,6 +108,14 @@ Data$methods(quick.update = function(by, FUN, ...) {
 
 Data$methods(reshape = function(...) {
     data <<- stats::reshape(data, ...)
+})
+
+Data$methods(duplicated = function(by, ...) {
+    if (missing(by)) {
+        base::duplicated(data, ...)
+    } else {
+        base::duplicated(data[by], ...)
+    }
 })
 
 # Regression methods

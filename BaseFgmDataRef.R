@@ -10,7 +10,7 @@ grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = 
 {
   lcl.grp <- grp.data$copy()
   if (exclude.self)
-    lcl.grp <- lcl.grp$exclude.rows(rowid)
+    lcl.grp <- lcl.grp$remove.rows(rowid)
   
   if ((lcl.grp$nrow == 0) | all(is.na(lcl.grp$spatial.data[, column])))
     return()
@@ -102,79 +102,82 @@ BaseFgmData <- setRefClass("BaseFgmData",
       #if (is.empty(ir.file) | is.empty(gps.file))
       #  return(.self)
 
-      ir <- read.dta(ir.file, convert.underscore = TRUE)
-      #fgm.data <- base::subset(ir, select = eval(cols))
-      
-      rm(ir)
+      if (!missing(ir.file) & !missing(gps.file) & all(names(list(...)) != "collection")) {
+          ir <- read.dta(ir.file, convert.underscore = TRUE)
+          #fgm.data <- base::subset(ir, select = eval(cols))
+          
+          rm(ir)
 
-      #num.col <- length(col.names)
-      #names(fgm.data)[1:num.col] <- col.names
+          #num.col <- length(col.names)
+          #names(fgm.data)[1:num.col] <- col.names
 
-      fgm.data$dhs.year <- dhs.year
+          fgm.data$dhs.year <- dhs.year
 
-      fgm.data <- within(fgm.data, 
-      {
-        hh.id <- factor(paste(cluster, hh, sep = '-'))
-        religion <- factor(religion, 
-                           levels = 1:2, 
-                           labels = FgmData.religions) #, "missing"))
-        literacy.fac <- factor(literacy, 
-                               levels = c(0:2), #, 9), 
-                               labels = FgmData.literacy.labels) #, 'missing'))
-        med.help.permission.fac <- factor(med.help.permission, 
-                                          levels = FgmData.med.help.levels,
-                                          labels = FgmData.med.help.labels)
-        med.help.distance.fac <- factor(med.help.distance, 
-                                        levels = FgmData.med.help.levels, 
-                                        labels = FgmData.med.help.labels)
-        med.help.transportation.fac <- factor(med.help.transportation, 
+          fgm.data <- within(fgm.data, 
+          {
+            hh.id <- factor(paste(cluster, hh, sep = '-'))
+            religion <- factor(religion, 
+                               levels = 1:2, 
+                               labels = FgmData.religions) #, "missing"))
+            literacy.fac <- factor(literacy, 
+                                   levels = c(0:2), #, 9), 
+                                   labels = FgmData.literacy.labels) #, 'missing'))
+            med.help.permission.fac <- factor(med.help.permission, 
                                               levels = FgmData.med.help.levels,
                                               labels = FgmData.med.help.labels)
-        med.help.money.fac <- factor(med.help.money, 
-                                              levels = FgmData.med.help.levels,
-                                              labels = FgmData.med.help.labels)
-        partner.occupation.1.fac <- factor(partner.occupation.1)
-        partner.occupation.2.fac <- factor(partner.occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
-        occupation.1.fac <- factor(occupation.1)
-        occupation.2.fac <- factor(occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
-        partner.educlvl.fac <- factor(partner.educlvl, 
-                                      levels = c(0:5), #, 8, 9), 
-                                      labels = FgmData.partner.educlvl.labels) #, "don't know", 'missing'))
-        mother.circum.fac <- factor(mother.circum, 
-                                    levels = c(0:1), #, 9), 
-                                    labels = c('no', 'yes')) #, 'missing'))
+            med.help.distance.fac <- factor(med.help.distance, 
+                                            levels = FgmData.med.help.levels, 
+                                            labels = FgmData.med.help.labels)
+            med.help.transportation.fac <- factor(med.help.transportation, 
+                                                  levels = FgmData.med.help.levels,
+                                                  labels = FgmData.med.help.labels)
+            med.help.money.fac <- factor(med.help.money, 
+                                                  levels = FgmData.med.help.levels,
+                                                  labels = FgmData.med.help.labels)
+            partner.occupation.1.fac <- factor(partner.occupation.1)
+            partner.occupation.2.fac <- factor(partner.occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
+            occupation.1.fac <- factor(occupation.1)
+            occupation.2.fac <- factor(occupation.2, levels = FgmData.occupation.2.levels, labels = FgmData.occupation.2.labels)
+            partner.educlvl.fac <- factor(partner.educlvl, 
+                                          levels = c(0:5), #, 8, 9), 
+                                          labels = FgmData.partner.educlvl.labels) #, "don't know", 'missing'))
+            mother.circum.fac <- factor(mother.circum, 
+                                        levels = c(0:1), #, 9), 
+                                        labels = c('no', 'yes')) #, 'missing'))
 
-        wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
+            wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
 
-        discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
-        received.info.circum.fac <- factor(received.info.circum, level = 0:1, labels = c("no", "yes"))
-        visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
-      })
+            discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
+            received.info.circum.fac <- factor(received.info.circum, level = 0:1, labels = c("no", "yes"))
+            visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
+          })
 
-      for (ci in FgmData.circum.info)
-        fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
+          for (ci in FgmData.circum.info)
+            fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
 
-      fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
+          fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
 
-      # What's this?
-      if (is.null(fgm.data$unique.cluster)) 
-        fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
+          # What's this?
+          if (is.null(fgm.data$unique.cluster)) 
+            fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
 
-      gps <- read.dbf(gps.file)
+          gps <- read.dbf(gps.file)
 
-      fgm.spdf <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-      #coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
-      #proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
+          fgm.data <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
+          #coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
+          #proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
-      callSuper(data = fgm.spdf, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"))
-      initFields(cluster.info = gps)
+          callSuper(data = fgm.spdf, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"), cluster.info = gps)
 
-      rm(gps)
+          rm(gps)
+      } else {
+          callSuper(...)
+      }
     }
 ))
 
 BaseFgmData$methods(create.new.from.data = function(df, ...) {
-    callSuper(df = df, cluster.info = cluster.info, ...)
+    callSuper(data = df, cluster.info = cluster.info, ...)
 })
 
 BaseFgmData$methods(

@@ -16,16 +16,16 @@ SpatialData <- setRefClass("SpatialData",
 SpatialData$lock(c("coordinate.names", "proj4string"))
 
 SpatialData$methods(init.from.list = function(obj.list) {
-    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))))
+    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) | is.empty(obj.list))
 
     spatial.data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$spatial.data))
+    coordinate.names <<- obj.list[[1L]]$coordinate.names
+    proj4string <<- objlist[[1L]]$proj4string
 })
 
 SpatialData$methods(initialize = function(coordinate.names, proj4string = "+proj=longlat +ellps=WGS84", ...) {
-    callSuper(...)
-
     if (all(names(list(...)) != "collection")) {
-        initFields(coordinate.names = coordinate.names, proj4string = proj4string)
+        callSuper(coordinate.names = coordinate.names, proj4string = proj4string, ...)
 
         temp.data <- data
         data <<- data.frame()
@@ -34,6 +34,8 @@ SpatialData$methods(initialize = function(coordinate.names, proj4string = "+proj
         proj4string(temp.data) <- proj4string 
 
         spatial.data <<- temp.data
+    } else {
+        callSuper(...)
     }
 })
 
@@ -51,12 +53,12 @@ SpatialData$methods(subset = function(subset, select, ...) {
     spatial.data <<- temp.data
 }) 
 
-SpatialData$methods(exclude.rows = function(rows) {
+SpatialData$methods(remove.rows = function(rows) {
     spatial.data <<- data[-rows, ]
 })
 
 SpatialData$methods(create.new.from.data = function(df, ...) {
-    callSuper(df = df, coordinate.names = coordinate.names, proj4string = proj4string, ...)
+    callSuper(data = df, coordinate.names = coordinate.names, proj4string = proj4string, ...)
 })
 
 SpatialData$methods(aggregate = function(by, FUN, ...) {
@@ -106,4 +108,13 @@ SpatialData$methods(quick.update = function(by, FUN, ...) {
 
 SpatialData$methods(reshape = function(...) {
     spatial.data <<- do.call("reshape", c(spatial.data, ...))
+})
+
+SpatialData$methods(duplicated = function(by, ...) {
+    origin.data <- as.data.frame(spatial.data)
+    if (missing(by)) {
+        base::duplicated(origin.data, ...)
+    } else {
+        base::duplicated(origin.data[by], ...)
+    }
 })
