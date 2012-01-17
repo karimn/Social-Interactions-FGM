@@ -5,36 +5,41 @@ library(sem)
 library(AER)
 library(plm)
 
+#grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
 grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
 {
+  lcl.grp <- grp.data$copy()
   if (exclude.self)
-    grp.data <- grp.data[-rowid,]
+    lcl.grp <- lcl.grp$exclude.rows(rowid)
   
-  if ((nrow(grp.data) == 0) | all(is.na(grp.data[, column])))
-    return(NA)
+  if ((lcl.grp$nrow == 0) | all(is.na(lcl.grp$spatial.data[, column])))
+    return()
 
   if (is.null(column.lvl))
-    mean(grp.data[, column], na.rm = TRUE)
+    mean(lcl.grp$spatial.data[, column], na.rm = TRUE)
   else
-    mean(grp.data[, column] == column.lvl, na.rm = TRUE)
+    mean(lcl.grp$spatial.data[, column] == column.lvl, na.rm = TRUE)
+    
+  return()
 }
 
-factor.mean <- function(df, grp, col.name, prefix, exclude.self = FALSE)
+#factor.mean <- function(df, grp, col.name, prefix, exclude.self = FALSE)
+factor.mean <- function(all.data, grp.mask, grp, col.name, prefix, exclude.self = FALSE)
 {
-  stopifnot(is.factor(df[, col.name]))
+  stopifnot(is.factor(all.data$spatial.data[, col.name]))
 
-  col.lvls <- levels(df[, col.name])
-  grp.nrow <- nrow(grp)
+  col.lvls <- levels(all.data$spatial.data[, col.name])
+  grp.nrow <- grp$nrow
 
-  for (i in 2:length(col.lvls))
+  for (i in 2L:length(col.lvls))
   {
     cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", col.lvls[i], perl = TRUE))
     new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
     #df[, new.col.name] <- if (grp.nrow != 0) sum(grp[, col.name] == col.lvls[i], na.rm = TRUE) / grp.nrow else NA
-    df[, new.col.name] <- vapply(1:nrow(df), grp.mean, 0, grp, col.name, col.lvls[i], exclude.self)
+    all.data$spatial.data[grp.mask, new.col.name] <- vapply(1L:length(which(mask)), grp.mean, 0L, grp, col.name, col.lvls[i], exclude.self)
   }
 
-  return(df)
+  return() 
 }
 
 
@@ -86,29 +91,24 @@ FgmData.grpavg.prefix = "grpavg"
 FgmData.lagged.grpavg.prefix = "lagged.grpavg"
 
 BaseFgmData <- setRefClass("BaseFgmData",
+  contains = "SpatialData",
   fields = list(
-    cluster.info = "data.frame", 
-    individual.controls = "character",
-    other.grpavg.controls = "character",
-    spdf = "SpatialPointsDataFrame"),
+    cluster.info = "data.frame"), 
 
   methods = list(
-    initialize = function(ir.file = character(0), gps.file = character(0), 
-                          cols = FgmData.cols, 
-                          col.names = FgmData.col.names, 
-                          dhs.year = 2008, ...)
+    initialize = function(ir.file, gps.file, columns = FgmData.cols, new.column.names = FgmData.col.names, dhs.year = 2008, ...)
     {
-      initFields(...)
-      if (is.empty(ir.file) | is.empty(gps.file))
-        return(.self)
+      #initFields(...)
+      #if (is.empty(ir.file) | is.empty(gps.file))
+      #  return(.self)
 
       ir <- read.dta(ir.file, convert.underscore = TRUE)
-      fgm.data <- base::subset(ir, select = eval(cols))
+      #fgm.data <- base::subset(ir, select = eval(cols))
       
       rm(ir)
 
-      num.col <- length(col.names)
-      names(fgm.data)[1:num.col] <- col.names
+      #num.col <- length(col.names)
+      #names(fgm.data)[1:num.col] <- col.names
 
       fgm.data$dhs.year <- dhs.year
 
@@ -147,7 +147,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
         wealth.index.2 <- factor(ifelse(wealth.index %in% c("rich", "richest"), 1, 0), levels = c(0, 1), labels = c("poor", "rich"))
 
         discuss.circum.fac <- factor(discuss.circum, level = 0:1, labels = c("no", "yes"))
-	received.info.circum.fac <- factor(received.info.circum, level = 0:1, labels = c("no", "yes"))
+        received.info.circum.fac <- factor(received.info.circum, level = 0:1, labels = c("no", "yes"))
         visit.health.facil.12mon.fac <- factor(visit.health.facil.12mon, level = 0:1, labels = c("no", "yes"))
       })
 
@@ -156,72 +156,26 @@ BaseFgmData <- setRefClass("BaseFgmData",
 
       fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
 
+      # What's this?
       if (is.null(fgm.data$unique.cluster)) 
         fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
 
       gps <- read.dbf(gps.file)
 
       fgm.spdf <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-      coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
-      proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
+      #coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
+      #proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
 
-      initFields(spdf = fgm.spdf, cluster.info = gps)
+      callSuper(data = fgm.spdf, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"))
+      initFields(cluster.info = gps)
 
       rm(gps)
-
-      return(.self)
     }
 ))
 
-# Can use the name "names"
-BaseFgmData$methods(
-  get.names = function()
-          {
-            names(spdf@data)
-          }
-)
-
-BaseFgmData$methods(
-  by = function(INDICES, FUN, ...)
-  {
-    convert.FgmData <- function(df, ...)
-    {
-      df <- merge(df, data@cluster.info[, c('DHSYEAR', 'DHSCLUST', 'LONGNUM', 'LATNUM')], by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-      coordinates(df) <- c('LONGNUM', 'LATNUM')
-      proj4string(df) <- CRS("+proj=longlat +ellps=WGS84")
-
-      FUN(new("FgmData", df, cluster.info = data@cluster.info), ...)
-    } 
-
-    by(spdf@data, INDICES, convert.FgmData, ...)
-  }
-)
-
-BaseFgmData$methods(
-  subset = function(subset, ...)
-  {
-    # same implementation as subset.base().  I had to do this because of a parent.frame() used in evaluating the subset param
-    if (missing(subset)) 
-        r <- TRUE
-    else 
-    {
-        e <- substitute(subset)
-        r <- eval(e, spdf@data, parent.frame(n = 2))
-        if (!is.logical(r)) 
-            stop("'subset' must evaluate to logical")
-        r <- r & !is.na(r)
-    }
-
-    spdf@data[r, ]
-  }
-)
-
-BaseFgmData$methods(
-  nrow = function()
-  {
-    base::nrow(spdf@data)
-  }
-)
+BaseFgmData$methods(create.new.from.data = function(df, ...) {
+    callSuper(df = df, cluster.info = cluster.info, ...)
+})
 
 BaseFgmData$methods(
   by.radius = function(radius, fun, ..., indices = NULL, by.cluster = TRUE)
@@ -277,90 +231,3 @@ BaseFgmData$methods(
           }
 )
 
-BaseFgmData$methods(
-  lm = function(formula, gen.vcov = FALSE)
-  {
-    r <- stats::lm(formula, data = spdf@data)
-    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else matrix(NA, 0, 0)
-    
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
-  }
-)
-
-BaseFgmData$methods(
-  tsls = function(formula, instruments, gen.vcov = FALSE)
-  {
-    r <- sem::tsls(formula, formula, data = spdf@data)
-    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-    
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula, instruments = instruments) 
-  }
-)
-
-BaseFgmData$methods(
-  ivreg = function(formula, gen.vcov = FALSE)
-  {
-    r <- AER::ivreg(formula, data = spdf@data)
-    v <- if (gen.vcov) tryCatch(vcovHAC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-    
-    RegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
-  }
-)
-
-BaseFgmData$methods(
-  plm = function(formula, effect, model, index, gen.vcov = FALSE)
-  {
-    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spdf@data)
-    v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-    
-    PlmRegressionResults$new(.lm = r, vcov = v, data = .self, regress.formula = formula) 
-  }
-)
-
-RegressionResults <- setRefClass("RegressionResults",
-  fields = list(
-    .lm = "ANY", 
-    vcov = "matrix",
-    regress.formula = "formula",
-    instruments = "formula",
-    data = "BaseFgmData",
-    na.action = function(val) { return(.lm$na.action) }),
-
-  methods = list(
-    summary = function()
-    {
-      coeftest(.lm, vcov = vcov)
-    },
-    
-    lht = function(hypothesis, test = c("Chisq", "F"))
-    {
-      linearHypothesis(.lm, hypothesis, test = test, vcov = if (!is.empty(vcov)) vcov)
-    },
-
-    adj.r.squared = function()
-    {
-      return(base::summary(.lm)$adj.r.squared)
-    },
-
-    r.squared = function()
-    {
-      return(base::summary(.lm)$r.squared)
-    }
-    )
-)
-
-PlmRegressionResults <- setRefClass("PlmRegressionResults",
-  contains = "RegressionResults",
-
-  methods = list(
-    r.squared = function()
-    {
-      return(base::summary(.lm)$r.squared["rsq"])
-    },
-
-    adj.r.squared = function()
-    {
-      return(base::summary(.lm)$r.squared["adjrsq"])
-    }
-    )
-)

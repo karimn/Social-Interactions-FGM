@@ -9,18 +9,37 @@ Data <- setRefClass("Data",
         #ncol = function(value) if (missing(value)) base::ncol(data) else stop("ncol is not mutable")))
         ncol = function(value) base::ncol(data)))
 
-Data$methods(initialize = function(columns = NULL, new.column.names = NULL, ...) {
+Data$methods(init.from.list = function(obj.list) {
+    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))))
+
+    data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$data))
+})
+
+Data$methods(initialize = function(columns, new.column.names, collection, ...) {
     initFields(...)
 
-    if (!is.null(columns)) { # Select columns
+    if (!missing(collection)) {
+        init.from.list(collection)
+    }
+
+    if (!missing(columns)) { # Select columns
         subset(select = eval(columns))
     }
 
-    if (!is.null(new.column.names)) { # Rename column names
+    if (!missing(new.column.names)) { # Rename column names
         stopifnot(length(new.column.names) <= ncol(data))
         names[1:length(new.column.names)] <<- new.column.names
     }
   })
+
+
+Data$methods(change.column.names = function(old.names, new.names) {
+    names[names %in% old.names] <<- new.names
+})
+
+Data$methods(sort = function(by, ...) {
+    data <<- data[order(data[by], ...), , drop = FALSE]
+})
 
 Data$methods(subset = function(subset, select, ...) { 
     data <<- do.call(base::subset, c(list(x = data, subset = substitute(subset), select = substitute(select)), list(...)), envir = parent.frame()) 
@@ -32,29 +51,66 @@ Data$methods(get.subset = function(...) {
     return(new.data.obj)
 })
 
+Data$methods(exclude.rows = function(rows) {
+    data <<- data[-rows, ]
+})
+
 stub.callback <- function(df, FUN, self.obj, ...) {
     self.obj$convert.callback(df, FUN, ...)
 }
 
+Data$methods(create.new.from.data = function(df, ...) {
+    getRefClass()$new(data = df, ...)
+})
+
 Data$methods(convert.callback = function(df, original.callback, ...) {
-    original.callback(getRefClass()$new(data = df), ...)
+    original.callback(create.new.from.data(df), ...)
 })
 
 Data$methods(aggregate = function(by, FUN, ...) {
     stats::aggregate(data, data[by], stub.callback, FUN, .self, ...)
 })
 
-Data$methods(tapply = function(by, FUN, ...) {
-    base::tapply(data, data[by], stub.callback, FUN, .self, ...)
-})
+#Data$methods(tapply = function(by, FUN, ...) {
+#    base::tapply(data, data[by], stub.callback, FUN, .self, ...)
+#})
+
+#Data$methods(tapply.change = function(by, FUN, ...) {
+#    "The callback function must return an object of the same type of this class"  
+#    do.call(base::rbind, lapply(base::tapply(data, data[by], stub.callback, FUN, .self, ...)), function (obj) obj$data)
+#})
 
 Data$methods(split = function(by, ...) {
-    DataCollection$new(coll = base::lapply(base::split(data, by, data[by], ...), function(df) getRefClass()$new(data = df)))
+    DataCollection$new(coll = base::lapply(base::split(data, by, data[by], ...), function(df) create.new.from.data(df)))
 })
 
-Data$methods(by = function(INDICES, FUN, ...) {
-    base::by(data, INDICES = eval(substitute(INDICES), envir = data), FUN = stub.callback, FUN, .self, ...)
+Data$methods(by = function(by.indices, FUN, ...) {
+    base::by(data, INDICES = data[by.indices], FUN = stub.callback, FUN, .self, ...)
 })
+
+Data$methods(quick.update = function(by, FUN, ...) {
+    "The callback function will receive a reference to self, a group mask, the value of the group indices, and \"...\""
+    grp.ind <- base::tapply(data[[1L]], data[[by]])
+    max.grp.index <- max(grp.ind)
+    for (grp.index in 1L:max.grp.index) {
+        mask <- grp.ind == grp.index
+        first.in.grp <- which.min(mask)
+
+        grp.index.values <- list()
+
+        for (by.index in by) {
+            grp.index.values[by.index] <- origin.data[first.in.grp, by.index]
+        }
+
+        FUN(.self, mask, grp.index.values, ...)
+    }
+})
+
+Data$methods(reshape = function(...) {
+    data <<- stats::reshape(data, ...)
+})
+
+# Regression methods
 
 Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
     r <- stats::lm(formula, data = data)
