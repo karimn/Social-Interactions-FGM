@@ -23,17 +23,19 @@ SpatialData$methods(init.from.list = function(obj.list) {
     proj4string <<- objlist[[1L]]$proj4string
 })
 
-SpatialData$methods(initialize = function(coordinate.names, proj4string = "+proj=longlat +ellps=WGS84", ...) {
+SpatialData$methods(initialize = function(coordinate.names = NULL, proj4string = "+proj=longlat +ellps=WGS84", ...) {
     if (all(names(list(...)) != "collection")) {
         callSuper(coordinate.names = coordinate.names, proj4string = proj4string, ...)
 
         temp.data <- data
         data <<- data.frame()
 
-        coordinates(temp.data) <- coordinate.names
-        proj4string(temp.data) <- proj4string 
+        if (!is.empty(temp.data) & !is.null(coordinate.names)) {
+            coordinates(temp.data) <- coordinate.names
+            proj4string(temp.data) <- proj4string 
 
-        spatial.data <<- temp.data
+            spatial.data <<- temp.data
+        }
     } else {
         callSuper(...)
     }

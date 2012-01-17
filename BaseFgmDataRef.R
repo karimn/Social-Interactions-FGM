@@ -96,20 +96,12 @@ BaseFgmData <- setRefClass("BaseFgmData",
     cluster.info = "data.frame"), 
 
   methods = list(
-    initialize = function(ir.file, gps.file, columns = FgmData.cols, new.column.names = FgmData.col.names, dhs.year = 2008, ...)
+    initialize = function(ir.file = NULL, gps.file = NULL, columns = FgmData.cols, new.column.names = FgmData.col.names, dhs.year = 2008, ...)
     {
-      #initFields(...)
-      #if (is.empty(ir.file) | is.empty(gps.file))
-      #  return(.self)
-
-      if (!missing(ir.file) & !missing(gps.file) & all(names(list(...)) != "collection")) {
+      if (!is.null(ir.file) & !is.null(gps.file) & all(names(list(...)) != "collection")) {
           ir <- read.dta(ir.file, convert.underscore = TRUE)
-          #fgm.data <- base::subset(ir, select = eval(cols))
           
           rm(ir)
-
-          #num.col <- length(col.names)
-          #names(fgm.data)[1:num.col] <- col.names
 
           fgm.data$dhs.year <- dhs.year
 
@@ -171,7 +163,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
 
           rm(gps)
       } else {
-          callSuper(...)
+          callSuper(coordinate.names = c("LONGNUM", "LATNUM"),...)
       }
     }
 ))

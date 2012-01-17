@@ -100,7 +100,7 @@ cleanup.by.hh <- function(df.obj) {
   df.obj$sort("age", decreasing = TRUE)
 
   df.obj$spatial.data$n.ord <- n
-  df.obj$spatial.data$$order <- 1:n
+  df.obj$spatial.data$order <- 1:n
 
   return(df)
 }
@@ -116,14 +116,14 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
   contains = "BaseFgmData",
 
   fields = list(
-    all.cohorts.spdf = "SpatialPointsDataFrame",
+    all.cohorts.spdf = "DaughterFgmData", #"SpatialPointsDataFrame",
     individual.controls = "character",
     other.grpavg.controls = "character",
     birth.data = "data.frame"),
 
   methods = list(
-    initialize = function(ir.file = character(0), br.file, gps.file = character(0), 
-                          new.column.names = FgmData.col.names
+    initialize = function(ir.file = NULL, br.file, gps.file = NULL, 
+                          new.column.names = FgmData.col.names,
                           youngest.cohort = 1996, 
                           dhs.year = 2008, 
                           individual.controls = DaughterFgmData.individual.controls, 
@@ -133,10 +133,9 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
     {
       columns <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
 
-      callSuper(ir.file = ir.file, gps.file = gps.file, columns = columns, new.column.names = new.column.names, dhs.year = dhs.year, ...)
-      initFields(individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls)
+      callSuper(ir.file = ir.file, gps.file = gps.file, columns = columns, new.column.names = new.column.names, dhs.year = dhs.year, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls, ...)
 
-      if (!is.empty(ir.file) & !is.empty(gps.file))
+      if (!is.null(ir.file) & !is.null(gps.file))
       {
         num.col <- length(new.column.names) + 1
 
@@ -153,21 +152,21 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
 
         subset(!is.na(sdcol), select = c(-sdcol))
 
-        spdf@data <<- transform(spdf@data, 
-                               circum = as.numeric(circum), 
-                               mar.status = as.numeric(mar.status), 
-                               who.circum = as.numeric(who.circum))
-        spdf@data <<- transform(spdf@data,
-                               circum.yesno = ifelse(circum == 1, 1, 0))
+        spatial.data@data <<- within(spatial.data@data, {
+            circum <- as.numeric(circum) 
+            mar.status <- as.numeric(mar.status) 
+            who.circum <- as.numeric(who.circum)
+            circum.yesno <- ifelse(circum == 1, 1, 0)
+        })
 
         br <- read.dta(br.file, convert.underscore = TRUE)
         br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno, m3g, m15))
         br$delivery.location <- factor(br$m15 %/% 10, labels = c("home", "public sector", "private sector", "other", "missing"))
         br$delivered.by.daya <- factor(br$m3g, labels = c("no", "yes"), levels = 0:1)
 
-        spdf@data <<- merge(spdf@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
+        spatial.data@data <<- merge(spatial.data@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
 
-        br <- merge(br, spdf@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
+        br <- merge(br, spatial.data@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
 
         birth.data <<- br
 		    
@@ -175,7 +174,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
 
         change.column.names(c('v437', 'v438', 'b2') , c('weight', 'height', 'birth.year'))
 
-        spdf@data <<- within(spdf@data, 
+        spatial.data@data <<- within(spatial.data@data, 
         {
           age <- dhs.year - birth.year
           has.or.intends.circum <- ifelse(circum == 1 | ((age <= 12) & (intends.circum == 1)), 1, 0)
@@ -187,7 +186,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
           birth.year.fac <- factor(birth.year)
         })
 
-        all.cohorts.spdf <<- spdf
+        all.cohorts.spdf <<- copy()
 
         if (!is.null(youngest.cohort))
           subset(birth.year <= youngest.cohort)
@@ -195,14 +194,14 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
         #spdf@data <<- do.call(rbind, base::by(spdf@data, spdf@data$hh.id, cleanup.by.hh))
         tapply.change(c("hh.id"), cleanup.by.hh)
 
-        spdf@data$order.fac <<- factor(spdf@data$order)
+        spatial.data@data$order.fac <<- factor(spdf@data$order)
         sort(c("hh.id", "birth.year"))
 
         subset(circum <= 1)
       }
       else
       {
-        all.cohorts.spdf <<- spdf
+        all.cohorts.spdf <<- copy() 
 
         if (!is.null(youngest.cohort) & !is.empty(spdf@data))
           subset(birth.year <= youngest.cohort)
@@ -225,9 +224,8 @@ DaughterFgmData$methods(
                                 range.type = c("both", "older"))
   {
     #spdf@data <<- do.call(rbind, 
-    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
-                          #lag = 0, exclude.self = exclude.self))
-    quick.upate(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg. cohort.range, regs, lag = 0, exclude.self = exclude.self)
+    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, lag = 0, exclude.self = exclude.self))
+    quick.upate(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 0, exclude.self = exclude.self)
 
     #spdf@data <<- do.call(rbind, 
     #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
