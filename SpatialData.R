@@ -204,8 +204,6 @@ SpatialData$methods(quick.update = function(by, FUN, ...) {
 })
 
 SpatialData$methods(reshape = function(...) {
-    #spatial.data <<- do.call("reshape", c(spatial.data, ...))
-
     origin.data <- as.data.frame(spatial.data)
     origin.data <- stats::reshape(origin.data, ...)
     coordinates(origin.data) <- coordinate.names
@@ -227,3 +225,54 @@ SpatialData$methods(relevel = function(column, ref, ...) {
     spatial.data@data[,column] <<- stats::relevel(spatial.data@data[,column], ref = ref, ...)
 })
 
+SpatialData$methods(summary = function(columns = TRUE, ...) {
+    base::summary(spatial.data@data[, columns], ...)
+})
+
+# Regression methods
+
+SpatialData$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
+    r <- stats::lm(formula, data = spatial.data)
+
+    if (!is.null(vcov.fun)) {
+        vcov <- vcov.fun(r, ...)
+
+        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+    } else {
+        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+    }
+  })
+
+SpatialData$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
+    r <- sem::tsls(formula, formula, data = spatial.data)
+
+    if (!is.null(vcov.fun)) {
+        vcov <- vcov.fun(r, ...) 
+        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+    } else {
+        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+    }
+  })
+
+Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
+    r <- AER::ivreg(formula, formula, data = spatial.data)
+
+    if (!is.null(vcov.fun)) {
+        vcov <- vcov.fun(r, ...) 
+        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+    } else {
+        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+    }
+  })
+
+Data$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, ...) {
+    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spatial.data)
+    v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
+     if (!is.null(vcov.fun)) {
+        vcov <- vcov.fun(r, ...) 
+        PanelRegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+    } else {
+        PanelRegressionResults$new(results = r, regress.formula = formula, data = .self) 
+     }
+  }
+)

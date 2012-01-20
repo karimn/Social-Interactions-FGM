@@ -115,7 +115,8 @@ BaseFgmData <- setRefClass("BaseFgmData",
 
           spatial.data@data <<- within(spatial.data@data, 
           {
-            hh.id <- factor(paste(cluster, hh, sep = '-'))
+            hh.id <- factor(paste(cluster, hh, sep = '-')) # This is unique on households, but there might be 
+                                                           # multiple mothers in the same hh
             religion <- factor(religion, 
                                levels = 1:2, 
                                labels = FgmData.religions) #, "missing"))

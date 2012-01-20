@@ -135,12 +135,11 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
 
             reshape(varying = lapply(reshape.col, function(col) paste(col, 1:7, sep = ".")), 
                     direction = 'long', 
-                    sep = '.', 
-                    v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'), 
-                    timevar = 'order')
+                    v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'),
+                    timevar = 'order') # A new column "id" is created that is unique over mothers
 
-            subset(!is.na(sdcol), select = c(-sdcol))
-
+            # This needs to be done first; the below call to subset() seems to convert any "character" type
+            # columns into factors.  The "circum" column is text because of some "yes" and "no" values.
             spatial.data@data <<- within(spatial.data@data, {
                 circum <- as.numeric(circum) 
                 mar.status <- as.numeric(mar.status) 
@@ -148,6 +147,7 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
                 circum.yesno <- ifelse(circum == 1, 1, 0)
             })
 
+            subset(!is.na(sdcol), select = c(-sdcol))
 
             br <- read.dta(br.file, convert.underscore = TRUE)
             br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno, m3g, m15))

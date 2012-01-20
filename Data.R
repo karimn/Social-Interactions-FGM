@@ -142,6 +142,10 @@ Data$methods(relevel = function(column, ref, ...) {
     data[,column] <<- stats::relevel(data[,column], ref = ref, ...)
 })
 
+Data$methods(summary = function(columns = TRUE, ...) {
+    base::summary(data[, columns], ...)
+})
+
 # Regression methods
 
 Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
@@ -193,8 +197,3 @@ Data$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, .
 StataData <- setRefClass("StataData",
                          contains = c("Data"))
 
-StataData$methods(initialize = function(dta.file, ...) {
-    data <<- read.dta(dta.file, convert.underscore = TRUE)
-
-    callSuper(...)
-})
