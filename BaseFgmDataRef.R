@@ -5,38 +5,39 @@ library(sem)
 library(AER)
 library(plm)
 
-#grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
-grp.mean <- function(rowid, grp.data, column, column.lvl = NULL, exclude.self = FALSE)
+grp.mean <- function(rowid, grp.data, column, column.lvl = NULL)
 {
   lcl.grp <- grp.data$copy()
-  if (exclude.self)
+
+  if (!is.null(rowid)) {
     lcl.grp <- lcl.grp$remove.rows(rowid)
+  }
   
-  if ((lcl.grp$nrow == 0) | all(is.na(lcl.grp$spatial.data[, column])))
-    return()
+  if ((lcl.grp$nrow == 0) || all(is.na(lcl.grp$spatial.data@data[, column])))
+    return(NA)
 
   if (is.null(column.lvl))
-    mean(lcl.grp$spatial.data[, column], na.rm = TRUE)
+    mean(lcl.grp$spatial.data@data[, column], na.rm = TRUE)
   else
-    mean(lcl.grp$spatial.data[, column] == column.lvl, na.rm = TRUE)
-    
-  return()
+    mean(lcl.grp$spatial.data@data[, column] == column.lvl, na.rm = TRUE)
 }
 
-#factor.mean <- function(df, grp, col.name, prefix, exclude.self = FALSE)
-factor.mean <- function(all.data, grp.mask, grp, col.name, prefix, exclude.self = FALSE)
+factor.mean <- function(all.data, grp.ids, grp, col.name, prefix, exclude.self = FALSE)
 {
-  stopifnot(is.factor(all.data$spatial.data[, col.name]))
+  stopifnot(is.factor(all.data$spatial.data@data[, col.name]))
 
-  col.lvls <- levels(all.data$spatial.data[, col.name])
+  col.lvls <- levels(all.data$spatial.data@data[, col.name])
   grp.nrow <- grp$nrow
 
   for (i in 2L:length(col.lvls))
   {
     cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", col.lvls[i], perl = TRUE))
     new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
-    #df[, new.col.name] <- if (grp.nrow != 0) sum(grp[, col.name] == col.lvls[i], na.rm = TRUE) / grp.nrow else NA
-    all.data$spatial.data[grp.mask, new.col.name] <- vapply(1L:length(which(mask)), grp.mean, 0L, grp, col.name, col.lvls[i], exclude.self)
+    if (exclude.self) {
+        all.data$spatial.data@data[grp.ids, new.col.name] <- vapply(1L:length(grp.ids), grp.mean, 0, grp, col.name, col.lvls[i])
+    } else {
+        all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name, col.lvls[i])
+    }
   }
 
   return() 
@@ -98,14 +99,21 @@ BaseFgmData <- setRefClass("BaseFgmData",
   methods = list(
     initialize = function(ir.file = NULL, gps.file = NULL, columns = FgmData.cols, new.column.names = FgmData.col.names, dhs.year = 2008, ...)
     {
-      if (!is.null(ir.file) & !is.null(gps.file) & all(names(list(...)) != "collection")) {
-          ir <- read.dta(ir.file, convert.underscore = TRUE)
-          
-          rm(ir)
+      if ("data" %in% names(list(...))) {
+          callSuper(...) 
+      } else if (!is.null(ir.file) & !is.null(gps.file) & all(names(list(...)) != "collection")) {
+          fgm.data <- read.dta(ir.file, convert.underscore = TRUE)
+          gps <- read.dbf(gps.file)
 
           fgm.data$dhs.year <- dhs.year
 
-          fgm.data <- within(fgm.data, 
+          fgm.data <- merge(fgm.data, gps, by.x = c('dhs.year', 'v001'), by.y = c('DHSYEAR', 'DHSCLUST'))
+
+          callSuper(data = fgm.data, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"), cluster.info = gps)
+          rm(fgm.data)
+          rm(gps)
+
+          spatial.data@data <<- within(spatial.data@data, 
           {
             hh.id <- factor(paste(cluster, hh, sep = '-'))
             religion <- factor(religion, 
@@ -145,31 +153,22 @@ BaseFgmData <- setRefClass("BaseFgmData",
           })
 
           for (ci in FgmData.circum.info)
-            fgm.data[,paste(ci, "fac", sep = ".")] <- factor(fgm.data[,ci], levels = 0:1, labels = c("no", "yes"))
+            spatial.data@data[,paste(ci, "fac", sep = ".")] <<- factor(spatial.data@data[,ci], levels = 0:1, labels = c("no", "yes"))
 
-          fgm.data <- fgm.data[ order(fgm.data$hh.id), ]
+          sort("hh.id")
 
           # What's this?
-          if (is.null(fgm.data$unique.cluster)) 
-            fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
-
-          gps <- read.dbf(gps.file)
-
-          fgm.data <- merge(fgm.data, gps, by.x = c('dhs.year', 'cluster'), by.y = c('DHSYEAR', 'DHSCLUST'))
-          #coordinates(fgm.spdf) <- c("LONGNUM", "LATNUM")
-          #proj4string(fgm.spdf) <- CRS("+proj=longlat +ellps=WGS84")
-
-          callSuper(data = fgm.spdf, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"), cluster.info = gps)
-
-          rm(gps)
+          #if (is.null(fgm.data$unique.cluster)) 
+          #  fgm.data$unique.cluster <- as.numeric(row.names(fgm.data))
       } else {
           callSuper(coordinate.names = c("LONGNUM", "LATNUM"),...)
       }
     }
 ))
 
+
 BaseFgmData$methods(create.new.from.data = function(df, ...) {
-    callSuper(data = df, cluster.info = cluster.info, ...)
+    callSuper(df = df, cluster.info = cluster.info, ...)
 })
 
 BaseFgmData$methods(

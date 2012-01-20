@@ -6,16 +6,15 @@ library(lmtest)
 library(plm)
 library(AER)
 
-#calc.grpavg <- function(df, total.df, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE,
-calc.grpavg <- function(all.data, ind.mask, grp.index.values, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL)
+calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL)
 {
   #print(sprintf("calc.grpavg: size = %i", nrow(df)))
-  current.birth.year <- grp.index.values$birth.year - lag #df$birth.year[1] - lag
-  current.governorate <- grp.index.values$governorate #df$governorate[1]
+  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag #grp.index.col.values$birth.year - lag 
+  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] #grp.index.col.values$governorate 
 
   if (!is.null(other.network.reg))
   {
-    current.other.network <- grp.index.values[[other.network.reg]] # df[1, other.network.reg]
+    current.other.network <- grp.index.values[[other.network.reg]] 
     grp <- switch(match.arg(range.type),
                   both = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
                                   (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
@@ -37,58 +36,51 @@ calc.grpavg <- function(all.data, ind.mask, grp.index.values, cohort.range, regs
                                    (all.data$spatial.data[["governorate"]] == current.governorate))) 
   }
 
-  if (length(regs) > 0)
-    for (col.name in regs)
-    {
-      if (is.factor(all.data[, col.name]))
-      {
-        factor.mean(all.data, ind.mask, grp, col.name, prefix, exclude.self)
+  if ((length(regs) > 0) && (!is.null(grp))) {
+    for (col.name in regs) {
+        if (is.factor(all.data$spatial.data@data[, col.name])) {
+          factor.mean(all.data, grp.ids, grp, col.name, prefix, exclude.self)
+        } else {
+          new.col.name <- paste(prefix, col.name, sep = '.')
+          if (exclude.self) {
+              all.data$spatial.data@data[grp.ids, new.col.name] <- vapply(1L:length(grp.ids), grp.mean, 0, grp, col.name)
+          } else {
+              all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name)
+          }
+        }
       }
-      else
-      {
-        new.col.name <- paste(prefix, col.name, sep = '.')
-        #df[, new.col.name] <- if (nrow(grp) != 0) mean(grp[, col.name], na.rm = TRUE) else NA
-        all.data$spatial.data[ind.mask, new.col.name] <- vapply(1L:length(which(ind.mask)), grp.mean, 0L, grp, col.name, NULL, exclude.self)
-      }
-    }
+  }
 
-  all.data$spatial.data[ind.mask, "grp.size"] <- nrow(grp) 
+  all.data$spatial.data@data[grp.ids, "grp.size"] <- grp$nrow
 
   return()
 }
 
-#calc.delivery.avgs <- function(df, total.df, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
-calc.delivery.avgs <- function(all.data, grp.mask, grp.index.values, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
-  current.circum.year <- grp.index.values$birth.year + year.offset #df$birth.year[1] + year.offset
-  current.governorate <- grp.index.values$governoate #df$governorate[1]
+calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.cohorts.data, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
+  current.circum.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset #grp.index.col.values$birth.year + year.offset
+  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] #grp.index.col.values$governorate
 
 
   grp <- switch(match.arg(range.type),
-	  both = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.circum.year + year.range) & 
-			  (all.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
-			  (all.data$spatial.data[["governorate"]] == current.governorate)) ,
-	  older = all.data$get.subset[(all.data$spatial.data[["birth.year"]] <= current.circum.year) & 
-			   (all.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
-			   (all.data$spatial.data[["governorate"]] == current.governorate), ]) 
+	  both = all.cohorts.data$get.subset((all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year + year.range) & 
+			  (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
+			  (all.cohorts.data$spatial.data[["governorate"]] == current.governorate)) ,
+	  older = all.cohorts.data$get.subset[(all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year) & 
+			   (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
+			   (all.cohorts.data$spatial.data[["governorate"]] == current.governorate), ]) 
 
-  #browser(condition = current.circum.year, expr = nrow(grp) > 0)
-
-  if (length(regs) > 0)
-    for (col.name in regs)
-    {
-      if (is.factor(all.data$spatial.data[, col.name]))
-      {
-        factor.mean(all.data, grp.mask, grp, col.name, prefix)
-      }
-      else
-      {
-        new.col.name <- paste(prefix, col.name, sep = '.')
-        #df[, new.col.name] <- if (nrow(grp) != 0) mean(grp[, col.name], na.rm = TRUE) else NA
-        all.data$spatial.data[grp.mask, new.col.name] <- vapply(1L:length(which(grp.mask)), grp.mean, 0L, grp, col.name, NULL)
-      }
+  if ((length(regs) > 0) && (!is.null(grp))) {
+    for (col.name in regs) {
+        if (is.factor(all.data$spatial.data@data[, col.name])) {
+          factor.mean(all.data, grp.ids, grp, col.name, prefix)
+        } else {
+          new.col.name <- paste(prefix, col.name, sep = '.')
+          all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name)
+        }
     }
+  }
 
-   return()
+  return()
 }
 
 cleanup.by.hh <- function(df.obj) {
@@ -102,7 +94,7 @@ cleanup.by.hh <- function(df.obj) {
   df.obj$spatial.data$n.ord <- n
   df.obj$spatial.data$order <- 1:n
 
-  return(df)
+  return(df.obj)
 }
 
 
@@ -114,106 +106,103 @@ DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.
 
 DaughterFgmData <- setRefClass("DaughterFgmData", 
   contains = "BaseFgmData",
-
   fields = list(
-    all.cohorts.spdf = "DaughterFgmData", #"SpatialPointsDataFrame",
+    all.cohorts.spdf = "SpatialData", # "SpatialPointsDataFrame",
     individual.controls = "character",
     other.grpavg.controls = "character",
-    birth.data = "data.frame"),
+    birth.data = "data.frame"))
 
-  methods = list(
-    initialize = function(ir.file = NULL, br.file, gps.file = NULL, 
+DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gps.file = NULL, 
                           new.column.names = FgmData.col.names,
                           youngest.cohort = 1996, 
                           dhs.year = 2008, 
                           individual.controls = DaughterFgmData.individual.controls, 
                           other.grpavg.controls = character(0),
                           birth.data = "data.frame",
-                          ...)
-    {
-      columns <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
+                          skip.cleanup = FALSE, # This is just to speed up initialization in the interest of debugging
+                          ...) {
+      if ("data" %in% names(list(...))) {
+          callSuper(...)
+      } else {
+          columns <- quote(c(eval(FgmData.cols), sdcol.1:sdcol.7, s906.1:s906.7, s908.1:s908.7, s909.1:s909.7, s910.1:s910.7, s911.1:s911.7))
 
-      callSuper(ir.file = ir.file, gps.file = gps.file, columns = columns, new.column.names = new.column.names, dhs.year = dhs.year, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls, ...)
+          initFields(individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls)
+          callSuper(ir.file = ir.file, gps.file = gps.file, columns = columns, new.column.names = new.column.names, dhs.year = dhs.year, ...)
 
-      if (!is.null(ir.file) & !is.null(gps.file))
-      {
-        num.col <- length(new.column.names) + 1
+          if (!is.null(ir.file) & !is.null(gps.file))
+          {
+            reshape.col <- c("sdcol", "s906", "s908", "s909", "s910", "s911")
 
-        reshape(varying = list(names[(num.col + 1):(num.col + 7)], 
-                               names[(num.col + 8):(num.col + 14)], 
-                               names[(num.col + 15):(num.col + 21)], 
-                               names[(num.col + 22):(num.col + 28)], 
-                               names[(num.col + 29):(num.col + 35)], 
-                               names[(num.col + 36):(num.col + 42)]), 
-                     direction = 'long', 
-                     sep = '.', 
-                     v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'), 
-                     timevar = 'order')
+            reshape(varying = lapply(reshape.col, function(col) paste(col, 1:7, sep = ".")), 
+                    direction = 'long', 
+                    sep = '.', 
+                    v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'), 
+                    timevar = 'order')
 
-        subset(!is.na(sdcol), select = c(-sdcol))
+            subset(!is.na(sdcol), select = c(-sdcol))
 
-        spatial.data@data <<- within(spatial.data@data, {
-            circum <- as.numeric(circum) 
-            mar.status <- as.numeric(mar.status) 
-            who.circum <- as.numeric(who.circum)
-            circum.yesno <- ifelse(circum == 1, 1, 0)
-        })
+            spatial.data@data <<- within(spatial.data@data, {
+                circum <- as.numeric(circum) 
+                mar.status <- as.numeric(mar.status) 
+                who.circum <- as.numeric(who.circum)
+                circum.yesno <- ifelse(circum == 1, 1, 0)
+            })
 
-        br <- read.dta(br.file, convert.underscore = TRUE)
-        br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno, m3g, m15))
-        br$delivery.location <- factor(br$m15 %/% 10, labels = c("home", "public sector", "private sector", "other", "missing"))
-        br$delivered.by.daya <- factor(br$m3g, labels = c("no", "yes"), levels = 0:1)
 
-        spatial.data@data <<- merge(spatial.data@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
+            br <- read.dta(br.file, convert.underscore = TRUE)
+            br <- base::subset(br, select = c(v001:v003, bidx, v437, v438, b2, sdno, m3g, m15))
+            br$delivery.location <- factor(br$m15 %/% 10, labels = c("home", "public sector", "private sector", "other", "missing"))
+            br$delivered.by.daya <- factor(br$m3g, labels = c("no", "yes"), levels = 0:1)
 
-        br <- merge(br, spatial.data@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
+            spatial.data@data <<- merge(spatial.data@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
 
-        birth.data <<- br
-		    
-        rm(br)
+            br <- merge(br, spatial.data@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
 
-        change.column.names(c('v437', 'v438', 'b2') , c('weight', 'height', 'birth.year'))
+            birth.data <<- br
+                
+            rm(br)
 
-        spatial.data@data <<- within(spatial.data@data, 
-        {
-          age <- dhs.year - birth.year
-          has.or.intends.circum <- ifelse(circum == 1 | ((age <= 12) & (intends.circum == 1)), 1, 0)
-          med.circum <- ifelse(circum == 1 & (who.circum %in% c(1, 2)), 1, 0)
-          year.circum <- ifelse(circum == 1 & age.circum <= 19, birth.year + age.circum, NA)
-          year.circum.fac <- factor(year.circum)
-          #order.fac <- factor(order)
-          married <- ifelse(mar.status == 1, 1, 0)
-          birth.year.fac <- factor(birth.year)
-        })
+            change.column.names(c('v437', 'v438', 'b2') , c('weight', 'height', 'birth.year'))
 
-        all.cohorts.spdf <<- copy()
+            spatial.data@data <<- within(spatial.data@data, 
+            {
+              age <- dhs.year - birth.year
+              has.or.intends.circum <- ifelse(circum == 1 | ((age <= 12) & (intends.circum == 1)), 1, 0)
+              med.circum <- ifelse(circum == 1 & (who.circum %in% c(1, 2)), 1, 0)
+              year.circum <- ifelse(circum == 1 & age.circum <= 19, birth.year + age.circum, NA)
+              year.circum.fac <- factor(year.circum)
+              #order.fac <- factor(order)
+              married <- ifelse(mar.status == 1, 1, 0)
+              birth.year.fac <- factor(birth.year)
+            })
 
-        if (!is.null(youngest.cohort))
-          subset(birth.year <= youngest.cohort)
+            all.cohorts.spdf <<- SpatialData$new(copy = .self) #spatial.data 
 
-        #spdf@data <<- do.call(rbind, base::by(spdf@data, spdf@data$hh.id, cleanup.by.hh))
-        tapply.change(c("hh.id"), cleanup.by.hh)
+            if (!is.null(youngest.cohort))
+              subset(birth.year <= youngest.cohort)
 
-        spatial.data@data$order.fac <<- factor(spdf@data$order)
-        sort(c("hh.id", "birth.year"))
+            if (!skip.cleanup) {
+                by.list <- by(c("hh.id"), cleanup.by.hh)
+                spatial.data <<- do.call(base::rbind, lapply(by.list[!is.na(by.list)], function(obj) obj$spatial.data))
+                spatial.data@data$order.fac <<- factor(spatial.data@data$order)
+            }
 
-        subset(circum <= 1)
+            sort(c("hh.id", "birth.year"))
+
+            subset(circum <= 1)
+          }
+          else
+          {
+            all.cohorts.spdf <<- SpatialData$new(copy = .self) #spatial.data  
+
+            if (!is.null(youngest.cohort) & (nrow != 0))
+              subset(birth.year <= youngest.cohort)
+          }
       }
-      else
-      {
-        all.cohorts.spdf <<- copy() 
-
-        if (!is.null(youngest.cohort) & !is.empty(spdf@data))
-          subset(birth.year <= youngest.cohort)
-      }
-
-      #spdf@data$hh.id <<- spdf@data$hh.id[,drop = TRUE]
-      return(.self)
-    }
-))
+    })
 
 DaughterFgmData$methods(create.new.from.data = function(df, ...) {
-    callSuper(data = df, , ...)
+    callSuper(df = df, individual.controls = individual.controls, other.grpavg.controls = other.grpavg.controls, birth.data = birth.data, ...)
 })
 
 DaughterFgmData$methods(
@@ -223,13 +212,7 @@ DaughterFgmData$methods(
                                 exclude.self = FALSE,
                                 range.type = c("both", "older"))
   {
-    #spdf@data <<- do.call(rbind, 
-    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, lag = 0, exclude.self = exclude.self))
-    quick.upate(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 0, exclude.self = exclude.self)
-
-    #spdf@data <<- do.call(rbind, 
-    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate", other.network.reg)], calc.grpavg, spdf@data, cohort.range, regs, 
-    #                      lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self))
+    quick.update(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 0, exclude.self = exclude.self)
     quick.update(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self)
   }
 )
@@ -237,9 +220,7 @@ DaughterFgmData$methods(
 DaughterFgmData$methods(
   generate.delivery.means = function(year.range = 1, year.offset = 12, regs = c("delivery.location", "delivered.by.daya"), range.type = c("both", "older"))
   {
-    quick.update(c("birth.year.fac", "governorate"), calc.delivery.avgs, year.range, year.offset, regs)
-    #spdf@data <<- do.call(rbind, 
-    #                      base::by(spdf@data, spdf@data[c("birth.year.fac", "governorate")], calc.delivery.avgs, all.cohorts.spdf@data, year.range, year.offset, regs))
+    quick.update(c("birth.year.fac", "governorate"), calc.delivery.avgs, all.cohorts.spdf, year.range, year.offset, regs)
   }
 )
 

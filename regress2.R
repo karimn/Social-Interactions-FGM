@@ -1,11 +1,14 @@
+source("Data.R")
+source("DataCollection.R")
+source("SpatialData.R")
 source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 
-original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))
-original.data$spdf@data$urban.rural <- relevel(original.data$spdf@data$urban.rural, ref = "rural")
-original.data$spdf@data$med.help.distance.fac <- relevel(original.data$spdf@data$med.help.distance.fac, ref = "not big problem")
-original.data$spdf@data$med.help.money.fac <- relevel(original.data$spdf@data$med.help.money.fac, ref = "not big problem")
-original.data$spdf@data$med.help.transportation.fac <- relevel(original.data$spdf@data$med.help.transportation.fac, ref = "not big problem")
+original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"), skip.cleanup = T) # BUG don't skip cleanup!
+original.data$relevel("urban.rural", ref = "rural")
+original.data$relevel("med.help.distance.fac", ref = "not big problem")
+original.data$relevel("med.help.money.fac", ref = "not big problem")
+original.data$relevel("med.help.transportation.fac", ref = "not big problem")
 #original.data <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, youngest.cohort = 2000, other.grpavg.controls = "med.circum")
 #x <- DaughterFgmData$new(spdf = spdf, cluster.info = clust.info, other.grpavg.controls = c("med.circum", "circum"))
@@ -24,9 +27,9 @@ y$rm.by.res.years(10)
 y$generate.reg.means(exclude.self = FALSE)
 y$rm.by.grp.size(24)
 y$rm.duplicate(c("governorate", "birth.year.fac"))
-y$spdf@data$grpavg.educ.lvl_primary_neg <- - y$spdf@data$grpavg.educ.lvl_primary
-y$spdf@data$grpavg.educ.lvl_secondary_neg <- - y$spdf@data$grpavg.educ.lvl_secondary
-y$spdf@data$grpavg.mother.circum.fac_yes_neg <- - y$spdf@data$grpavg.mother.circum.fac_yes
+y$spatial.data@data$grpavg.educ.lvl_primary_neg <- - y$spatial.data@data$grpavg.educ.lvl_primary
+y$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - y$spatial.data@data$grpavg.educ.lvl_secondary
+y$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - y$spatial.data@data$grpavg.mother.circum.fac_yes
 
 #y.urbanrural$rm.by.res.years(10)
 #y.urbanruralgenerate.reg.means(exclude.self = FALSE, other.network.reg = "urban.rural")
@@ -50,9 +53,9 @@ x$generate.delivery.means()
 x$rm.by.res.years(10)
 x$generate.reg.means(exclude.self = TRUE)
 x$rm.by.grp.size(24)
-x$spdf@data$grpavg.educ.lvl_primary_neg <- - x$spdf@data$grpavg.educ.lvl_primary
-x$spdf@data$grpavg.educ.lvl_secondary_neg <- - x$spdf@data$grpavg.educ.lvl_secondary
-x$spdf@data$grpavg.mother.circum.fac_yes_neg <- - x$spdf@data$grpavg.mother.circum.fac_yes
+x$spatial.data@data$grpavg.educ.lvl_primary_neg <- - x$spatial.data@data$grpavg.educ.lvl_primary
+x$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - x$spatial.data@data$grpavg.educ.lvl_secondary
+x$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - x$spatial.data@data$grpavg.mother.circum.fac_yes
 
 #x.urbanrural$rm.by.res.years(10)
 #x.urbanrural$generate.reg.means(exclude.self = TRUE, other.network.reg = "urban.rural")
@@ -198,6 +201,4 @@ r11.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + edu
 
 r12.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + religion +mother.circum.fac + hh.head.sex + urban.rural * med.help.money.fac + received.info.circum.fac + order + I(order^2), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), gen.vcov = TRUE)
 
-spdf <- x$spdf
-
-save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "spdf", "r0.1", "r0.2", "r0.neg"), file = "new_results.RData")
+#save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "spdf", "r0.1", "r0.2", "r0.neg"), file = "new_results.RData")

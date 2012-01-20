@@ -15,10 +15,12 @@ Data$methods(init.from.list = function(obj.list) {
     data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$data))
 })
 
-Data$methods(initialize = function(columns, new.column.names, collection, ...) {
+Data$methods(initialize = function(columns, new.column.names, collection, copy, ...) {
     initFields(...)
 
-    if (!missing(collection)) {
+    if(!missing(copy) && is(copy, "Data")) {
+        data <<- copy$data
+    } else if (!missing(collection)) {
         init.from.list(collection)
     }
 
@@ -38,16 +40,28 @@ Data$methods(change.column.names = function(old.names, new.names) {
 })
 
 Data$methods(sort = function(by, ...) {
-    data <<- data[order(data[by], ...), , drop = FALSE]
+    data <<- data[do.call(order, c(as.list(data[, by, drop = FALSE]), list(...))), , drop = FALSE]
 })
 
 Data$methods(subset = function(subset, select, ...) { 
-    data <<- do.call(base::subset, c(list(x = data, subset = substitute(subset), select = substitute(select)), list(...)), envir = parent.frame()) 
+    if (".eval.frame.n" %in% names(list(...))) {
+        n <- list(...)[[".eval.frame.n"]]
+    } else {
+        n <- 1
+    }
+
+    if (missing(subset)) {
+        data <<- do.call(base::subset, c(list(x = data, select = substitute(select)), list(...)), envir = parent.frame(n)) 
+    } else if (missing(select)) {
+        data <<- do.call(base::subset, c(list(x = data, subset = substitute(subset)), list(...)), envir = parent.frame(n)) 
+    } else {
+        data <<- do.call(base::subset, c(list(x = data, subset = substitute(subset), select = substitute(select)), list(...)), envir = parent.frame(n)) 
+    }
   }) 
 
 Data$methods(get.subset = function(...) { 
     new.data.obj <- copy()
-    new.data.obj$subset(...)
+    new.data.obj$subset(.eval.frame.n = 2, ...)
     return(new.data.obj)
 })
 
@@ -55,8 +69,13 @@ Data$methods(remove.rows = function(rows) {
     data <<- data[-rows, ]
 })
 
-stub.callback <- function(df, FUN, self.obj, ...) {
-    self.obj$convert.callback(df, FUN, ...)
+stub.callback <- function(df, FUN, self.obj, rm.na = TRUE, ...) {
+    if (!rm.na || !is.na(df)) {
+        ret.obj <- self.obj$convert.callback(df, FUN, ...)
+        return(ret.obj)
+    } else {
+        return(NULL)
+    }
 }
 
 Data$methods(create.new.from.data = function(df, ...) {
@@ -84,25 +103,26 @@ Data$methods(split = function(by, ...) {
     DataCollection$new(coll = base::lapply(base::split(data, by, data[by], ...), function(df) create.new.from.data(df)))
 })
 
-Data$methods(by = function(by.indices, FUN, ...) {
-    base::by(data, INDICES = data[by.indices], FUN = stub.callback, FUN, .self, ...)
+Data$methods(by = function(by.indices, FUN, rm.na = TRUE, ...) {
+    base::by(data, INDICES = data[by.indices], FUN = stub.callback, FUN, .self, na.rm, ...)
 })
 
 Data$methods(quick.update = function(by, FUN, ...) {
-    "The callback function will receive a reference to self, a group mask, the value of the group indices, and \"...\""
+    "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     grp.ind <- base::tapply(data[[1L]], data[[by]])
     max.grp.index <- max(grp.ind)
     for (grp.index in 1L:max.grp.index) {
-        mask <- grp.ind == grp.index
-        first.in.grp <- which.min(mask)
+        # mask <- grp.ind == grp.index
+        grp.ids <- which(grp.ind == grp.index)
+        first.in.grp <- min(grp.ids)
 
-        grp.index.values <- list()
+        grp.index.col.values <- list()
 
         for (by.index in by) {
-            grp.index.values[by.index] <- origin.data[first.in.grp, by.index]
+            grp.index.col.values[by.index] <- data[first.in.grp, by.index]
         }
 
-        FUN(.self, mask, grp.index.values, ...)
+        FUN(.self, grp.ids, grp.index.col.values, ...)
     }
 })
 
@@ -116,6 +136,10 @@ Data$methods(duplicated = function(by, ...) {
     } else {
         base::duplicated(data[by], ...)
     }
+})
+
+Data$methods(relevel = function(column, ref, ...) {
+    data[,column] <<- stats::relevel(data[,column], ref = ref, ...)
 })
 
 # Regression methods
