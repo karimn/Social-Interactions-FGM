@@ -123,7 +123,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
 
           fgm.data$dhs.year <- dhs.year
 
-          fgm.data <- merge(fgm.data, gps, by.x = c('dhs.year', 'v001'), by.y = c('DHSYEAR', 'DHSCLUST'))
+          fgm.data <- base::merge(fgm.data, gps, by.x = c('dhs.year', 'v001'), by.y = c('DHSYEAR', 'DHSCLUST'))
 
           callSuper(data = fgm.data, columns = columns, new.column.names = new.column.names, coordinate.names = c("LONGNUM", "LATNUM"), cluster.info = gps)
           rm(fgm.data)

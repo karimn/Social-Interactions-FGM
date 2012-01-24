@@ -255,6 +255,15 @@ SpatialData$methods(summary = function(columns = TRUE, ...) {
     base::summary(spatial.data@data[, columns], ...)
 })
 
+SpatialData$methods(merge = function(other.data, ...) {
+    origin.data <- as.data.frame(spatial.data)
+    origin.data <- base::merge(origin.data, other.data, ...)
+    coordinates(origin.data) <- coordinate.names
+    proj4string(origin.data) <- proj4string 
+
+    spatial.data <<- origin.data
+})
+
 # Mapping
 
 SpatialData$methods(plot.gvis.map = function(tip.col, ...) {

@@ -8,9 +8,8 @@ library(AER)
 
 calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL)
 {
-  #print(sprintf("calc.grpavg: size = %i", nrow(df)))
-  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag #grp.index.col.values$birth.year - lag 
-  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] #grp.index.col.values$governorate 
+  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
+  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] 
 
   if (!is.null(other.network.reg))
   {
@@ -143,9 +142,9 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
             br$delivery.location <- factor(br$m15 %/% 10, labels = c("home", "public sector", "private sector", "other", "missing"))
             br$delivered.by.daya <- factor(br$m3g, labels = c("no", "yes"), levels = 0:1)
 
-            spatial.data@data <<- merge(spatial.data@data, br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
+            merge(br, by.x = c('cluster', 'hh', 'respond', 'line.num'), by.y = c('v001', 'v002', 'v003', 'bidx'), all.x = TRUE)
 
-            br <- merge(br, spatial.data@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
+            br <- base::merge(br, spatial.data@data[, c("cluster", "hh", "respond", "line.num", "governorate")], by.x = c('v001', 'v002', 'v003', 'bidx'), by.y = c('cluster', 'hh', 'respond', 'line.num'), all.x = TRUE)
 
             birth.data <<- br
                 
@@ -206,6 +205,14 @@ DaughterFgmData$methods(
     quick.update(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 1, prefix = FgmData.lagged.grpavg.prefix, exclude.self = exclude.self)
   }
 )
+
+DaughterFgmData$methods(generate.reg.means.spatial = function(cohort.range = 1, 
+                                                              regs = c(individual.controls, other.grpavg.controls), 
+                                                              other.network.reg = NULL, 
+                                                              exclude.self = FALSE,
+                                                              range.type = c("both", "older")) {
+    quick.update(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 0, exclude.self = exclude.self)
+})
 
 DaughterFgmData$methods(
   generate.delivery.means = function(year.range = 1, year.offset = 12, regs = c("delivery.location", "delivered.by.daya"), range.type = c("both", "older"))

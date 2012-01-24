@@ -146,6 +146,10 @@ Data$methods(summary = function(columns = TRUE, ...) {
     base::summary(data[, columns], ...)
 })
 
+Data$methods(merge = function(other.data, ...) {
+    data <<- base::merge(data, other.data, ...)
+})
+
 # Regression methods
 
 Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
