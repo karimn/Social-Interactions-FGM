@@ -15,44 +15,34 @@ calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, r
   if (!is.null(other.network.reg))
   {
     current.other.network <- grp.index.values[[other.network.reg]] 
-    grp <- switch(match.arg(range.type),
-                  both = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
+    peer.ids <- switch(match.arg(range.type),
+                  both = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
                                   (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
                                   (all.data$spatial.data[["governorate"]] == current.governorate) &
                                   (all.data$spatial.data[[other.network.reg]] == current.other.network)),
-                  older = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
+                  older = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
                                    (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
                                    (all.data$spatial.data[["governorate"]] == current.governorate) &
                                    (all.data$spatial.data[[other.network.reg]] == current.other.network)))
   }
   else
   {
-    grp <- switch(match.arg(range.type),
-                  both = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
+    peer.ids <- switch(match.arg(range.type),
+                  both = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
                                   (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
                                   (all.data$spatial.data[["governorate"]] == current.governorate)),
-                  older = all.data$get.subset((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
+                  older = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
                                    (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
                                    (all.data$spatial.data[["governorate"]] == current.governorate))) 
   }
 
-  if ((length(regs) > 0) && (!is.null(grp))) {
+  if ((length(regs) > 0) && (length(peer.ids) > 0)) {
     for (col.name in regs) {
-        if (is.factor(all.data$spatial.data@data[, col.name])) {
-          factor.mean(all.data, grp.ids, grp, col.name, prefix, exclude.self)
-        } else {
-          new.col.name <- paste(prefix, col.name, sep = '.')
-          if (exclude.self) {
-              all.data$spatial.data@data[grp.ids, new.col.name] <- vapply(1L:length(grp.ids), grp.mean, 0, grp, col.name)
-          } else {
-              all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name)
-          }
-        }
-      }
+        grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self)
+    }
   }
 
-  all.data$spatial.data@data[grp.ids, "grp.size"] <- grp$nrow
-
+  all.data$spatial.data@data[grp.ids, "grp.size"] <- length(peer.ids) 
   return()
 }
 
@@ -61,22 +51,20 @@ calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.coho
   current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] #grp.index.col.values$governorate
 
 
-  grp <- switch(match.arg(range.type),
-	  both = all.cohorts.data$get.subset((all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year + year.range) & 
+  peer.row.ids <- switch(match.arg(range.type),
+	  both = all.cohorts.data$get.subset.rows((all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year + year.range) & 
 			  (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
 			  (all.cohorts.data$spatial.data[["governorate"]] == current.governorate)) ,
-	  older = all.cohorts.data$get.subset[(all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year) & 
+	  older = all.cohorts.data$get.subset.rows[(all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year) & 
 			   (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
 			   (all.cohorts.data$spatial.data[["governorate"]] == current.governorate), ]) 
 
-  if ((length(regs) > 0) && (!is.null(grp))) {
+  peer.ids <- all.cohorts.data$spatial.data@data$daughter.id[peer.row.ids]
+  grp.ids <- all.data$spatial.data@data$daughter.id[grp.ids]
+
+  if ((length(regs) > 0) && (length(peer.ids) > 0)) {
     for (col.name in regs) {
-        if (is.factor(all.data$spatial.data@data[, col.name])) {
-          factor.mean(all.data, grp.ids, grp, col.name, prefix)
-        } else {
-          new.col.name <- paste(prefix, col.name, sep = '.')
-          all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name)
-        }
+        grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = NULL, new.col.name = NULL, exclude.self = FALSE, peers.data = all.cohorts.data, ids.col = "daughter.id")
     }
   }
 
@@ -136,7 +124,8 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
             reshape(varying = lapply(reshape.col, function(col) paste(col, 1:7, sep = ".")), 
                     direction = 'long', 
                     v.names = c('sdcol', 'line.num', 'mar.status', 'circum', 'who.circum', 'age.circum'),
-                    timevar = 'order') # A new column "id" is created that is unique over mothers
+                    timevar = 'order',
+                    idvar = "mother.id") # A new column is created that is unique over mothers
 
             # This needs to be done first; the below call to subset() seems to convert any "character" type
             # columns into factors.  The "circum" column is text because of some "yes" and "no" values.
@@ -174,6 +163,7 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
               #order.fac <- factor(order)
               married <- ifelse(mar.status == 1, 1, 0)
               birth.year.fac <- factor(birth.year)
+              daughter.id <- seq_along(age) # Create a unique id per daughter
             })
 
             all.cohorts.spdf <<- SpatialData$new(copy = .self) #spatial.data 

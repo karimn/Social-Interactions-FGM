@@ -3,8 +3,9 @@ source("DataCollection.R")
 source("SpatialData.R")
 source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
+source("RegressionResults.R")
 
-original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum")) #, skip.cleanup = T) 
+system.time(original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))) #, skip.cleanup = T) 
 original.data$relevel("urban.rural", ref = "rural")
 original.data$relevel("med.help.distance.fac", ref = "not big problem")
 original.data$relevel("med.help.money.fac", ref = "not big problem")
@@ -21,10 +22,10 @@ y <- original.data$copy()
 #y.wealth <- original.data$copy()
 #z <- original.data$copy()
 
-y$generate.delivery.means()
+system.time(y$generate.delivery.means())
 y$rm.by.res.years(10)
 #y$generate.reg.means(exclude.self = FALSE, other.network.reg = "urban.rural")
-y$generate.reg.means(exclude.self = FALSE)
+system.time(y$generate.reg.means(exclude.self = FALSE))
 y$rm.by.grp.size(24)
 y$rm.duplicate(c("governorate", "birth.year.fac"))
 y$spatial.data@data$grpavg.educ.lvl_primary_neg <- - y$spatial.data@data$grpavg.educ.lvl_primary
@@ -49,9 +50,9 @@ y$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - y$spatial.data@data$gr
 #y.wealth$rm.by.grp.size(24)
 #y.wealth$rm.duplicate(c("governorate", "birth.year.fac", "wealth.index.2"))
 
-x$generate.delivery.means()
+system.time(x$generate.delivery.means())
 x$rm.by.res.years(10)
-x$generate.reg.means(exclude.self = TRUE)
+system.time(x$generate.reg.means(exclude.self = TRUE))
 x$rm.by.grp.size(24)
 x$spatial.data@data$grpavg.educ.lvl_primary_neg <- - x$spatial.data@data$grpavg.educ.lvl_primary
 x$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - x$spatial.data@data$grpavg.educ.lvl_secondary
@@ -86,9 +87,9 @@ x$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - x$spatial.data@data$gr
 
 # To show that some grpavg don't effect grpavg.circum
 
-r0.1 <- y$lm(grpavg.circum ~ governorate + birth.year.fac + grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, gen.vcov = TRUE)
+r0.1 <- y$lm(grpavg.circum ~ governorate + birth.year.fac + grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem)
 
-r0.2 <- y$plm(grpavg.circum ~ grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, effect = "twoways", model = "within", index = c("governorate", "birth.year.fac"), gen.vcov = TRUE)
+r0.2 <- y$plm(grpavg.circum ~ grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, effect = "twoways", model = "within", index = c("governorate", "birth.year.fac"))
 
 # pooled model 1
 
@@ -201,4 +202,4 @@ r11.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + edu
 
 r12.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + religion +mother.circum.fac + hh.head.sex + urban.rural * med.help.money.fac + received.info.circum.fac + order + I(order^2), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), gen.vcov = TRUE)
 
-#save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "spdf", "r0.1", "r0.2", "r0.neg"), file = "new_results.RData")
+save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "r0.1", "r0.2"), file = "new_results2.RData")

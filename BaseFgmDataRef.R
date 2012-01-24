@@ -5,39 +5,55 @@ library(sem)
 library(AER)
 library(plm)
 
-grp.mean <- function(rowid, grp.data, column, column.lvl = NULL)
-{
-  lcl.grp <- grp.data$copy()
+grp.mean <- function(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = NULL, new.col.name = NULL, exclude.self = FALSE, peers.data = all.data, ids.col = NULL) {
+  col.is.factor <- is.factor(all.data$spatial.data@data[, col.name])
+  stopifnot(is.null(col.lvl) || col.is.factor)
+  stopifnot(is.null(col.lvl) == is.null(new.col.name)) 
+  stopifnot(col.is.factor == is.factor(peers.data$spatial.data@data[, col.name]))
 
-  if (!is.null(rowid)) {
-    lcl.grp <- lcl.grp$remove.rows(rowid)
-  }
-  
-  if ((lcl.grp$nrow == 0) || all(is.na(lcl.grp$spatial.data@data[, column])))
-    return(NA)
+  if (is.null(col.lvl) && col.is.factor) {
+      col.lvls <- levels(all.data$spatial.data@data[, col.name])
 
-  if (is.null(column.lvl))
-    mean(lcl.grp$spatial.data@data[, column], na.rm = TRUE)
-  else
-    mean(lcl.grp$spatial.data@data[, column] == column.lvl, na.rm = TRUE)
-}
+      for (current.col.lvl in col.lvls[-1]) {
+          cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", current.col.lvl, perl = TRUE))
+          new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
+          grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = current.col.lvl, new.col.name = new.col.name, exclude.self = exclude.self, peers.data = peers.data, ids.col = ids.col)
+      }
+  } else { 
+      if (is.null(new.col.name)) {
+          new.col.name <- paste(prefix, col.name, sep = '.')
+      }
 
-factor.mean <- function(all.data, grp.ids, grp, col.name, prefix, exclude.self = FALSE)
-{
-  stopifnot(is.factor(all.data$spatial.data@data[, col.name]))
+      peers.nrow <- length(peer.ids) 
 
-  col.lvls <- levels(all.data$spatial.data@data[, col.name])
-  grp.nrow <- grp$nrow
+      exclude.mask <- (grp.ids %in% peer.ids) & exclude.self
 
-  for (i in 2L:length(col.lvls))
-  {
-    cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", col.lvls[i], perl = TRUE))
-    new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
-    if (exclude.self) {
-        all.data$spatial.data@data[grp.ids, new.col.name] <- vapply(1L:length(grp.ids), grp.mean, 0, grp, col.name, col.lvls[i])
-    } else {
-        all.data$spatial.data@data[grp.ids, new.col.name] <- grp.mean(NULL, grp, col.name, col.lvls[i])
-    }
+      if (!is.null(ids.col)) {
+          peer.ids <- which(peers.data$spatial.data@data[, ids.col] %in% peer.ids)
+          grp.ids <- which(all.data$spatial.data@data[, ids.col] %in% grp.ids)
+      }
+
+      if (col.is.factor) {
+          peer.col.vals <- as.numeric(peers.data$spatial.data@data[peer.ids, col.name] == col.lvl )
+          grp.col.vals <- as.numeric(all.data$spatial.data@data[grp.ids, col.name] == col.lvl )
+      } else {
+          peer.col.vals <- peers.data$spatial.data@data[peer.ids, col.name]
+          grp.col.vals <- all.data$spatial.data@data[grp.ids, col.name]
+      }
+
+      non.na.count <- sum(!is.na(peer.col.vals))
+      all.peers.mean <- mean(peer.col.vals, na.rm = TRUE)
+
+      na.mask <- is.na(all.data$spatial.data@data[grp.ids, col.name])
+      exclude.mask <- as.numeric(exclude.mask & na.mask)
+      grp.col.vals[na.mask] <- 0 # I need to put a zero in the NA rows so when the are multiplied with the zero in the na.mask they don't result in
+      # an NA
+
+      if ((peers.nrow == 0L) || (non.na.count == 0L)) {
+          all.data$spatial.data@data[grp.ids, new.col.name] <- NA
+      } else { 
+          all.data$spatial.data@data[grp.ids, new.col.name] <- (rep(non.na.count * all.peers.mean, length(grp.ids)) - (grp.col.vals * exclude.mask)) / (non.na.count - exclude.mask) 
+      }
   }
 
   return() 

@@ -74,6 +74,30 @@ SpatialData$methods(sort = function(by, ...) {
     spatial.data <<- spatial.data[do.call(order, c(as.list(as.data.frame(spatial.data)[, by, drop = FALSE]), list(...))), , drop = FALSE]
 })
 
+SpatialData$methods(get.subset.rows = function(subset, ...) {
+    if (".eval.frame.n" %in% names(list(...))) {
+        n <- list(...)[[".eval.frame.n"]]
+    } else {
+        n <- 1
+    }
+
+    if (n > 1) {
+        e <- substitute(subset, env = parent.frame(n - 1))
+    } else {
+        e <- substitute(subset)
+    }
+
+    r <- eval(e, spatial.data@data, parent.frame(n))
+
+    if (!is.logical(r)) { 
+        stop("'subset' must evaluate to logical")
+    }
+
+    r <- r & !is.na(r)
+
+    return(which(r))
+})
+
 SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radius, ...) { 
     stopifnot(!xor(missing(center), missing(radius)))
     origin.data <- as.data.frame(spatial.data)
@@ -87,13 +111,26 @@ SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radi
     if (missing(subset)) {
         r <- TRUE
     } else {
-        e <- substitute(subset)
-        r <- eval(e, origin.data, parent.frame(n))
-        if (!is.logical(r)) { 
-            stop("'subset' must evaluate to logical")
-        }
-        r <- r & !is.na(r)
+        #e <- substitute(subset)
+        #r <- eval(e, origin.data, parent.frame(n))
+        #if (!is.logical(r)) { 
+        #    stop("'subset' must evaluate to logical")
+        #}
+        #r <- r & !is.na(r)
+        r <- get.subset.rows(subset, .eval.frame.n = n + 1)
     }
+
+    if(!missing(center)) {
+        bb <- bbox(spatial.data)
+        colnames(bb) <- NULL
+        w <- owin(bb[1, ], bb[2, ])
+        cc <- coordinates(spatial.data)
+        spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
+        neighborhood <- spatial.ppp[, disc(radius, center)]
+        browser()
+        r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
+    }
+
 
     if (missing(select)) {
         vars <- TRUE
@@ -105,16 +142,6 @@ SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radi
             vars <- c(vars, unlist(nl[coordinate.names])) # Making sure the coordinates are not removed 
                                                           #(this is why I'm basically reimplementing subset()
         }
-    }
-
-    if(!missing(center)) {
-        bb <- bbox(spatial.data)
-        colnames(bb) <- NULL
-        w <- owin(bb[1, ], bb[2, ])
-        cc <- coordinates(spatial.data)
-        spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
-        neighborhood <- spatial.ppp[, disc(radius, center)]
-        r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
     }
 
     origin.data <- origin.data[r, vars, drop = drop]
@@ -254,7 +281,7 @@ SpatialData$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
+SpatialData$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     r <- AER::ivreg(formula, formula, data = spatial.data)
 
     if (!is.null(vcov.fun)) {
@@ -265,14 +292,14 @@ Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, ...) {
-    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spatial.data)
-    v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-     if (!is.null(vcov.fun)) {
+SpatialData$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, ...) {
+    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spatial.data@data)
+
+    if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...) 
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
     } else {
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self) 
-     }
+    }
   }
 )
