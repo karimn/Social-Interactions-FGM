@@ -63,7 +63,7 @@ print.reg.list <- function(results, reg.dict, cutpoints, symbols, last.tex.newli
 print.nrow <- function(results) {
   cat(" N ")
   for (r in results) {
-    cat(sprintf("& %i", r$data$nrow()))
+    cat(sprintf("& %i", r$data$nrow))
     #cat(sprintf("& %i", r$na.action))
   }
   cat("\\\\\n")

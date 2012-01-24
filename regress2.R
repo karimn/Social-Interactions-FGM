@@ -202,4 +202,4 @@ r11.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + edu
 
 r12.pooled <- x$plm(circum ~ birth.year.fac + governorate + wealth.index.2 + educ.lvl + marital.age + religion +mother.circum.fac + hh.head.sex + urban.rural * med.help.money.fac + received.info.circum.fac + order + I(order^2), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), gen.vcov = TRUE)
 
-save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "r0.1", "r0.2"), file = "new_results2.RData")
+save(list = c(ls(pattern = "r\\d{1,2}(\\.instr\\.\\d{1,2})?(\\.pooled)?$"), "x", "y", "original.data", "r0.1", "r0.2"), file = "new_results2.RData")

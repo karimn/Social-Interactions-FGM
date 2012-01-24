@@ -27,11 +27,16 @@
 library(lattice)
 library(car)
 
+source("Data.R")
+source("DataCollection.R")
+source("SpatialData.R")
 source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
+source("RegressionResults.R")
+
 source("print.results.R")
 
-load("new_results.RData")
+load("new_results2.RData")
 
 youngest.cohort <- 1996
 
@@ -87,7 +92,7 @@ The survey sample was selected over three stages:
 \begin{figure}
 \begin{center}
 <<label=fgmagedensity, fig=TRUE, echo=FALSE>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+fgm <- x$spatial.data@data #subset(spdf@data, birth.year <= youngest.cohort)
 txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
 all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
 {
@@ -122,7 +127,7 @@ Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, 
 \begin{figure}
 \begin{center}
 <<label=fgmprop, echo=FALSE, fig=TRUE>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
+#fgm <- subset(spdf@data, birth.year <= youngest.cohort)
 fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
 fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
 
