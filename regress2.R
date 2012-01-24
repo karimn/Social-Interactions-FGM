@@ -5,7 +5,7 @@ source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 source("RegressionResults.R")
 
-system.time(original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))) #, skip.cleanup = T) 
+system.time(original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))) #, skip.cleanup = T))
 original.data$relevel("urban.rural", ref = "rural")
 original.data$relevel("med.help.distance.fac", ref = "not big problem")
 original.data$relevel("med.help.money.fac", ref = "not big problem")

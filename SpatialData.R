@@ -1,4 +1,5 @@
 library(sp)
+library(googleVis)
 
 SpatialData <- setRefClass("SpatialData",
     contains = "Data",
@@ -127,10 +128,8 @@ SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radi
         cc <- coordinates(spatial.data)
         spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
         neighborhood <- spatial.ppp[, disc(radius, center)]
-        browser()
         r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
     }
-
 
     if (missing(select)) {
         vars <- TRUE
@@ -254,6 +253,14 @@ SpatialData$methods(relevel = function(column, ref, ...) {
 
 SpatialData$methods(summary = function(columns = TRUE, ...) {
     base::summary(spatial.data@data[, columns], ...)
+})
+
+# Mapping
+
+SpatialData$methods(plot.gvis.map = function(tip.col, ...) {
+    map.df <- data.frame(latlong = apply(coords, 1, function(row) paste(rev(row), collapse = ":")), 
+                         tip = if (missing(tip.col)) seq_along(rownames(spatial.data@data)) else spatial.data@data[,tip.col])
+    plot(googleVis::gvisMap(map.df, "latlong", "tip", ...))
 })
 
 # Regression methods
