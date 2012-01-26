@@ -112,7 +112,6 @@ Data$methods(quick.update = function(by, FUN, ...) {
     grp.ind <- base::tapply(data[[1L]], data[[by]])
     max.grp.index <- max(grp.ind)
     for (grp.index in 1L:max.grp.index) {
-        # mask <- grp.ind == grp.index
         grp.ids <- which(grp.ind == grp.index)
         first.in.grp <- min(grp.ids)
 

@@ -8,6 +8,9 @@ library(AER)
 
 calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL)
 {
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "governorate"])) == 1)
+
   current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
   current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] 
 
@@ -45,9 +48,50 @@ calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, r
   return()
 }
 
+calc.grpavg.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL) {
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+  stopifnot(length(unique(all.data$coords[grp.ids, 1])) == 1)
+  stopifnot(length(unique(all.data$coords[grp.ids, 2])) == 1)
+
+  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
+  current.coords <- all.data$coords[grp.ids[1],]
+
+  if (!is.null(other.network.reg))
+  {
+    current.other.network <- grp.index.values[[other.network.reg]] 
+    peer.ids <- switch(match.arg(range.type),
+                  both = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
+                                  (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
+                                  (all.data$spatial.data[[other.network.reg]] == current.other.network), center = current.coords, radius = radius),
+                  older = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
+                                   (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range) &
+                                   (all.data$spatial.data[[other.network.reg]] == current.other.network), center = current.coords, radius = radius))
+  }
+  else
+  {
+    peer.ids <- switch(match.arg(range.type),
+                  both = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year + cohort.range) & 
+                                  (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range), center = current.coords, radius = radius),
+                  older = all.data$get.subset.rows((all.data$spatial.data[["birth.year"]] <= current.birth.year) & 
+                                   (all.data$spatial.data[["birth.year"]] >= current.birth.year - cohort.range), center = current.coords, radius = radius)) 
+  }
+
+  if ((length(regs) > 0) && (length(peer.ids) > 0)) {
+    for (col.name in regs) {
+        grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self)
+    }
+  }
+
+  all.data$spatial.data@data[grp.ids, "grp.size"] <- length(peer.ids) 
+  return()
+}
+
 calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.cohorts.data, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
-  current.circum.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset #grp.index.col.values$birth.year + year.offset
-  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] #grp.index.col.values$governorate
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "governorate"])) == 1)
+
+  current.circum.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset
+  current.governorate <- all.data$spatial.data@data[grp.ids[1], "governorate"] 
 
 
   peer.row.ids <- switch(match.arg(range.type),
@@ -58,6 +102,8 @@ calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.coho
 			   (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range) &
 			   (all.cohorts.data$spatial.data[["governorate"]] == current.governorate), ]) 
 
+  grp.row.ids <- grp.ids
+
   peer.ids <- all.cohorts.data$spatial.data@data$daughter.id[peer.row.ids]
   grp.ids <- all.data$spatial.data@data$daughter.id[grp.ids]
 
@@ -67,6 +113,39 @@ calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.coho
     }
   }
 
+  all.data$spatial.data@data[grp.row.ids, "delivery.grp.size"] <- length(peer.ids) 
+  return()
+}
+
+calc.delivery.avgs.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, all.cohorts.data, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
+  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+  stopifnot(length(unique(all.data$coords[grp.ids, 1])) == 1)
+  stopifnot(length(unique(all.data$coords[grp.ids, 2])) == 1)
+  stopifnot(length(grp.ids) > 0)
+
+  current.circum.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset 
+  current.coords <- all.data$coords[grp.ids[1],]
+
+  peer.row.ids <- switch(match.arg(range.type),
+	  both = all.cohorts.data$get.subset.rows((all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year + year.range) & 
+			  (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range), center = current.coords, radius = radius) ,
+	  older = all.cohorts.data$get.subset.rows((all.cohorts.data$spatial.data[["birth.year"]] <= current.circum.year) & 
+			   (all.cohorts.data$spatial.data[["birth.year"]] >= current.circum.year - year.range), center = current.coords, radius = radius)) 
+
+  stopifnot(spDistsN(all.cohorts.data$spatial.data[peer.row.ds,], current.coords) <= radius)
+
+  grp.row.ids <- grp.ids
+
+  peer.ids <- all.cohorts.data$spatial.data@data$daughter.id[peer.row.ids]
+  grp.ids <- all.data$spatial.data@data$daughter.id[grp.ids]
+
+  if ((length(regs) > 0) && (length(peer.ids) > 0)) {
+    for (col.name in regs) {
+        grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, col.lvl = NULL, new.col.name = NULL, exclude.self = FALSE, peers.data = all.cohorts.data, ids.col = "daughter.id")
+    }
+  }
+
+  all.data$spatial.data@data[grp.row.ids, "delivery.grp.size"] <- length(peer.ids) 
   return()
 }
 
@@ -206,18 +285,35 @@ DaughterFgmData$methods(
   }
 )
 
-DaughterFgmData$methods(generate.reg.means.spatial = function(cohort.range = 1, 
+DaughterFgmData$methods(generate.reg.means.spatial = function(radius, 
+                                                              cohort.range = 1, 
                                                               regs = c(individual.controls, other.grpavg.controls), 
                                                               other.network.reg = NULL, 
                                                               exclude.self = FALSE,
                                                               range.type = c("both", "older")) {
-    quick.update(c("birth.year.fac", "governorate", other.network.reg), calc.grpavg, cohort.range, regs, lag = 0, exclude.self = exclude.self)
+    if (missing(radius)) {
+        stop("Missing radius value")
+    }
+
+    quick.update(c("birth.year.fac", "cluster.fac", other.network.reg), calc.grpavg.spatial, radius, cohort.range, regs, lag = 0, exclude.self = exclude.self)
 })
 
 DaughterFgmData$methods(
   generate.delivery.means = function(year.range = 1, year.offset = 12, regs = c("delivery.location", "delivered.by.daya"), range.type = c("both", "older"))
   {
-    quick.update(c("birth.year.fac", "governorate"), calc.delivery.avgs, all.cohorts.spdf, year.range, year.offset, regs)
+
+      quick.update(c("birth.year.fac", "governorate"), calc.delivery.avgs, all.cohorts.spdf, year.range, year.offset, regs)
+  }
+)
+
+DaughterFgmData$methods(
+  generate.delivery.means.spatial = function(radius, year.range = 1, year.offset = 12, regs = c("delivery.location", "delivered.by.daya"), range.type = c("both", "older"))
+  {
+      if (missing(radius)) {
+          stop("Missing radius value")
+      }
+
+      quick.update(c("birth.year.fac", "cluster.fac"), calc.delivery.avgs.spatial, radius, all.cohorts.spdf, year.range, year.offset, regs)
   }
 )
 

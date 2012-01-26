@@ -122,13 +122,17 @@ SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radi
     }
 
     if(!missing(center)) {
-        bb <- bbox(spatial.data)
-        colnames(bb) <- NULL
-        w <- owin(bb[1, ], bb[2, ])
-        cc <- coordinates(spatial.data)
-        spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
-        neighborhood <- spatial.ppp[, disc(radius, center)]
-        r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
+        #bb <- bbox(spatial.data)
+        #colnames(bb) <- NULL
+        #w <- owin(bb[1, ], bb[2, ])
+        #cc <- coordinates(spatial.data)
+        #spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
+        #neighborhood <- spatial.ppp[, disc(radius, center)]
+        #r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
+
+        dists <- spDistsN1(spatial.data, center, longlat = TRUE) # in kilometers
+        proximal.ids <- which(dists <= radius)
+        r <- if (is.logical(r)) proximal.ids else intersect(r, proximal.ids)
     }
 
     if (missing(select)) {
@@ -212,20 +216,24 @@ SpatialData$methods(quick.update = function(by, FUN, ...) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     origin.data <- as.data.frame(spatial.data)
     grp.ind <- base::tapply(origin.data[[1L]], origin.data[, by])
+
     max.grp.index <- max(grp.ind)
     for (grp.index in 1L:max.grp.index) {
-        # mask <- grp.ind == grp.index
         grp.ids <- which(grp.ind == grp.index)
-        first.in.grp <- min(grp.ids)
+        stopifnot(all(grp.ids <= nrow))
 
-        grp.index.col.values <- list()
+        if (length(grp.ids) > 0) {
+            first.in.grp <- min(grp.ids)
 
-        for (by.index in by) {
-            # BUG This is not very useful if the by.index column is a factor
-            grp.index.col.values[by.index] <- origin.data[first.in.grp, by.index]
+            grp.index.col.values <- list()
+
+            for (by.index in by) {
+                # BUG This is not very useful if the by.index column is a factor
+                grp.index.col.values[by.index] <- origin.data[first.in.grp, by.index]
+            }
+
+            FUN(.self, grp.ids, grp.index.col.values, ...)
         }
-
-        FUN(.self, grp.ids, grp.index.col.values, ...)
     }
 })
 
