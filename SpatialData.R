@@ -1,5 +1,6 @@
 library(sp)
 library(googleVis)
+library(parallel)
 
 SpatialData <- setRefClass("SpatialData",
     contains = "Data",
@@ -75,32 +76,44 @@ SpatialData$methods(sort = function(by, ...) {
     spatial.data <<- spatial.data[do.call(order, c(as.list(as.data.frame(spatial.data)[, by, drop = FALSE]), list(...))), , drop = FALSE]
 })
 
-SpatialData$methods(get.subset.rows = function(subset, ...) {
+# BUG implement same function in class Data
+SpatialData$methods(get.subset.rows = function(subset, center, radius, inner.radius = 0, ...) {
+    stopifnot(!xor(missing(center), missing(radius)))
+
     if (".eval.frame.n" %in% names(list(...))) {
         n <- list(...)[[".eval.frame.n"]]
     } else {
         n <- 1
     }
 
-    if (n > 1) {
-        e <- substitute(subset, env = parent.frame(n - 1))
-    } else {
-        e <- substitute(subset)
+    r <- rep(TRUE, nrow)
+
+    if (!missing(subset)) {
+        if (n > 1) {
+            e <- substitute(subset, env = parent.frame(n - 1))
+        } else {
+            e <- substitute(subset)
+        }
+
+        r <- r & eval(e, spatial.data@data, parent.frame(n))
+        r <- r & !is.na(r)
     }
 
-    r <- eval(e, spatial.data@data, parent.frame(n))
-
-    if (!is.logical(r)) { 
-        stop("'subset' must evaluate to logical")
+    if(!missing(center)) {
+        dists <- spDistsN1(spatial.data, center, longlat = TRUE) # in kilometers
+        #proximal.ids <- which(dists <= radius)
+        #r <- if (is.logical(r)) proximal.ids else intersect(r, proximal.ids)
+        r <- r & (dists <= radius) & (dists >= inner.radius)
     }
-
-    r <- r & !is.na(r)
 
     return(which(r))
 })
 
-SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radius, ...) { 
+# BUG Add rows parameter to Data class version 
+SpatialData$methods(subset = function(subset, select, drop = FALSE, rows, center, radius, ...) { 
     stopifnot(!xor(missing(center), missing(radius)))
+    #stopifnot(sum(missing(subset), missing(rows)) <= 1) # Only one of these can be provided at the same time
+
     origin.data <- as.data.frame(spatial.data)
 
     if (".eval.frame.n" %in% names(list(...))) {
@@ -109,30 +122,10 @@ SpatialData$methods(subset = function(subset, select, drop = FALSE, center, radi
         n <- 1
     }
 
-    if (missing(subset)) {
-        r <- TRUE
-    } else {
-        #e <- substitute(subset)
-        #r <- eval(e, origin.data, parent.frame(n))
-        #if (!is.logical(r)) { 
-        #    stop("'subset' must evaluate to logical")
-        #}
-        #r <- r & !is.na(r)
-        r <- get.subset.rows(subset, .eval.frame.n = n + 1)
-    }
+    r <- get.subset.rows(subset = subset, center = center, radius = radius, .eval.frame.n = n + 1)
 
-    if(!missing(center)) {
-        #bb <- bbox(spatial.data)
-        #colnames(bb) <- NULL
-        #w <- owin(bb[1, ], bb[2, ])
-        #cc <- coordinates(spatial.data)
-        #spatial.ppp <- ppp(cc[, 1], cc[, 2], window = w, marks = 1L:nrow, check = FALSE)
-        #neighborhood <- spatial.ppp[, disc(radius, center)]
-        #r <- if (is.logical(r)) neighborhood$marks else intersect(r, neighborhood$marks)
-
-        dists <- spDistsN1(spatial.data, center, longlat = TRUE) # in kilometers
-        proximal.ids <- which(dists <= radius)
-        r <- if (is.logical(r)) proximal.ids else intersect(r, proximal.ids)
+    if (!missing(rows)) {
+        r <- intersect(r, rows)
     }
 
     if (missing(select)) {
@@ -212,29 +205,60 @@ SpatialData$methods(by = function(by.indices, FUN, rm.na = TRUE, ...) {
     base::by(origin.data, INDICES = origin.data[by.indices], FUN = stub.callback, FUN, .self, rm.na, ...)
 })
 
-SpatialData$methods(quick.update = function(by, FUN, ...) {
+SpatialData$methods(apply = function(by, FUN, ...) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     origin.data <- as.data.frame(spatial.data)
     grp.ind <- base::tapply(origin.data[[1L]], origin.data[, by])
 
-    max.grp.index <- max(grp.ind)
-    for (grp.index in 1L:max.grp.index) {
+    ret.list <- list()
+
+    #max.grp.index <- max(grp.ind)
+    invisible(lapply(unique(grp.ind), function(grp.index) {
+    #for (grp.index in unique(grp.ind)) {
         grp.ids <- which(grp.ind == grp.index)
         stopifnot(all(grp.ids <= nrow))
 
-        if (length(grp.ids) > 0) {
-            first.in.grp <- min(grp.ids)
+        #if (length(grp.ids) > 0) {
+            #first.in.grp <- min(grp.ids)
 
+            grp.index.col.values <- as.list(origin.data[grp.ids[1], by]) 
+
+            return(FUN(.self, grp.ids, grp.index.col.values, ...))
+            #ret.list[[length(ret.list) + 1]] <- FUN(.self, grp.ids, grp.index.col.values, ...)
+        #}
+    }))
+
+    #invisible(ret.list)
+})
+
+#SpatialData$methods(par.apply = function(by, FUN, .combine = c, .inorder = TRUE, ...) {
+SpatialData$methods(par.apply = function(by, FUN, ...) {
+    "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
+    origin.data <- as.data.frame(spatial.data)
+    grp.ind <- base::tapply(origin.data[[1L]], origin.data[[by]])
+    max.grp.index <- max(grp.ind)
+
+    #for (grp.index in 1L:max.grp.index) {
+    #ret.list <- foreach(grp.index = 1L:max.grp.index, .combine = .combine, .inorder = .inorder) %dopar% {
+    ret.list <- mclapply(1L:max.grp.index, function(grp.index) { 
+        grp.ids <- which(grp.ind == grp.index)
+        first.in.grp <- min(grp.ids)
+        stopifnot(all(grp.ids <= nrow))
+
+        if (length(grp.ids) > 0) {
             grp.index.col.values <- list()
 
             for (by.index in by) {
-                # BUG This is not very useful if the by.index column is a factor
                 grp.index.col.values[by.index] <- origin.data[first.in.grp, by.index]
             }
 
-            FUN(.self, grp.ids, grp.index.col.values, ...)
+            return(FUN(.self, grp.ids, grp.index.col.values, ...))
+        } else {
+            return(NULL)
         }
-    }
+    })
+
+    invisible(ret.list)
 })
 
 SpatialData$methods(reshape = function(...) {
@@ -275,7 +299,7 @@ SpatialData$methods(merge = function(other.data, ...) {
 # Mapping
 
 SpatialData$methods(plot.gvis.map = function(tip.col, ...) {
-    map.df <- data.frame(latlong = apply(coords, 1, function(row) paste(rev(row), collapse = ":")), 
+    map.df <- data.frame(latlong = base::apply(coords, 1, function(row) paste(rev(row), collapse = ":")), 
                          tip = if (missing(tip.col)) seq_along(rownames(spatial.data@data)) else spatial.data@data[,tip.col])
     plot(googleVis::gvisMap(map.df, "latlong", "tip", ...))
 })

@@ -26,7 +26,7 @@ system.time(y$generate.delivery.means())
 y$rm.by.res.years(10)
 #y$generate.reg.means(exclude.self = FALSE, other.network.reg = "urban.rural")
 system.time(y$generate.reg.means(exclude.self = FALSE))
-y$rm.by.grp.size(24)
+y$subset(grp.size >= 24) #rm.by.grp.size(24)
 y$rm.duplicate(c("governorate", "birth.year.fac"))
 y$spatial.data@data$grpavg.educ.lvl_primary_neg <- - y$spatial.data@data$grpavg.educ.lvl_primary
 y$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - y$spatial.data@data$grpavg.educ.lvl_secondary
@@ -53,7 +53,7 @@ y$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - y$spatial.data@data$gr
 system.time(x$generate.delivery.means())
 x$rm.by.res.years(10)
 system.time(x$generate.reg.means(exclude.self = TRUE))
-x$rm.by.grp.size(24)
+x$subset(grp.size >= 24) #rm.by.grp.size(24)
 x$spatial.data@data$grpavg.educ.lvl_primary_neg <- - x$spatial.data@data$grpavg.educ.lvl_primary
 x$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - x$spatial.data@data$grpavg.educ.lvl_secondary
 x$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - x$spatial.data@data$grpavg.mother.circum.fac_yes

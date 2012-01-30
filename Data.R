@@ -1,4 +1,5 @@
 library(foreign)
+library(parallel)
 
 Data <- setRefClass("Data",
     fields = list(
@@ -107,7 +108,7 @@ Data$methods(by = function(by.indices, FUN, rm.na = TRUE, ...) {
     base::by(data, INDICES = data[by.indices], FUN = stub.callback, FUN, .self, na.rm, ...)
 })
 
-Data$methods(quick.update = function(by, FUN, ...) {
+Data$methods(apply = function(by, FUN, ...) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     grp.ind <- base::tapply(data[[1L]], data[[by]])
     max.grp.index <- max(grp.ind)
@@ -123,6 +124,35 @@ Data$methods(quick.update = function(by, FUN, ...) {
 
         FUN(.self, grp.ids, grp.index.col.values, ...)
     }
+})
+
+#Data$methods(par.apply = function(by, FUN, .combine = c, .inorder = TRUE, ...) {
+Data$methods(par.apply = function(by, FUN, ...) {
+    "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
+    grp.ind <- base::tapply(data[[1L]], data[[by]])
+    max.grp.index <- max(grp.ind)
+
+    #for (grp.index in 1L:max.grp.index) {
+    #ret.list <- foreach(grp.index = 1L:max.grp.index, .combine = c, .inorder = .inorder) %dopar% {
+    ret.list <- mclapply(1L:max.grp.index, function(grp.index) { 
+        grp.ids <- which(grp.ind == grp.index)
+        first.in.grp <- min(grp.ids)
+        stopifnot(all(grp.ids <= nrow))
+
+        if (length(grp.ids) > 0) {
+            grp.index.col.values <- list()
+
+            for (by.index in by) {
+                grp.index.col.values[by.index] <- data[first.in.grp, by.index]
+            }
+
+            return(FUN(.self, grp.ids, grp.index.col.values, ...))
+        } else {
+            return(NULL)
+        }
+    })
+
+    invisible(ret.list)
 })
 
 Data$methods(reshape = function(...) {
