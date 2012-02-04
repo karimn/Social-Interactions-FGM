@@ -101,8 +101,6 @@ SpatialData$methods(get.subset.rows = function(subset, center, radius, inner.rad
 
     if(!missing(center)) {
         dists <- spDistsN1(spatial.data, center, longlat = TRUE) # in kilometers
-        #proximal.ids <- which(dists <= radius)
-        #r <- if (is.logical(r)) proximal.ids else intersect(r, proximal.ids)
         r <- r & (dists <= radius) & (dists >= inner.radius)
     }
 
@@ -112,7 +110,6 @@ SpatialData$methods(get.subset.rows = function(subset, center, radius, inner.rad
 # BUG Add rows parameter to Data class version 
 SpatialData$methods(subset = function(subset, select, drop = FALSE, rows, center, radius, ...) { 
     stopifnot(!xor(missing(center), missing(radius)))
-    #stopifnot(sum(missing(subset), missing(rows)) <= 1) # Only one of these can be provided at the same time
 
     origin.data <- as.data.frame(spatial.data)
 
@@ -184,16 +181,6 @@ SpatialData$methods(aggregate = function(by, FUN, ...) {
     stats::aggregate(origin.data, origin.data[by], stub.callback, FUN, .self, ...)
 })
 
-#SpatialData$methods(tapply = function(by, FUN, ...) {
-#    origin.data <- as.data.frame(spatial.data)
-#    base::tapply(origin.data, origin.data[by], stub.callback, FUN, .self, ...)
-#})
-
-#Data$methods(tapply.change = function(by, FUN, ...) {
-#    "The callback function must return an object of the same type of this class"  
-#    do.call(base::rbind, lapply(base::tapply(data, data[by], stub.callback, FUN, .self, ...)), function (obj) obj$spatial.data)
-#})
-
 SpatialData$methods(split = function(by, ...) {
     origin.data <- as.data.frame(spatial.data)
     DataCollection$new(coll = base::lapply(base::split(origin.data, origin.data[by], ...), 
@@ -212,34 +199,20 @@ SpatialData$methods(apply = function(by, FUN, ...) {
 
     ret.list <- list()
 
-    #max.grp.index <- max(grp.ind)
     invisible(lapply(unique(grp.ind), function(grp.index) {
-    #for (grp.index in unique(grp.ind)) {
         grp.ids <- which(grp.ind == grp.index)
         stopifnot(all(grp.ids <= nrow))
-
-        #if (length(grp.ids) > 0) {
-            #first.in.grp <- min(grp.ids)
-
-            grp.index.col.values <- as.list(origin.data[grp.ids[1], by]) 
-
-            return(FUN(.self, grp.ids, grp.index.col.values, ...))
-            #ret.list[[length(ret.list) + 1]] <- FUN(.self, grp.ids, grp.index.col.values, ...)
-        #}
+        grp.index.col.values <- as.list(origin.data[grp.ids[1], by]) 
+        return(FUN(.self, grp.ids, grp.index.col.values, ...))
     }))
-
-    #invisible(ret.list)
 })
 
-#SpatialData$methods(par.apply = function(by, FUN, .combine = c, .inorder = TRUE, ...) {
 SpatialData$methods(par.apply = function(by, FUN, ...) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     origin.data <- as.data.frame(spatial.data)
     grp.ind <- base::tapply(origin.data[[1L]], origin.data[[by]])
     max.grp.index <- max(grp.ind)
 
-    #for (grp.index in 1L:max.grp.index) {
-    #ret.list <- foreach(grp.index = 1L:max.grp.index, .combine = .combine, .inorder = .inorder) %dopar% {
     ret.list <- mclapply(1L:max.grp.index, function(grp.index) { 
         grp.ids <- which(grp.ind == grp.index)
         first.in.grp <- min(grp.ids)
@@ -340,11 +313,11 @@ SpatialData$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-SpatialData$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, ...) {
-    r <- plm::plm(formula, effect = effect, model = model, index = index, data = spatial.data@data)
+Data$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
+    r <- plm::plm(formula, model = model, ..., data = spatial.data@data)
 
     if (!is.null(vcov.fun)) {
-        vcov <- vcov.fun(r, ...) 
+        vcov <- vcov.fun(r) 
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
     } else {
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self) 

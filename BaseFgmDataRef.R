@@ -5,73 +5,6 @@ library(sem)
 library(AER)
 library(plm)
 
-grp.mean <- function(all.data, grp.ids, peer.ids, col.name, prefix, postfix = NULL, col.lvl = NULL, new.col.name = NULL, exclude.self = FALSE, peers.data = all.data, ids.col = NULL, weights = NULL) {
-  col.is.factor <- is.factor(all.data$spatial.data@data[, col.name])
-  stopifnot(is.null(col.lvl) || col.is.factor)
-  stopifnot(is.null(col.lvl) == is.null(new.col.name)) 
-  stopifnot(col.is.factor == is.factor(peers.data$spatial.data@data[, col.name]))
-
-  if (is.null(col.lvl) && col.is.factor) {
-      col.lvls <- levels(all.data$spatial.data@data[, col.name])
-
-      for (current.col.lvl in col.lvls[-1]) {
-          cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", current.col.lvl, perl = TRUE))
-          new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
-          grp.mean(all.data, grp.ids, peer.ids, col.name, prefix, postfix = postfix, col.lvl = current.col.lvl, new.col.name = new.col.name, exclude.self = exclude.self, peers.data = peers.data, ids.col = ids.col, weights = weights)
-      }
-  } else { 
-      if (is.null(new.col.name)) {
-          new.col.name <- paste(prefix, col.name, sep = '.')
-      }
-
-      if (!is.null(postfix)) {
-          new.col.name <- paste(new.col.name, postfix, sep = '.')
-      }
-
-      peers.nrow <- length(peer.ids) 
-
-      exclude.mask <- (grp.ids %in% peer.ids) & exclude.self
-
-      if (!is.null(ids.col)) {
-          peer.ids <- which(peers.data$spatial.data@data[, ids.col] %in% peer.ids)
-          grp.ids <- which(all.data$spatial.data@data[, ids.col] %in% grp.ids)
-      }
-
-      if (col.is.factor) {
-          peer.col.vals <- as.numeric(peers.data$spatial.data@data[peer.ids, col.name] == col.lvl )
-          grp.col.vals <- as.numeric(all.data$spatial.data@data[grp.ids, col.name] == col.lvl )
-      } else {
-          peer.col.vals <- peers.data$spatial.data@data[peer.ids, col.name]
-          grp.col.vals <- all.data$spatial.data@data[grp.ids, col.name]
-      }
-
-      non.na.count <- sum(!is.na(peer.col.vals))
-      weight.sum <- if (is.null(weights)) 1 else sum(weights[!is.na(peer.col.vals)]) 
-      all.peers.mean <- if (is.null(weights)) mean(peer.col.vals, na.rm = TRUE) else weighted.mean(peer.col.vals, weights, na.rm = TRUE)
-
-      na.mask <- is.na(all.data$spatial.data@data[grp.ids, col.name])
-      exclude.mask <- as.numeric(exclude.mask & na.mask)
-      grp.col.vals[na.mask] <- 0 # I need to put a zero in the NA rows so when the are multiplied with the zero in the na.mask they don't result in
-      # an NA
-
-
-      if ((peers.nrow == 0L) || (non.na.count == 0L)) {
-          all.data$spatial.data@data[grp.ids, new.col.name] <- NA
-      } else { 
-          if (is.null(weights)) {
-              grp.weights <- rep(1/non.na.count, length(grp.ids))
-          } else {
-              grp.weights <- ifelse(grp.ids %in% peer.ids, weights, 0)
-          }
-          
-          replace.vals <- (rep(weight.sum * all.peers.mean, length(grp.ids)) - (grp.col.vals * exclude.mask * grp.weights)) / (weight.sum - (grp.weights * exclude.mask))
-          stopifnot(length(replace.vals) == length(grp.ids))
-          all.data$spatial.data@data[grp.ids, new.col.name] <- replace.vals
-      }
-  }
-
-  return() 
-}
 
 
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
@@ -216,6 +149,90 @@ BaseFgmData$methods(get.cluster.cohort.summary = function() {
     peer.links$id <- seq_along(peer.links$cluster)
 
     return(SpatialData$new(data = peer.links, coordinate.names = c("long", "lat")))
+})
+
+BaseFgmData$methods(grp.mean = function(grp.ids, peer.ids, col.name, prefix, postfix = NULL, col.lvl = NULL, new.col.name = NULL, exclude.self = FALSE, peers.data = NULL, ids.col = NULL, weights = NULL) {
+  if (is.null(peers.data)) {
+      peers.data <- .self
+  }
+
+  col.is.factor <- is.factor(spatial.data@data[, col.name])
+
+  stopifnot(is.null(col.lvl) || col.is.factor)
+  stopifnot(is.null(col.lvl) == is.null(new.col.name)) 
+  stopifnot(col.is.factor == is.factor(peers.data$spatial.data@data[, col.name]))
+  stopifnot(is.null(weights) || (length(weights) == length(peer.ids)))
+
+  if (is.null(col.lvl) && col.is.factor) {
+      col.lvls <- levels(spatial.data@data[, col.name])
+
+      for (current.col.lvl in col.lvls[-1]) {
+          cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", current.col.lvl, perl = TRUE))
+          new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
+          grp.mean(grp.ids, peer.ids, col.name, prefix, postfix = postfix, col.lvl = current.col.lvl, new.col.name = new.col.name, exclude.self = exclude.self, peers.data = peers.data, ids.col = ids.col, weights = weights)
+      }
+  } else { 
+      if (is.null(new.col.name)) {
+          new.col.name <- paste(prefix, col.name, sep = '.')
+      }
+
+      if (!is.null(postfix)) {
+          new.col.name <- paste(new.col.name, postfix, sep = '.')
+      }
+
+      peers.nrow <- length(peer.ids) 
+
+      exclude.mask <- (grp.ids %in% peer.ids) & exclude.self
+
+      if (!is.null(ids.col)) {
+          peer.ids <- which(peers.data$spatial.data@data[, ids.col] %in% peer.ids)
+          grp.ids <- which(spatial.data@data[, ids.col] %in% grp.ids)
+      }
+
+      # Doing this because there might be repeats in the peer.ids; simple [] indexing removes
+      # repeats
+      peer.col.vals <- sapply(peer.ids, function(p.id) { 
+        col.val <- peers.data$spatial.data@data[p.id, col.name]
+        if (col.is.factor) as.integer(col.val == col.lvl) else col.val
+      })
+
+      if (col.is.factor) {
+          grp.col.vals <- as.integer(spatial.data@data[grp.ids, col.name] == col.lvl )
+      } else {
+          grp.col.vals <- spatial.data@data[grp.ids, col.name]
+      }
+
+      non.na.count <- sum(!is.na(peer.col.vals))
+      weight.sum <- if (is.null(weights)) 1 else sum(weights[!is.na(peer.col.vals)]) 
+
+      if (is.null(weights)) {
+          all.peers.mean <- mean(peer.col.vals, na.rm = TRUE) 
+      } else {
+          all.peers.mean <- weighted.mean(peer.col.vals, weights, na.rm = TRUE)
+      }
+
+      na.mask <- is.na(spatial.data@data[grp.ids, col.name])
+      exclude.mask <- as.numeric(exclude.mask & na.mask)
+      grp.col.vals[na.mask] <- 0 # I need to put a zero in the NA rows so when the are multiplied with the zero in the na.mask they don't result in
+      # an NA
+
+
+      if ((peers.nrow == 0L) || (non.na.count == 0L)) {
+          spatial.data@data[grp.ids, new.col.name] <<- NA
+      } else { 
+          if (is.null(weights)) {
+              grp.weights <- rep(1/non.na.count, length(grp.ids))
+          } else {
+              grp.weights <- ifelse(grp.ids %in% peer.ids, weights, 0)
+          }
+          
+          replace.vals <- (rep(weight.sum * all.peers.mean, length(grp.ids)) - (grp.col.vals * exclude.mask * grp.weights)) / (weight.sum - (grp.weights * exclude.mask))
+          stopifnot(length(replace.vals) == length(grp.ids))
+          spatial.data@data[grp.ids, new.col.name] <<- replace.vals
+      }
+  }
+
+  return() 
 })
 
 #BaseFgmData$methods(calc.peer.links = function(outer.radius, inner.radius = 0, cohort.range = 0, range.type = c("both", "older")) {

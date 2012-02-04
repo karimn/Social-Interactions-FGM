@@ -91,15 +91,6 @@ Data$methods(aggregate = function(by, FUN, ...) {
     stats::aggregate(data, data[by], stub.callback, FUN, .self, ...)
 })
 
-#Data$methods(tapply = function(by, FUN, ...) {
-#    base::tapply(data, data[by], stub.callback, FUN, .self, ...)
-#})
-
-#Data$methods(tapply.change = function(by, FUN, ...) {
-#    "The callback function must return an object of the same type of this class"  
-#    do.call(base::rbind, lapply(base::tapply(data, data[by], stub.callback, FUN, .self, ...)), function (obj) obj$data)
-#})
-
 Data$methods(split = function(by, ...) {
     DataCollection$new(coll = base::lapply(base::split(data, by, data[by], ...), function(df) create.new.from.data(df)))
 })
@@ -215,11 +206,11 @@ Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(plm = function(formula, effect, model, index, vcov.fun = vcovSCC, ...) {
-    r <- plm::plm(formula, effect = effect, model = model, index = index, data = data)
-    v <- if (gen.vcov) tryCatch(vcovSCC(r), error = function(e) { matrix(NA, 0, 0) }) else NULL
-     if (!is.null(vcov.fun)) {
-        vcov <- vcov.fun(r, ...) 
+Data$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
+    r <- plm::plm(formula, model = model, data = data, ...)
+
+    if (!is.null(vcov.fun)) {
+        vcov <- vcov.fun(r) 
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
     } else {
         PanelRegressionResults$new(results = r, regress.formula = formula, data = .self) 

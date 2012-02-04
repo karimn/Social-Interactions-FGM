@@ -11,18 +11,21 @@ original.data$relevel("med.help.distance.fac", ref = "not big problem")
 original.data$relevel("med.help.money.fac", ref = "not big problem")
 original.data$relevel("med.help.transportation.fac", ref = "not big problem")
 
+regress.data <- original.data$copy()
+
 radii <- c(10, 20)
 
-regress.data <- original.data$copy()
 for (radius in radii) {
-    system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = as.character(radius)))
-    system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = '.'), dist.wt = TRUE))
+    (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = as.character(radius))))
+    (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = '.'), dist.wt = TRUE)))
 }
 regress.data$rm.by.res.years(10)
 
 for (radius in radii) { 
-    system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius), exclude.self = TRUE))
-    system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = "."), exclude.self = TRUE, dist.wt = TRUE))
+    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius), exclude.self = TRUE)))
+    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = "."), exclude.self = TRUE, dist.wt = TRUE)))
+    print(system.time(regress.data$generate.reg.means.intran(radius = radius, postfix = as.character(radius), exclude.self = TRUE)))
+    print(system.time(regress.data$generate.reg.means.intran(radius = radius, postfix = paste(as.character(radius), "wt", sep = "."), exclude.self = TRUE, dist.wt = TRUE)))
 }
 
 system.time(regress.data$generate.reg.means.spatial(radius = 20, inner.radius = 10, postfix = "10_20", exclude.self = TRUE))
@@ -40,11 +43,57 @@ regress.data.20$subset(grp.size.20 >= 20)
 regress.data.10_20 <- regress.data$copy()
 regress.data.10_20$subset(grp.size.10_20 >= 10)
 
-# Exogenous Effects only
+get.grpavg.regs <- function(data, radius, weighted = FALSE, spat = TRUE, intran = FALSE) {
+    reg.pattern <- sprintf("%s%sgrpavg\\.(?!med\\.circum|circum).+%d%s$", 
+                           if (spat) "spat." else "",
+                           if (intran) "intran." else "",
+                           radius,
+                           if (weighted) ".wt" else "")
+    return(grep(reg.pattern, data$names, value = TRUE, perl = TRUE))
+}
 
-pooled.exogen.only.results.10 <- regress.data.10$plm(circum ~ governorate + birth.year.fac + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural + order + I(order^2) + spat.grpavg.urban.rural_urban.10 + spat.grpavg.wealth.index.2_rich.10 + spat.grpavg.educ.lvl_primary.10 + spat.grpavg.educ.lvl_secondary.10 + spat.grpavg.educ.lvl_higher.10 + spat.grpavg.marital.age.10 + spat.grpavg.mother.circum.fac_yes.10 + spat.grpavg.religion_christian.10 + spat.grpavg.hh.head.sex_female.10 + spat.grpavg.med.help.distance.fac_big_problem.10, effect = "individual", model = "pooling", index = c("hh.id", "order.fac"))
+hh.regs <- c("governorate", "wealth.index.2", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "urban.rural", "med.help.distance.fac", "n.ord")
+daughter.regs <- c("birth.year.fac", "order")
 
-within.exogen.only.results.10 <- regress.data.10$plm(circum ~ birth.year.fac + spat.grpavg.urban.rural_urban.10 + spat.grpavg.wealth.index.2_rich.10 + spat.grpavg.educ.lvl_primary.10 + spat.grpavg.educ.lvl_secondary.10 + spat.grpavg.educ.lvl_higher.10 + spat.grpavg.marital.age.10 + spat.grpavg.mother.circum.fac_yes.10 + spat.grpavg.religion_christian.10 + spat.grpavg.hh.head.sex_female.10 + spat.grpavg.med.help.distance.fac_big_problem.10, effect = "twoways", model = "within", index = c("hh.id", "order.fac"))
+# Test the strength of the intran averages on circum averages
+
+relv.formula <- list()
+relv.results <- list()
+for (radius in radii) {
+    relv.formula[[radius]] <- formula(sprintf("spat.grpavg.circum.%d ~ %s", radius, get.grpavg.regs(regress.data, radius = radius, intran = TRUE)))
+    relv.results[[radius]] <- regress.data$lm(relv.formula[[radius]])
+}
+
+relv.formula.wt <- list()
+relv.results.wt <- list()
+for (radius in radii) {
+    relv.formula[[radius]] <- formula(sprintf("spat.grpavg.circum.%d.wt ~ %s", radius, get.grpavg.regs(regress.data, radius = radius, intran = TRUE, weighted = TRUE)))
+    relv.results.wt[[radius]] <- regress.data$lm(relv.formula.wt[[radius]])
+}
+
+# Effect of exogenous averages on behavioral averages
+
+pooled.avg.results.10 <- regress.data$plm(formula(sprintf("spat.grpavg.circum.10 ~ birth.year.fac + (%s) * spat.grp.size.10", 
+                                                                  paste(get.grpavg.regs(regress.data, radius = 10), collapse = " + "))),
+                                                  effect = "individual", model = "pooling", index = c("hh.id", "order.fac"))
+
+# TODO a within version of the above regression
+
+# Direct effects only
+
+ols.dir.only.results.10 <- regress.data$lm(formula(sprintf("circum ~ %s", paste(c(hh.regs, daughter.regs, "I(order^2)", "spat.grp.size.10"), collapse = " + "))))
+# There doesn't seem to be any significant difference between using different robust SEs.
+
+pooled.dir.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s", paste(c(hh.regs, daughter.regs, "I(order^2)", "spat.grp.size.10"), collapse = " + "))), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"))
+
+# Exogenous effects only
+pooled.exogen.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s + (%s) * spat.grp.size.10", 
+                                                                  paste(c(hh.regs, daughter.regs, "I(order^2)"), collapse = " + "),
+                                                                  paste(get.grpavg.regs(regress.data, radius = 10), collapse = " + "))),
+                                                  effect = "individual", model = "pooling", index = c("hh.id", "order.fac"))
+
+within.exogen.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ birth.year.fac + (%s) * spat.grp.size.10", paste(get.grpavg.regs(regress.data, radius = 10), collapse = " + "))),
+                                                  effect = "twoways", model = "within", index = c("hh.id", "order.fac"))
 
 #within.exogen.only.results.10.2 <- regress.data.10$plm(circum ~ spat.grpavg.urban.rural_urban.10 + spat.grpavg.wealth.index.2_rich.10 + spat.grpavg.educ.lvl_primary.10 + spat.grpavg.educ.lvl_secondary.10 + spat.grpavg.educ.lvl_higher.10 + spat.grpavg.marital.age.10 + spat.grpavg.mother.circum.fac_yes.10 + spat.grpavg.religion_christian.10 + spat.grpavg.hh.head.sex_female.10 + spat.grpavg.med.help.distance.fac_big_problem.10, effect = "twoways", model = "within", index = c("hh.id", "birth.year.fac"))
 
