@@ -5,7 +5,13 @@ library(sem)
 library(AER)
 library(plm)
 
-
+make.row.stochastic <- function(adj.matrix) {
+    t(apply(adj.matrix, 1, function(row) {
+          row.sum <- sum(row)
+          if (row.sum > 0) row[row == 1] <- 1/row.sum
+          return(row)
+    }))
+}
 
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
@@ -233,6 +239,44 @@ BaseFgmData$methods(grp.mean = function(grp.ids, peer.ids, col.name, prefix, pos
   }
 
   return() 
+})
+
+BaseFgmData$methods(get.spatial.adj.matrix = function(radius, cohort.range = 1, cohort.range.type = c("both", "older")) {
+    return(do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older"), dist.wt) {
+          ret.mat <- matrix(0, ncol = nrow, nrow = length(grp.ids))
+
+          current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"]
+          current.coords <- all.data$coords[grp.ids[1],]
+
+          cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
+          cohort.lower.bound <- current.birth.year - cohort.range
+
+          peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound), center = current.coords, radius = radius)   
+
+          ret.mat[,peer.ids] <- 1 
+
+          return(ret.mat)
+    }, cohort.range, cohort.range.type, dist.wt)))
+})
+
+BaseFgmData$methods(get.dist.matrix = function(cohort.range = 1, cohort.range.type = c("both", "older")) {
+    return(do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older"), dist.wt) {
+          ret.mat <- matrix(ncol = nrow, nrow = length(grp.ids))
+
+          current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"]
+          current.coords <- all.data$coords[grp.ids[1],]
+
+          cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
+          cohort.lower.bound <- current.birth.year - cohort.range
+
+          peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound))   
+
+          if (length(peer.ids) > 0) {
+              ret.mat[,peer.ids] <- matrix(spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE), ncol = length(peer.ids), nrow = length(grp.ids))
+          }
+
+          return(ret.mat)
+    }, cohort.range, cohort.range.type, dist.wt)))
 })
 
 #BaseFgmData$methods(calc.peer.links = function(outer.radius, inner.radius = 0, cohort.range = 0, range.type = c("both", "older")) {
