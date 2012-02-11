@@ -7,8 +7,8 @@ RegressionResults <- setRefClass("RegressionResults",
     regress.formula = "formula",
     data = "Data",
     na.action = function(val) if (missing(val)) results$na.action else stop("na.action is not mutable"),
-    r.square = function(val) base::summary(results)$r.squared,
-    adj.r.square = function(val) base::summary(results)$adj.r.squared) )
+    r.squared = function(val) base::summary(results)$r.squared,
+    adj.r.squared = function(val) base::summary(results)$adj.r.squared) )
 
 RegressionResults$lock("results", "regress.formula", "data")
 
@@ -21,7 +21,7 @@ RegressionResults$methods(summary = function(vcov.fun, ...) {
     if (!missing(vcov.fun)) {
         coeftest(results, vcov. = if (!is.null(vcov.fun)) vcov.fun(results, ...) else NULL)
     } else {
-        coeftest(results, vcov. = vcov)
+        coeftest(results, vcov. = if (all(vcov == c(0, 0))) NULL else vcov)
     }
   })
 
