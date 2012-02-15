@@ -13,6 +13,10 @@ make.row.stochastic <- function(adj.matrix) {
     }))
 }
 
+clean.lvl.name <- function(lvl.name) {
+    gsub(",", '', gsub("[\\s-&\\.]+", "_", lvl.name, perl = TRUE))
+}
+
 FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v104,
                                                v130, v151, v190, g116, v106, v155, v467b, v467c, v467d, v467e,
                                                v511, v704, v705, v714, v716, v717, v719, v721, v729, v730,
@@ -173,7 +177,7 @@ BaseFgmData$methods(grp.mean = function(grp.ids, peer.ids, col.name, prefix, pos
       col.lvls <- levels(spatial.data@data[, col.name])
 
       for (current.col.lvl in col.lvls[-1]) {
-          cleaned.lvl.name <- gsub(",", '', gsub("[\\s-&\\.]+", "_", current.col.lvl, perl = TRUE))
+          cleaned.lvl.name <- clean.lvl.name(current.col.lvl)
           new.col.name <- paste(paste(prefix, col.name, sep = '.'), cleaned.lvl.name, sep = '_')
           grp.mean(grp.ids, peer.ids, col.name, prefix, postfix = postfix, col.lvl = current.col.lvl, new.col.name = new.col.name, exclude.self = exclude.self, peers.data = peers.data, ids.col = ids.col, weights = weights)
       }

@@ -6,6 +6,18 @@ library(lmtest)
 library(plm)
 library(AER)
 
+clean.grpavg.matrix.colnames <- function(curr.names, regs, prefix = "spat.grpavg", postfix = NULL) {
+    lvl.removed <- sub(sprintf("^(%s)(.+)", paste(regs, collapse = "|")), "\\1", curr.names)
+    lvls <- clean.lvl.name(sub(sprintf("^(%s)(.*)", paste(regs, collapse = "|")), "\\2", curr.names))
+    new.col.names <- paste(prefix, paste(lvl.removed, lvls, sep = "_"), sep = ".")
+
+    if (!is.null(postfix)) {
+        new.col.names <- paste(new.col.names, postfix, sep = ".")
+    }
+
+    return(new.col.names)
+}
+
 calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, regs, prefix = FgmData.grpavg.prefix, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL, radius)
 {
   stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
@@ -61,59 +73,59 @@ calc.grpavg <- function(all.data, grp.ids, grp.index.col.values, cohort.range, r
   return()
 }
 
-calc.grpavg.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = paste("spat", FgmData.grpavg.prefix, sep = "."), postfix = NULL, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL, inner.radius = 0, dist.wt = FALSE) {
-  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
-  stopifnot(length(unique(all.data$coords[grp.ids, 1])) == 1)
-  stopifnot(length(unique(all.data$coords[grp.ids, 2])) == 1)
-
-  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
-  current.coords <- all.data$coords[grp.ids[1],]
-
-  cohort.upper.bound <- current.birth.year + switch(match.arg(range.type), both = cohort.range, older = 0)
-  cohort.lower.bound <- current.birth.year - cohort.range
-
-  if (!is.null(other.network.reg))
-  {
-    current.other.network <- grp.index.values[[other.network.reg]] 
-    peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound) &
-                                         (all.data$spatial.data[[other.network.reg]] == current.other.network), 
-                                         center = current.coords, radius = radius, inner.radius = inner.radius)   
-  }
-  else
-  {
-    peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound), 
-                                         center = current.coords, radius = radius, inner.radius = inner.radius)   
-  }
-
-  dists <- spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE)
-  stopifnot(all(dists <= radius))
-
-  if (dist.wt) {
-      dists[dists == 0] <- 0.02 # A arbitrarily small distance found to be lesser than any distance between clusters
-                                # This is in order to avoid division by zero
-      weights <- 1/dists 
-  } else {
-      weights <- NULL
-  }
-
-  if ((length(regs) > 0) && (length(peer.ids) > 0)) {
-    for (col.name in regs) {
-        all.data$grp.mean(grp.ids, peer.ids, col.name, prefix, postfix = postfix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self, weights = weights)
-    }
-  }
-
-  grp.size.col.name <- if (!is.null(postfix)) paste("spat.grp.size", postfix, sep = ".") else "spat.grp.size"
-  all.data$spatial.data@data[grp.ids, grp.size.col.name] <- length(peer.ids) 
-
-  if (dist.wt) {
-      grp.total.wt.col.name <- if (!is.null(postfix)) paste("spat.grp.tot.wt", postfix, sep = ".") else "spat.grp.tot.wt"
-      grp.total.dist.col.name <- if (!is.null(postfix)) paste("spat.grp.tot.dist", postfix, sep = ".") else "spat.grp.tot.dist"
-      all.data$spatial.data@data[grp.ids, grp.total.wt.col.name] <- sum(weights) 
-      all.data$spatial.data@data[grp.ids, grp.total.dist.col.name] <- sum(dists) 
-  }
-
-  return()
-}
+# calc.grpavg.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = paste("spat", FgmData.grpavg.prefix, sep = "."), postfix = NULL, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL, inner.radius = 0, dist.wt = FALSE) {
+#   stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+#   stopifnot(length(unique(all.data$coords[grp.ids, 1])) == 1)
+#   stopifnot(length(unique(all.data$coords[grp.ids, 2])) == 1)
+# 
+#   current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
+#   current.coords <- all.data$coords[grp.ids[1],]
+# 
+#   cohort.upper.bound <- current.birth.year + switch(match.arg(range.type), both = cohort.range, older = 0)
+#   cohort.lower.bound <- current.birth.year - cohort.range
+# 
+#   if (!is.null(other.network.reg))
+#   {
+#     current.other.network <- grp.index.values[[other.network.reg]] 
+#     peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound) &
+#                                          (all.data$spatial.data[[other.network.reg]] == current.other.network), 
+#                                          center = current.coords, radius = radius, inner.radius = inner.radius)   
+#   }
+#   else
+#   {
+#     peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound), 
+#                                          center = current.coords, radius = radius, inner.radius = inner.radius)   
+#   }
+# 
+#   dists <- spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE)
+#   stopifnot(all(dists <= radius))
+# 
+#   if (dist.wt) {
+#       dists[dists == 0] <- 0.02 # A arbitrarily small distance found to be lesser than any distance between clusters
+#This is in order to avoid division by zero
+#       weights <- 1/dists 
+#   } else {
+#       weights <- NULL
+#   }
+# 
+#   if ((length(regs) > 0) && (length(peer.ids) > 0)) {
+#     for (col.name in regs) {
+#         all.data$grp.mean(grp.ids, peer.ids, col.name, prefix, postfix = postfix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self, weights = weights)
+#     }
+#   }
+# 
+#   grp.size.col.name <- if (!is.null(postfix)) paste("spat.grp.size", postfix, sep = ".") else "spat.grp.size"
+#   all.data$spatial.data@data[grp.ids, grp.size.col.name] <- length(peer.ids) 
+# 
+#   if (dist.wt) {
+#       grp.total.wt.col.name <- if (!is.null(postfix)) paste("spat.grp.tot.wt", postfix, sep = ".") else "spat.grp.tot.wt"
+#       grp.total.dist.col.name <- if (!is.null(postfix)) paste("spat.grp.tot.dist", postfix, sep = ".") else "spat.grp.tot.dist"
+#       all.data$spatial.data@data[grp.ids, grp.total.wt.col.name] <- sum(weights) 
+#       all.data$spatial.data@data[grp.ids, grp.total.dist.col.name] <- sum(dists) 
+#   }
+# 
+#   return()
+# }
 
 calc.delivery.avgs <- function(all.data, grp.ids, grp.index.col.values, all.cohorts.data, year.range, year.offset, regs, prefix = FgmData.grpavg.prefix, range.type = c("both", "older")) {
   stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
@@ -203,77 +215,75 @@ cleanup.by.hh <- function(df.obj) {
   return(df.obj)
 }
 
-calc.intran.grpavg.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = paste("spat.intran", FgmData.grpavg.prefix, sep = "."), postfix = NULL, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL, dist.wt = FALSE, current.grp = NULL, intran.degree = 2, weights = NULL, to.exclude = grp.ids) {
-  stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
-  stopifnot(is.null(weights) || (length(weights) == length(current.grp)))
-
-  current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
-
-  cohort.upper.bound <- current.birth.year + switch(match.arg(range.type), both = cohort.range, older = 0)
-  cohort.lower.bound <- current.birth.year - cohort.range
-
-  if (is.null(current.grp)) {
-      current.grp <- grp.ids
-  }
-
-  len.current.grp <- length(current.grp)
-
-  if (len.current.grp > 0) { # it is possible that there are no peers at this "distance"
-      peer.matrix <- do.call(rbind, lapply(1:len.current.grp, function(id.index) {
-        current.coords <- all.data$coords[current.grp[id.index],]
-        if (!is.null(other.network.reg)) {
-            current.other.network <- grp.index.values[[other.network.reg]] 
-            peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & 
-                                                 (birth.year >= cohort.lower.bound) &
-                                                 (all.data$spatial.data[[other.network.reg]] == current.other.network), 
-                                                 center = current.coords, radius = radius)
-        } else {
-            peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & 
-                                                 (birth.year >= cohort.lower.bound), 
-                                                 center = current.coords, radius = radius)
-        }   
-
-        if (dist.wt) {
-            current.dists <- spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE)
-            current.dists[current.dists == 0] <- 0.02 # A arbitrarily small distance lesser than any distance between clusters. This is in order to avoid division by zero
-            current.weights <- 1/current.dists * if (is.null(weights)) 1 else weights[id.index]
-        } else {
-            current.weights <- rep(1/length(peer.ids), length(peer.ids))
-        }
-
-        return(matrix(c(peer.ids, current.weights), ncol = 2))
-      }))
-
-      peer.mask <- !(peer.matrix[,1] %in% to.exclude)
-      current.grp <- peer.matrix[peer.mask, 1] 
-      weights <- peer.matrix[peer.mask, 2]
-  }
-
-  if (intran.degree > 1) {
-      to.exclude <- c(to.exclude, current.grp)
-      calc.intran.grpavg.spatial(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = prefix, postfix = postfix, lag = lag, exclude.self = exclude.self, range.type = range.type, other.network.reg = other.network.reg, dist.wt = dist.wt, current.grp = current.grp, intran.degree = intran.degree - 1, weights = weights, to.exclude = to.exclude)
-  } else {
-      len.current.grp <- length(current.grp)
-
-      if ((length(regs) > 0) && (len.current.grp > 0)) {
-        for (col.name in regs) {
-            all.data$grp.mean(grp.ids, current.grp, col.name, prefix, postfix = postfix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self, weights = weights)
-        }
-      }
-
-      grp.size.col.name <- if (!is.null(postfix)) paste("spat.intran.grp.size", postfix, sep = ".") else "spat.intran.grp.size"
-      all.data$spatial.data@data[grp.ids, grp.size.col.name] <- len.current.grp
-
-      if (dist.wt) {
-          grp.total.wt.col.name <- if (!is.null(postfix)) paste("spat.intran.grp.tot.wt", postfix, sep = ".") else "spat.intran.grp.tot.wt"
-          #grp.total.dist.col.name <- if (!is.null(postfix)) paste("spat.intran.grp.tot.dist", postfix, sep = ".") else "spat.intran.grp.tot.dist"
-          all.data$spatial.data@data[grp.ids, grp.total.wt.col.name] <- sum(weights) 
-          #all.data$spatial.data@data[grp.ids, grp.total.dist.col.name] <- sum(dists) 
-      }
-
-      return()
-  }
-}
+# calc.intran.grpavg.spatial <- function(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = paste("spat.intran", FgmData.grpavg.prefix, sep = "."), postfix = NULL, lag = 0, exclude.self = FALSE, range.type = c("both", "older"), other.network.reg = NULL, dist.wt = FALSE, current.grp = NULL, intran.degree = 2, weights = NULL, to.exclude = grp.ids) {
+#   stopifnot(length(unique(all.data$spatial.data@data[grp.ids, "birth.year"])) == 1)
+#   stopifnot(is.null(weights) || (length(weights) == length(current.grp)))
+# 
+#   current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] - lag 
+# 
+#   cohort.upper.bound <- current.birth.year + switch(match.arg(range.type), both = cohort.range, older = 0)
+#   cohort.lower.bound <- current.birth.year - cohort.range
+# 
+#   if (is.null(current.grp)) {
+#       current.grp <- grp.ids
+#   }
+# 
+#   len.current.grp <- length(current.grp)
+# 
+#   if (len.current.grp > 0) { # it is possible that there are no peers at this "distance"
+#       peer.matrix <- do.call(rbind, lapply(1:len.current.grp, function(id.index) {
+#         current.coords <- all.data$coords[current.grp[id.index],]
+#         if (!is.null(other.network.reg)) {
+#             current.other.network <- grp.index.values[[other.network.reg]] 
+#             peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & 
+#                                                  (birth.year >= cohort.lower.bound) &
+#                                                  (all.data$spatial.data[[other.network.reg]] == current.other.network), 
+#                                                  center = current.coords, radius = radius)
+#         } else {
+#             peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & 
+#                                                  (birth.year >= cohort.lower.bound), 
+#                                                  center = current.coords, radius = radius)
+#         }   
+# 
+#         if (dist.wt) {
+#             current.dists <- spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE)
+#             current.dists[current.dists == 0] <- 0.02 # A arbitrarily small distance lesser than any distance between clusters. This is in order to avoid division by zero
+#             current.weights <- 1/current.dists * if (is.null(weights)) 1 else weights[id.index]
+#         } else {
+#             current.weights <- rep(1/length(peer.ids), length(peer.ids))
+#         }
+# 
+#         return(matrix(c(peer.ids, current.weights), ncol = 2))
+#       }))
+# 
+#       peer.mask <- !(peer.matrix[,1] %in% to.exclude)
+#       current.grp <- peer.matrix[peer.mask, 1] 
+#       weights <- peer.matrix[peer.mask, 2]
+#   }
+# 
+#   if (intran.degree > 1) {
+#       to.exclude <- c(to.exclude, current.grp)
+#       calc.intran.grpavg.spatial(all.data, grp.ids, grp.index.col.values, radius, cohort.range, regs, prefix = prefix, postfix = postfix, lag = lag, exclude.self = exclude.self, range.type = range.type, other.network.reg = other.network.reg, dist.wt = dist.wt, current.grp = current.grp, intran.degree = intran.degree - 1, weights = weights, to.exclude = to.exclude)
+#   } else {
+#       len.current.grp <- length(current.grp)
+# 
+#       if ((length(regs) > 0) && (len.current.grp > 0)) {
+#         for (col.name in regs) {
+#             all.data$grp.mean(grp.ids, current.grp, col.name, prefix, postfix = postfix, col.lvl = NULL, new.col.name = NULL, exclude.self = exclude.self, weights = weights)
+#         }
+#       }
+# 
+#       grp.size.col.name <- if (!is.null(postfix)) paste("spat.intran.grp.size", postfix, sep = ".") else "spat.intran.grp.size"
+#       all.data$spatial.data@data[grp.ids, grp.size.col.name] <- len.current.grp
+# 
+#       if (dist.wt) {
+#           grp.total.wt.col.name <- if (!is.null(postfix)) paste("spat.intran.grp.tot.wt", postfix, sep = ".") else "spat.intran.grp.tot.wt"
+#           all.data$spatial.data@data[grp.ids, grp.total.wt.col.name] <- sum(weights) 
+#       }
+# 
+#       return()
+#   }
+# }
 
 
 DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "med.help.distance.fac", "discuss.circum.fac", "received.info.circum")
@@ -406,17 +416,53 @@ DaughterFgmData$methods(
 DaughterFgmData$methods(generate.reg.means.spatial = function(radius, 
                                                               cohort.range = 1, 
                                                               regs = c(individual.controls, other.grpavg.controls), 
-                                                              other.network.reg = NULL, 
-                                                              exclude.self = FALSE,
+                                                              #other.network.reg = NULL
+                                                              #exclude.self = FALSE,
                                                               range.type = c("both", "older"),
+                                                              prefix = "spat.grpavg",
                                                               postfix = NULL,
-                                                              inner.radius = 0,
+                                                              degree = 1,
+                                                              #inner.radius = 0,
                                                               dist.wt = FALSE) {
     if (missing(radius)) {
         stop("Missing radius value")
     }
 
-    apply(c("birth.year.fac", "cluster.fac", other.network.reg), calc.grpavg.spatial, radius, cohort.range, regs, lag = 0, exclude.self = exclude.self, postfix = postfix, inner.radius = inner.radius, dist.wt = dist.wt)
+    adj.matrix <- get.spatial.adj.matrix(radius, cohort.range, range.type)
+    diag(adj.matrix) <- 0
+
+    reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
+    colnames(reg.matrix) <- clean.grpavg.matrix.colnames(colnames(reg.matrix), regs, prefix, postfix)
+    which.rows <- as.integer(rownames(reg.matrix))
+
+    adj.matrix <- adj.matrix[which.rows, which.rows]
+    w.matrix <- make.row.stochastic(adj.matrix)
+   
+    not.neighbor.mat <- base::apply(w.matrix, 1, function(row) as.integer(row == 0))
+    diag(not.neighbor.mat) <- 0
+
+    if (degree > 1) {
+        original.w.matrix <- w.matrix
+        for (curr.deg in 2:degree) {
+            w.matrix <- w.matrix %*% original.w.matrix
+            w.matrix <- w.matrix * not.neighbor.mat
+            not.neighbor.mat <- not.neighbor.mat * base::apply(w.matrix, 1, function(row) as.integer(row == 0))
+        }
+    }
+
+   reg.matrix <- w.matrix %*% reg.matrix
+
+   for (col.name in colnames(reg.matrix)) {
+       spatial.data@data[which.rows, col.name] <<- reg.matrix[, col.name]
+   }
+
+   neighbor.mat <- (not.neighbor.mat - 1) * (-1) 
+   diag(neighbor.mat) <- 0
+   grp.size <- neighbor.mat %*% rep.int(1, ncol(neighbor.mat)) # apply(w.matrix, 1, function(row) sum(row > 0))
+   grp.size.col <- "grp.size"
+   if (!is.null(prefix)) grp.size.col <- paste(prefix, grp.size.col, sep = ".")
+   if (!is.null(postfix)) grp.size.col <- paste(grp.size.col, postfix, sep = ".")
+   spatial.data@data[which.rows, grp.size.col] <<- grp.size
 })
 
 DaughterFgmData$methods(generate.reg.means.intran = function(radius, 
@@ -427,6 +473,29 @@ DaughterFgmData$methods(generate.reg.means.intran = function(radius,
                                                              range.type = c("both", "older"),
                                                              postfix = NULL,
                                                              dist.wt = FALSE) {
+
+    if (missing(radius)) {
+        stop("Missing radius value")
+    }
+
+    adj.matrix <- get.spatial.adj.matrix(radius, cohort.range, range.type)
+
+    if (exclude.self) {
+        diag(adj.matrix) <- 0
+    }
+
+    reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
+    colnames(reg.matrix) <- clean.grpavg.matrix.colnames(colnames(reg.matrix), regs, prefix = "spat.intran.grpavg", postfix = postfix)
+    which.rows <- as.integer(rownames(reg.matrix))
+
+    adj.matrix <- adj.matrix[which.rows, which.rows]
+    w.matrix <- make.row.stochastic(adj.matrix)
+
+   reg.matrix <- w.matrix %*% reg.matrix
+
+   for (col.name in colnames(reg.matrix)) {
+       spatial.data@data[which.rows, col.name] <<- reg.matrix[, col.name]
+   }
     if (missing(radius)) {
         stop("Missing radius value")
     }
@@ -437,7 +506,6 @@ DaughterFgmData$methods(generate.reg.means.intran = function(radius,
 DaughterFgmData$methods(
   generate.delivery.means = function(year.range = 1, year.offset = 12, regs = c("delivery.location", "delivered.by.daya"), range.type = c("both", "older"))
   {
-
       apply(c("birth.year.fac", "governorate"), calc.delivery.avgs, all.cohorts.spdf, year.range, year.offset, regs)
   }
 )
