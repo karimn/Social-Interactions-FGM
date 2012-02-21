@@ -7,9 +7,9 @@ library(plm)
 library(AER)
 
 clean.grpavg.matrix.colnames <- function(curr.names, regs, prefix = "spat.grpavg", postfix = NULL) {
-    lvl.removed <- sub(sprintf("^(%s)(.+)", paste(regs, collapse = "|")), "\\1", curr.names)
+    lvl.removed <- sub(sprintf("^(%s)(.+)", paste(regs, collapse = "|")), "\\1_", curr.names)
     lvls <- clean.lvl.name(sub(sprintf("^(%s)(.*)", paste(regs, collapse = "|")), "\\2", curr.names))
-    new.col.names <- paste(prefix, paste(lvl.removed, lvls, sep = "_"), sep = ".")
+    new.col.names <- paste(prefix, paste(lvl.removed, lvls, sep = ""), sep = ".")
 
     if (!is.null(postfix)) {
         new.col.names <- paste(new.col.names, postfix, sep = ".")
@@ -295,11 +295,11 @@ DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.
 DaughterFgmData <- setRefClass("DaughterFgmData", 
   contains = "BaseFgmData",
   fields = list(
-    all.cohorts.spdf = "SpatialData", # "SpatialPointsDataFrame",
+    all.cohorts.spdf = "BaseFgmData", # "SpatialPointsDataFrame",
+    all.cohorts.dist.mat = "matrix",
     individual.controls = "character",
     other.grpavg.controls = "character",
     birth.data = "data.frame"))
-    #peer.links = "data.frame"))
 
 DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gps.file = NULL, 
                           new.column.names = FgmData.col.names,
@@ -367,7 +367,7 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
               daughter.id <- seq_along(age) # Create a unique id per daughter
             })
 
-            all.cohorts.spdf <<- SpatialData$new(copy = .self) #spatial.data 
+            all.cohorts.spdf <<- BaseFgmData$new(copy = .self)
 
             if (!is.null(youngest.cohort))
               subset(birth.year <= youngest.cohort)
@@ -387,7 +387,7 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
           }
           else
           {
-            all.cohorts.spdf <<- SpatialData$new(copy = .self) #spatial.data  
+            all.cohorts.spdf <<- BaseFgmData$new(copy = .self) #spatial.data  
 
             if (!is.null(youngest.cohort) & (nrow != 0))
               subset(birth.year <= youngest.cohort)
@@ -413,6 +413,11 @@ DaughterFgmData$methods(
   }
 )
 
+DaughterFgmData$methods(calc.all.cohorts.dist.matrix = function() {
+    all.cohorts.dist.mat <<- all.cohorts.spdf$get.dist.matrix(subset = daughter.id %in% spatial.data$daughter.id)
+})
+
+
 DaughterFgmData$methods(generate.reg.means.spatial = function(radius, 
                                                               cohort.range = 1, 
                                                               regs = c(individual.controls, other.grpavg.controls), 
@@ -421,48 +426,84 @@ DaughterFgmData$methods(generate.reg.means.spatial = function(radius,
                                                               range.type = c("both", "older"),
                                                               prefix = "spat.grpavg",
                                                               postfix = NULL,
-                                                              degree = 1,
+                                                              year.offset = 0,
+                                                              use.all.cohorts.data = FALSE,
+                                                              degree = 1) {
                                                               #inner.radius = 0,
-                                                              dist.wt = FALSE) {
+                                                              #dist.wt = FALSE) {
     if (missing(radius)) {
         stop("Missing radius value")
     }
 
-    adj.matrix <- get.spatial.adj.matrix(radius, cohort.range, range.type)
+    if (!use.all.cohorts.data) {
+        adj.matrix <- get.spatial.adj.matrix(radius)
+        cohort.adj.matrix <- get.cohort.adj.matrix(cohort.range, range.type, year.offset = year.offset)
+        adj.matrix <- adj.matrix * cohort.adj.matrix
+
+        reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
+    } else {
+        #         adj.matrix <- all.cohorts.spdf$get.spatial.adj.matrix(radius, subset = daughter.id %in% spatial.data$daughter.id)
+        #         adj.matrix <- all.cohorts.spdf$get.dist.matrix(subset = daughter.id %in% spatial.data$daughter.id)
+        adj.matrix <- ifelse(all.cohorts.dist.mat <= radius, 1, 0) # This seems to be faster
+
+        cohort.adj.matrix <- all.cohorts.spdf$get.cohort.adj.matrix(cohort.range, range.type, year.offset = year.offset, subset = daughter.id %in% spatial.data$daughter.id)
+        adj.matrix <- adj.matrix * cohort.adj.matrix
+
+        reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = all.cohorts.spdf$spatial.data)[, -1]
+    }
+
     diag(adj.matrix) <- 0
 
-    reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
     colnames(reg.matrix) <- clean.grpavg.matrix.colnames(colnames(reg.matrix), regs, prefix, postfix)
     which.rows <- as.integer(rownames(reg.matrix))
 
-    adj.matrix <- adj.matrix[which.rows, which.rows]
+    if (!use.all.cohorts.data) {
+        adj.matrix <- adj.matrix[which.rows, which.rows]
+    } else {
+        adj.matrix <- adj.matrix[, which.rows]
+    }
+
     w.matrix <- make.row.stochastic(adj.matrix)
    
-    not.neighbor.mat <- base::apply(w.matrix, 1, function(row) as.integer(row == 0))
-    diag(not.neighbor.mat) <- 0
+    #     not.neighbor.mat <- base::apply(w.matrix, 1, function(row) as.integer(row == 0))
+    #     diag(not.neighbor.mat) <- 0
 
     if (degree > 1) {
         original.w.matrix <- w.matrix
         for (curr.deg in 2:degree) {
             w.matrix <- w.matrix %*% original.w.matrix
-            w.matrix <- w.matrix * not.neighbor.mat
-            not.neighbor.mat <- not.neighbor.mat * base::apply(w.matrix, 1, function(row) as.integer(row == 0))
+            #             w.matrix <- w.matrix * not.neighbor.mat
+            #             not.neighbor.mat <- not.neighbor.mat * base::apply(w.matrix, 1, function(row) as.integer(row == 0))
         }
     }
 
    reg.matrix <- w.matrix %*% reg.matrix
 
-   for (col.name in colnames(reg.matrix)) {
-       spatial.data@data[which.rows, col.name] <<- reg.matrix[, col.name]
-   }
+   #    for (col.name in colnames(reg.matrix)) {
+   #        if (use.all.cohorts.data) {
+   #            reg.matrix <- cbind(reg.matrix, all.cohorts.spdf$spatial.data$daughter.id[which.rows])
+   #            merge(reg.matrix, by.x = "daughter.id", by.y = ncol(reg.matrix) - 1)
+   #        } else {
+   #            spatial.data@data[which.rows, col.name] <<- reg.matrix[, col.name]
+   #        }
+   #    }
 
-   neighbor.mat <- (not.neighbor.mat - 1) * (-1) 
-   diag(neighbor.mat) <- 0
-   grp.size <- neighbor.mat %*% rep.int(1, ncol(neighbor.mat)) # apply(w.matrix, 1, function(row) sum(row > 0))
+   #    neighbor.mat <- (not.neighbor.mat - 1) * (-1) 
+   #    diag(neighbor.mat) <- 0
+   grp.size <- adj.matrix %*% rep.int(1, ncol(adj.matrix)) # neighbor.mat %*% rep.int(1, ncol(neighbor.mat)) # apply(w.matrix, 1, function(row) sum(row > 0))
    grp.size.col <- "grp.size"
    if (!is.null(prefix)) grp.size.col <- paste(prefix, grp.size.col, sep = ".")
    if (!is.null(postfix)) grp.size.col <- paste(grp.size.col, postfix, sep = ".")
-   spatial.data@data[which.rows, grp.size.col] <<- grp.size
+
+   if (!use.all.cohorts.data) {
+       reg.matrix <- cbind(reg.matrix, spatial.data$daughter.id[which.rows], grp.size)
+       colnames(reg.matrix)[ncol(reg.matrix) - c(1, 0)] <- c("daughter.id", grp.size.col)
+
+       merge(reg.matrix, by = "daughter.id", all.x = TRUE)
+   } else {
+       spatial.data@data[, grp.size.col] <<- grp.size
+       spatial.data@data <<- cbind(spatial.data@data, reg.matrix)
+   }
 })
 
 DaughterFgmData$methods(generate.reg.means.intran = function(radius, 

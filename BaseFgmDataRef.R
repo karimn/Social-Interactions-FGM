@@ -13,6 +13,10 @@ make.row.stochastic <- function(adj.matrix) {
     }))
 }
 
+test.adj.matrix <- function(adj.matrix) {
+    isSymmetric(adj.matrix)
+}
+
 clean.lvl.name <- function(lvl.name) {
     gsub(",", '', gsub("[\\s-&\\.]+", "_", lvl.name, perl = TRUE))
 }
@@ -67,6 +71,7 @@ FgmData.lagged.grpavg.prefix = "lagged.grpavg"
 BaseFgmData <- setRefClass("BaseFgmData",
   contains = "SpatialData",
   fields = list(
+    dist.mat = "matrix",
     cluster.info = "SpatialData"), ##"SpatialPointsDataFrame"), #"data.frame"), 
 
   methods = list(
@@ -147,7 +152,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
 BaseFgmData$lock("cluster.info")
 
 BaseFgmData$methods(create.new.from.data = function(df, ...) {
-    callSuper(df = df, cluster.info = cluster.info$copy(), ...)
+    callSuper(df = df, cluster.info = cluster.info$copy(), dist.mat = dist.mat, ...)
 })
 
 BaseFgmData$methods(get.cluster.cohort.summary = function() {
@@ -245,86 +250,90 @@ BaseFgmData$methods(grp.mean = function(grp.ids, peer.ids, col.name, prefix, pos
   return() 
 })
 
-BaseFgmData$methods(get.spatial.adj.matrix = function(radius, cohort.range = 1, cohort.range.type = c("both", "older")) {
-    return(do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older"), dist.wt) {
-          ret.mat <- matrix(0, ncol = nrow, nrow = length(grp.ids))
 
-          current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"]
+BaseFgmData$methods(get.dist.matrix = function(#cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, 
+                                               subset, ...) {
+    if (".eval.frame.n" %in% names(list(...))) {
+        n <- list(...)[[".eval.frame.n"]]
+    } else {
+        n <- 1
+    }
+
+    #l.dist.mat <- do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older")) { #, dist.mat) {
+    l.dist.mat <- do.call(rbind, apply("cluster.fac", function(all.data, grp.ids, grp.index.col.value) {
+          ret.mat <- matrix(0, ncol = nrow + 1, nrow = length(grp.ids))
+
+    #           current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset
           current.coords <- all.data$coords[grp.ids[1],]
 
-          cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
-          cohort.lower.bound <- current.birth.year - cohort.range
+          #           cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
+          #           cohort.lower.bound <- current.birth.year - cohort.range
+          # 
+          #           peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound))   
 
-          peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound), center = current.coords, radius = radius)   
+          #           if (length(peer.ids) > 0) {
+          #               ret.mat[, peer.ids] <- matrix(spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE), ncol = length(peer.ids), nrow = length(grp.ids), byrow = TRUE)
+              ret.mat[, 1:nrow] <- matrix(spDistsN1(all.data$spatial.data, current.coords, longlat = TRUE), ncol = nrow, nrow = length(grp.ids), byrow = TRUE)
+          #           }
 
-          ret.mat[,peer.ids] <- 1 
+          ret.mat[, nrow + 1] <- grp.ids
 
           return(ret.mat)
-    }, cohort.range, cohort.range.type, dist.wt)))
+    }, subset = subset, .eval.frame.n = n + 1))
+
+    l.dist.mat <- l.dist.mat[order(l.dist.mat[, nrow + 1]), 1:nrow]
+
+    return(l.dist.mat)
 })
 
-BaseFgmData$methods(get.dist.matrix = function(cohort.range = 1, cohort.range.type = c("both", "older")) {
-    return(do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older"), dist.wt) {
-          ret.mat <- matrix(ncol = nrow, nrow = length(grp.ids))
+BaseFgmData$methods(calc.dist.matrix = function() {
+    dist.mat <<- get.dist.matrix()
+})
 
-          current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"]
-          current.coords <- all.data$coords[grp.ids[1],]
+BaseFgmData$methods(get.spatial.adj.matrix = function(radius, recalc.dist.matrix = FALSE, #cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, 
+                                                      subset) {
+    if (!recalc.dist.matrix && missing(subset)) {
+        return(ifelse(dist.mat <= radius, 1, 0))
+    }
+
+    if (missing(subset)) {
+        #         dist.matrix <- get.dist.matrix(cohort.range, cohort.range.type, year.offset)
+        dist.matrix <- get.dist.matrix()
+    } else {
+        #         dist.matrix <- get.dist.matrix(cohort.range, cohort.range.type, year.offset, subset, .eval.frame.n = 2)
+        dist.matrix <- get.dist.matrix(subset, .eval.frame.n = 2)
+    }
+
+    return(ifelse(dist.matrix <= radius, 1, 0))
+})
+
+BaseFgmData$methods(get.cohort.adj.matrix = function(cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, subset, ...) {
+    if (".eval.frame.n" %in% names(list(...))) {
+        n <- list(...)[[".eval.frame.n"]]
+    } else {
+        n <- 1
+    }
+
+    cohort.adj.mat <- do.call(rbind, apply("birth.year.fac", function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older"), year.offset) {
+          ret.mat <- matrix(0, ncol = nrow + 1, nrow = length(grp.ids))
+
+          current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset
 
           cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
           cohort.lower.bound <- current.birth.year - cohort.range
-
+          # 
           peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound))   
 
-          if (length(peer.ids) > 0) {
-              ret.mat[,peer.ids] <- matrix(spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE), ncol = length(peer.ids), nrow = length(grp.ids))
-          }
+          ret.mat[, peer.ids] <- 1 
+
+          ret.mat[, nrow + 1] <- grp.ids
 
           return(ret.mat)
-    }, cohort.range, cohort.range.type, dist.wt)))
-})
+    }, cohort.range, cohort.range.type, year.offset, subset = subset, .eval.frame.n = n + 1))
 
-#BaseFgmData$methods(calc.peer.links = function(outer.radius, inner.radius = 0, cohort.range = 0, range.type = c("both", "older")) {
-#    clusters <- unique(spatial.data@data$cluster)
-#
-##    peer.links <<- do.call(rbind, lapply(clusters, function(current.cluster) {
-##        cluster.b.years <- unique(spatial.data@data$birth.year[spatial.data@data$cluster == current.cluster])
-##        cluster.long <- cluster.info$LONGNUM[cluster.info$DHSCLUST == current.cluster]
-##        cluster.lat <- cluster.info$LATNUM[cluster.info$DHSCLUST == current.cluster]
-##        sapply(cluster.b.years, function(b.year) nrow(spatial.data@data[
-##        return(data.frame(cluster = current.cluster, birth.year = cluster.b.years, long = cluster.long, lat = cluster.lat))
-##    }))
-#
-#    peer.links <<- do.call(rbind, base::by(spatial.data@data, spatial.data@data[c("cluster", "birth.year")], function(df) {
-#        df.nrow <- nrow(df)
-#        if (df.nrow == 0) return(NA) 
-#
-#        current.cluster = df$cluster[1]
-#        return(data.frame(cluster = current.cluster, birth.year = df$birth.year[1], 
-#                          long = cluster.info$LONGNUM[cluster.info$DHSCLUST == current.cluster], lat = cluster.info$LATNUM[cluster.info$DHSCLUST == current.cluster], 
-#                          count = df.nrow))
-#    }))
-#
-#    browser()
-#
-#    peer.links$id <<- seq_along(peer.links$cluster)
-#
-#    upper.offset <- switch(match.arg(range.type), both = cohort.range, older = 0)
-#
-#    peer.links <<- do.call(rbind, base::by(peer.links, peer.links["cluster"], function(cluster.df) {
-#        if (nrow(cluster.df) > 0) {
-#            current.coords <- cluster.df[1, c("long", "lat")]
-#            dists <- spDistsN1(as.matrix(peer.links[c("long", "lat")]), as.matrix(current.coords), longlat = TRUE) # in kilometers
-#            return(do.call(rbind, lapply(1:nrow(cluster.df), function(current.row) {
-#                          browser()
-#                peer.mask <- (dists <= outer.radius) & (dists >= inner.radius) &
-#                             (peer.links["birth.year"] <= cluster.df$birth.year[current.row] + upper.offset) &
-#                             (peer.links["birth.year"] >= cluster.df$birth.year[current.row] - cohort.range)
-#                cbind(cluster.df[current.row,], neighbor = peer.links$id[peer.mask], dist = dists[peer.mask])
-#            })))
-#        } else {
-#            return(NA)
-#        }
-#    }))
-#})
+    cohort.adj.mat <- cohort.adj.mat[order(cohort.adj.mat[, nrow + 1]), 1:nrow]
+
+    return(cohort.adj.mat)
+})
 
 

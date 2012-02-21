@@ -99,22 +99,38 @@ Data$methods(by = function(by.indices, FUN, rm.na = TRUE, ...) {
     base::by(data, INDICES = data[by.indices], FUN = stub.callback, FUN, .self, na.rm, ...)
 })
 
-Data$methods(apply = function(by, FUN, ...) {
+Data$methods(apply = function(by, FUN, ..., subset) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
+    dot.list <- list(...)
+
+    if (missing(subset)) {
+        subset.rows <- NULL 
+    } else {
+        if (".eval.frame.n" %in% names(dot.list)) {
+            n <- dot.list[[".eval.frame.n"]]
+            dot.list <- dot.list[names(dot.list) != ".eval.frame.n"]
+        } else {
+            n <- 1
+        }
+        subset.rows <- get.subset.rows(subset = subset, .eval.frame.n = n + 1)
+    }
+
     grp.ind <- base::tapply(data[[1L]], data[[by]])
     max.grp.index <- max(grp.ind)
-    for (grp.index in 1L:max.grp.index) {
+
+    invisible(lapply(unique(grp.ind), function(grp.index) {
         grp.ids <- which(grp.ind == grp.index)
-        first.in.grp <- min(grp.ids)
 
-        grp.index.col.values <- list()
+        if (!is.null(subset.rows)) {
+            grp.ids <- intersect(grp.ids, subset.rows)
 
-        for (by.index in by) {
-            grp.index.col.values[by.index] <- data[first.in.grp, by.index]
+            if (length(grp.ids) == 0) return(NULL)
         }
-
-        FUN(.self, grp.ids, grp.index.col.values, ...)
-    }
+        
+        stopifnot(all(grp.ids <= nrow))
+        grp.index.col.values <- as.list(data[grp.ids[1], by]) 
+        return(FUN(.self, grp.ids, grp.index.col.values, dot.list))
+    }))
 })
 
 #Data$methods(par.apply = function(by, FUN, .combine = c, .inorder = TRUE, ...) {

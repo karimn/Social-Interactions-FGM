@@ -13,23 +13,22 @@ original.data$relevel("med.help.transportation.fac", ref = "not big problem")
 
 regress.data <- original.data$copy()
 
-radii <- c(10, 20)
-# adj.matrix <- list()
-# w.matrix <- list()
-# w.2.matrix <- list()
-# 
-# for (radius in radii) {
-#     char.radius <- as.character(radius)
-#     adj.matrix[[char.radius]] <- regress.data$get.spatial.adj.matrix(radius)
-# 
-# Exclude self
-#     diag(adj.matrix[[char.radius]]) <- 0
-# 
-#     w.matrix[[char.radius]] <- make.row.stochastic(adj.matrix[[char.radius]])
-#     w.2.matrix[[char.radius]] <- w.matrix[[char.radius]] %*% w.matrix[[char.radius]]
+regress.data$calc.dist.matrix()
+regress.data$calc.all.cohorts.dist.matrix()
+
+del.regs <- c("delivery.location", "delivered.by.daya")
+del.year.offset <- 12
+
+# radii <- c(10, 20)
+radii <- 10
+
+#stopifnot(test.adj.matrix(regress.data$get.spatial.adj.matrix(20)))
+
+ for (radius in radii) {
+     (system.time(regress.data$generate.reg.means.spatial(radius = radius, regs = del.regs, prefix = "del.spat.grpavg", postfix = as.character(radius), use.all.cohorts.data = TRUE, year.offset = del.year.offset)))
 # (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = as.character(radius))))
 # (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = '.'), dist.wt = TRUE)))
-# }
+}
 
 #regress.data$rm.by.res.years(10)
 
@@ -48,14 +47,14 @@ for (radius in radii) {
 #regress.data$spatial.data@data$grpavg.educ.lvl_secondary_neg <- - regress.data$spatial.data@data$grpavg.educ.lvl_secondary
 #regress.data$spatial.data@data$grpavg.mother.circum.fac_yes_neg <- - regress.data$spatial.data@data$grpavg.mother.circum.fac_yes
 
-regress.data.10 <- regress.data$copy()
-regress.data.10$subset(grp.size.10 >= 10)
-
-regress.data.20 <- regress.data$copy()
-regress.data.20$subset(grp.size.20 >= 20)
-
-regress.data.10_20 <- regress.data$copy()
-regress.data.10_20$subset(grp.size.10_20 >= 10)
+# regress.data.10 <- regress.data$copy()
+# regress.data.10$subset(grp.size.10 >= 10)
+# 
+# regress.data.20 <- regress.data$copy()
+# regress.data.20$subset(grp.size.20 >= 20)
+# 
+# regress.data.10_20 <- regress.data$copy()
+# regress.data.10_20$subset(grp.size.10_20 >= 10)
 
 get.grpavg.regs <- function(data, radius, weighted = FALSE, spat = TRUE, intran = FALSE) {
     reg.pattern <- sprintf("%s%sgrpavg\\.(?!med\\.circum|circum).+%d%s$", 
@@ -104,7 +103,7 @@ pooled.avg.results.10 <- regress.data$plm(formula(sprintf("spat.grpavg.circum.10
 
 # Direct effects only ################################################################################      
 
-pooled.dir.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s", paste(c(hh.regs, daughter.regs, "I(order^2)", "spat.grp.size.10"), collapse = " + "))), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"))
+pooled.dir.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s", paste(c(hh.regs, daughter.regs, "I(order^2)", "spat.grpavg.grp.size.10"), collapse = " + "))), effect = "individual", model = "pooling", index = c("hh.id", "order.fac"), vcov.fun = NULL)
 
 # Exogenous effects only ################################################################################   
 pooled.exogen.only.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s + (%s) * spat.grp.size.10", 
@@ -173,13 +172,13 @@ within.se.med.results.10.2 <- regress.data$plm(formula(sprintf("circum ~ %s + sp
                                                          paste(get.grpavg.regs(regress.data, radius = 10, intran = TRUE), collapse = " + "))),
                                                   effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = NULL)
 
-within.se.med.results.10.3 <- regress.data$plm(formula(sprintf("circum ~ %s + spat.grpavg.med.circum.10 * spat.grp.size.10 + spat.grpavg.circum.10 * spat.grp.size.10 | . - spat.grpavg.med.circum.10 * spat.grp.size.10 - spat.grpavg.circum.10 * spat.grp.size.10 + (%s) * spat.grp.size.10", 
+within.se.med.results.10.3 <- regress.data$plm(formula(sprintf("circum ~ %s + spat.grpavg.med.circum.10 * spat.grpavg.grp.size.10 + spat.grpavg.circum.10 * spat.grpavg.grp.size.10 | . - spat.grpavg.med.circum.10 * spat.grpavg.grp.size.10 - spat.grpavg.circum.10 * spat.grpavg.grp.size.10 + (%s) * spat.grpavg.grp.size.10", 
                                                          paste(c(daughter.regs, "I(order^2)"), collapse = " + "),
                                                          paste(get.grpavg.regs(regress.data, radius = 10, intran = TRUE), collapse = " + "))),
                                                   effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = NULL)
 
 # Using spat.intran.grpavg.circum as another instrument
-within.se.med.results.10.4 <- regress.data$plm(formula(sprintf("circum ~ %s + spat.grpavg.med.circum.10 * spat.grp.size.10 + spat.grpavg.circum.10 * spat.grp.size.10 | . - spat.grpavg.med.circum.10 * spat.grp.size.10 - spat.grpavg.circum.10 * spat.grp.size.10 + (%s) * spat.grp.size.10", 
+within.se.med.results.10.4 <- regress.data$plm(formula(sprintf("circum ~ %s + spat.grpavg.med.circum.10 * spat.grpavg.grp.size.10 + spat.grpavg.circum.10 * spat.grpavg.grp.size.10 | . - spat.grpavg.med.circum.10 * spat.grpavg.grp.size.10 - spat.grpavg.circum.10 * spat.grpavg.grp.size.10 + (%s) * spat.grpavg.grp.size.10", 
                                                          paste(c(daughter.regs, "I(order^2)"), collapse = " + "),
                                                          paste(c(get.grpavg.regs(regress.data, radius = 10, intran = TRUE), "spat.intran.grpavg.circum.10"), collapse = " + "))),
                                                   effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = NULL)

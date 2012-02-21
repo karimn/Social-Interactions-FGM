@@ -192,15 +192,36 @@ SpatialData$methods(by = function(by.indices, FUN, rm.na = TRUE, ...) {
     base::by(origin.data, INDICES = origin.data[by.indices], FUN = stub.callback, FUN, .self, rm.na, ...)
 })
 
-SpatialData$methods(apply = function(by, FUN, ...) {
+SpatialData$methods(apply = function(by, FUN, ..., subset, .eval.frame.n) {
     "The callback function will receive a reference to self, group IDs, the value of the group indices, and \"...\""
     origin.data <- as.data.frame(spatial.data)
-    grp.ind <- base::tapply(origin.data[[1L]], origin.data[, by])
+    dot.list <- list(...)
 
-    ret.list <- list()
+    if (missing(subset)) {
+        subset.rows <- NULL 
+    } else {
+        #if (".eval.frame.n" %in% names(dot.list)) {
+        if (!missing(.eval.frame.n)) {  #" %in% names(dot.list)) {
+            #             n <- dot.list[[".eval.frame.n"]]
+            n <- .eval.frame.n
+            #dot.list <- dot.list[names(dot.list) != ".eval.frame.n"]
+        } else {
+            n <- 1
+        }
+        subset.rows <- get.subset.rows(subset = subset, .eval.frame.n = n + 1)
+    }
+
+    grp.ind <- base::tapply(origin.data[[1L]], origin.data[, by])
 
     invisible(lapply(unique(grp.ind), function(grp.index) {
         grp.ids <- which(grp.ind == grp.index)
+
+        if (!is.null(subset.rows)) {
+            grp.ids <- intersect(grp.ids, subset.rows)
+
+            if (length(grp.ids) == 0) return(NULL)
+        }
+        
         stopifnot(all(grp.ids <= nrow))
         grp.index.col.values <- as.list(origin.data[grp.ids[1], by]) 
         return(FUN(.self, grp.ids, grp.index.col.values, ...))
@@ -313,7 +334,7 @@ SpatialData$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
+SpatialData$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
     r <- plm::plm(formula, model = model, ..., data = spatial.data@data)
 
     if (!is.null(vcov.fun)) {
