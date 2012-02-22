@@ -251,30 +251,18 @@ BaseFgmData$methods(grp.mean = function(grp.ids, peer.ids, col.name, prefix, pos
 })
 
 
-BaseFgmData$methods(get.dist.matrix = function(#cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, 
-                                               subset, ...) {
+BaseFgmData$methods(get.dist.matrix = function(subset, ...) {
     if (".eval.frame.n" %in% names(list(...))) {
         n <- list(...)[[".eval.frame.n"]]
     } else {
         n <- 1
     }
 
-    #l.dist.mat <- do.call(rbind, apply(c("birth.year.fac", "cluster.fac"), function(all.data, grp.ids, grp.index.col.value, cohort.range, cohort.range.type = c("both", "older")) { #, dist.mat) {
     l.dist.mat <- do.call(rbind, apply("cluster.fac", function(all.data, grp.ids, grp.index.col.value) {
           ret.mat <- matrix(0, ncol = nrow + 1, nrow = length(grp.ids))
 
-    #           current.birth.year <- all.data$spatial.data@data[grp.ids[1], "birth.year"] + year.offset
           current.coords <- all.data$coords[grp.ids[1],]
-
-          #           cohort.upper.bound <- current.birth.year + switch(match.arg(cohort.range.type), both = cohort.range, older = 0)
-          #           cohort.lower.bound <- current.birth.year - cohort.range
-          # 
-          #           peer.ids <- all.data$get.subset.rows((birth.year <= cohort.upper.bound) & (birth.year >= cohort.lower.bound))   
-
-          #           if (length(peer.ids) > 0) {
-          #               ret.mat[, peer.ids] <- matrix(spDistsN1(all.data$spatial.data[peer.ids,], current.coords, longlat = TRUE), ncol = length(peer.ids), nrow = length(grp.ids), byrow = TRUE)
-              ret.mat[, 1:nrow] <- matrix(spDistsN1(all.data$spatial.data, current.coords, longlat = TRUE), ncol = nrow, nrow = length(grp.ids), byrow = TRUE)
-          #           }
+          ret.mat[, 1:nrow] <- matrix(spDistsN1(all.data$spatial.data, current.coords, longlat = TRUE), ncol = nrow, nrow = length(grp.ids), byrow = TRUE)
 
           ret.mat[, nrow + 1] <- grp.ids
 
@@ -290,17 +278,14 @@ BaseFgmData$methods(calc.dist.matrix = function() {
     dist.mat <<- get.dist.matrix()
 })
 
-BaseFgmData$methods(get.spatial.adj.matrix = function(radius, recalc.dist.matrix = FALSE, #cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, 
-                                                      subset) {
+BaseFgmData$methods(get.spatial.adj.matrix = function(radius, recalc.dist.matrix = FALSE, subset) {
     if (!recalc.dist.matrix && missing(subset)) {
         return(ifelse(dist.mat <= radius, 1, 0))
     }
 
     if (missing(subset)) {
-        #         dist.matrix <- get.dist.matrix(cohort.range, cohort.range.type, year.offset)
         dist.matrix <- get.dist.matrix()
     } else {
-        #         dist.matrix <- get.dist.matrix(cohort.range, cohort.range.type, year.offset, subset, .eval.frame.n = 2)
         dist.matrix <- get.dist.matrix(subset, .eval.frame.n = 2)
     }
 

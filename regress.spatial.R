@@ -5,6 +5,8 @@ source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 source("RegressionResults.R")
 
+library(igraph)
+
 system.time(original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))) #, skip.cleanup = T))
 original.data$relevel("urban.rural", ref = "rural")
 original.data$relevel("med.help.distance.fac", ref = "not big problem")
@@ -21,25 +23,25 @@ del.year.offset <- 12
 
 # radii <- c(10, 20)
 radii <- 10
+coh.adj.mat <- regress.data$get.cohort.adj.matrix()
 
-#stopifnot(test.adj.matrix(regress.data$get.spatial.adj.matrix(20)))
+for (radius in radii) {
+    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, regs = del.regs, prefix = "del.spat.grpavg", postfix = as.character(radius), use.all.cohorts.data = TRUE, year.offset = del.year.offset)))
+    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius))))
+    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, prefix = "spat.intran.grpavg", postfix = as.character(radius), degree = 2)))
 
- for (radius in radii) {
-     (system.time(regress.data$generate.reg.means.spatial(radius = radius, regs = del.regs, prefix = "del.spat.grpavg", postfix = as.character(radius), use.all.cohorts.data = TRUE, year.offset = del.year.offset)))
-# (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = as.character(radius))))
-# (system.time(regress.data$generate.delivery.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = '.'), dist.wt = TRUE)))
+    spat.adj.mat <- regress.data$get.spatial.adj.matrix(radius = radius)
+
+    spat.only.graph <- graph.adjacency(spat.adj.mat)
+    spat.coh.graph <- graph.adjacency(spat.adj.mat * coh.adj.mat)
+
+    regress.data$spatial.data$spat.only.graph.cluster <- clusters(spat.only.graph)$membership + 1
+    regress.data$spatial.data$spat.coh.graph.cluster <- clusters(spat.coh.graph)$membership + 1
 }
 
 #regress.data$rm.by.res.years(10)
 
 #regs.to.average <- c(regress.data$individual.controls, regress.data$other.grpavg.controls)
-
-for (radius in radii) { 
-    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius))))
-    #     print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = paste(as.character(radius), "wt", sep = "."), exclude.self = TRUE, dist.wt = TRUE)))
-    print(system.time(regress.data$generate.reg.means.spatial(radius = radius, prefix = "spat.intran.grpavg", postfix = as.character(radius), degree = 2)))
-    #     print(system.time(regress.data$generate.reg.means.intran(radius = radius, postfix = paste(as.character(radius), "wt", sep = "."), exclude.self = TRUE, dist.wt = TRUE)))
-}
 
 #system.time(regress.data$generate.reg.means.spatial(radius = 20, inner.radius = 10, postfix = "10_20", exclude.self = TRUE))
 
