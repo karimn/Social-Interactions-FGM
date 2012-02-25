@@ -5,7 +5,7 @@ source("BaseFgmDataRef.R")
 source("DaughterFgmDataRef.R")
 source("RegressionResults.R")
 
-library(igraph)
+# library(igraph)
 
 system.time(original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum"))) #, skip.cleanup = T))
 original.data$relevel("urban.rural", ref = "rural")
@@ -23,20 +23,27 @@ del.year.offset <- 12
 
 # radii <- c(10, 20)
 radii <- 10
-coh.adj.mat <- regress.data$get.cohort.adj.matrix()
+# coh.adj.mat <- regress.data$get.cohort.adj.matrix()
 
 for (radius in radii) {
     print(system.time(regress.data$generate.reg.means.spatial(radius = radius, regs = del.regs, prefix = "del.spat.grpavg", postfix = as.character(radius), use.all.cohorts.data = TRUE, year.offset = del.year.offset)))
     print(system.time(regress.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius))))
     print(system.time(regress.data$generate.reg.means.spatial(radius = radius, prefix = "spat.intran.grpavg", postfix = as.character(radius), degree = 2)))
 
-    spat.adj.mat <- regress.data$get.spatial.adj.matrix(radius = radius)
-
-    spat.only.graph <- graph.adjacency(spat.adj.mat)
-    spat.coh.graph <- graph.adjacency(spat.adj.mat * coh.adj.mat)
-
-    regress.data$spatial.data$spat.only.graph.cluster <- clusters(spat.only.graph)$membership + 1
-    regress.data$spatial.data$spat.coh.graph.cluster <- clusters(spat.coh.graph)$membership + 1
+    #     spat.adj.mat <- regress.data$get.spatial.adj.matrix(radius = radius)
+    #     diag(spat.adj.mat) <- 0
+    # 
+    #     spat.only.graph <- graph.adjacency(spat.adj.mat)
+    #     spat.coh.graph <- graph.adjacency(spat.adj.mat * coh.adj.mat)
+    # 
+    #     spat.only.cl.col <- sprintf("spat.only.graph.cluster.%d", radius)
+    #     spat.coh.cl.col <- sprintf("spat.coh.graph.cluster.%d", radius)
+    # 
+    #     regress.data$spatial.data@data[, spat.only.cl.col] <- clusters(spat.only.graph)$membership + 1
+    #     regress.data$spatial.data@data[, spat.coh.cl.col] <- clusters(spat.coh.graph)$membership + 1
+    # 
+    #     regress.data$sort(spat.only.cl.col)
+    #     spat.adj.mat <- regress.data$get.spatial.adj.matrix(radius = radius, recalc.dist.matrix = TRUE)
 }
 
 #regress.data$rm.by.res.years(10)
@@ -58,33 +65,88 @@ for (radius in radii) {
 # regress.data.10_20 <- regress.data$copy()
 # regress.data.10_20$subset(grp.size.10_20 >= 10)
 
-get.grpavg.regs <- function(data, radius, weighted = FALSE, spat = TRUE, intran = FALSE) {
-    reg.pattern <- sprintf("%s%sgrpavg\\.(?!med\\.circum|circum).+%d%s$", 
+get.grpavg.regs <- function(data, radius, weighted = FALSE, spat = TRUE, intran = FALSE, delivery = FALSE) {
+    reg.pattern <- sprintf("%s%s%sgrpavg\\.(?!med\\.circum|circum|grp\\.size).+%d%s$", 
+                           if (delivery) "del." else "",
                            if (spat) "spat." else "",
                            if (intran) "intran." else "",
                            radius,
                            if (weighted) ".wt" else "")
+
     return(grep(reg.pattern, data$names, value = TRUE, perl = TRUE))
 }
 
 hh.regs <- c("governorate", "wealth.index.2", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "urban.rural", "med.help.distance.fac", "n.ord")
-daughter.regs <- c("birth.year.fac", "order")
+daughter.regs <- c("birth.year.fac", "order.fac")
 
-# Test the strength of the intran averages on circum averages ################################################################################ 
+# Test the strength of the intran averages on circum averages (1st stage of 2SLS) ################################################################################ 
 
-relv.formula <- list()
-relv.results <- list()
-for (radius in radii) {
-    relv.formula[[radius]] <- formula(sprintf("spat.grpavg.circum.%d ~ %s", radius, get.grpavg.regs(regress.data, radius = radius, intran = TRUE)))
-    relv.results[[radius]] <- regress.data$lm(relv.formula[[radius]])
-}
+instruments <- get.grpavg.regs(regress.data, radius = 10, intran = TRUE)
 
-relv.formula.wt <- list()
-relv.results.wt <- list()
-for (radius in radii) {
-    relv.formula[[radius]] <- formula(sprintf("spat.grpavg.circum.%d.wt ~ %s", radius, get.grpavg.regs(regress.data, radius = radius, intran = TRUE, weighted = TRUE)))
-    relv.results.wt[[radius]] <- regress.data$lm(relv.formula.wt[[radius]])
-}
+relv.formula.10.1 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         instruments), collapse = " + ")))
+relv.results.10.1 <- regress.data$lm(relv.formula.10.1, vcov.fun = vcovHAC)
+
+#relv.instr.1 <- grep("urban\\.rural|higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
+relv.instr.1 <- grep("higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
+
+# I'm getting an F stat that is > 10 only with the relv.instr.1 (Staiger and Stock (1997) in Cameron and Trivedi p.105)
+relv.results.10.1$lht(instruments, test = "F") 
+relv.results.10.1$lht(relv.instr.1, test = "F")
+
+relv.formula.10.2 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         relv.instr.1), collapse = " + ")))
+relv.results.10.2 <- regress.data$lm(relv.formula.10.2, vcov.fun = vcovHAC)
+relv.results.10.2$lht(relv.instr.1, test = "F")
+
+# relv.formula.10.3 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(setdiff(daughter.regs, "order.fac"),
+#                                                                          get.grpavg.regs(regress.data, radius = 10),
+#                                                                          get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+#                                                                          instruments), collapse = " + ")))
+# relv.results.10.3 <- regress.data$plm(relv.formula.10.2, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
+# 
+# relv.results.10.2$lht(instruments, test = "F")
+
+# relv.formula.wt <- list()
+# relv.results.wt <- list()
+# for (radius in radii) {
+#     relv.formula[[radius]] <- formula(sprintf("spat.grpavg.circum.%d.wt ~ %s", radius, get.grpavg.regs(regress.data, radius = radius, intran = TRUE, weighted = TRUE)))
+#     relv.results.wt[[radius]] <- regress.data$lm(relv.formula.wt[[radius]])
+# }
+
+# Shea's test regressions #################################################################################################### 
+
+# (5.
+
+# Test the strength of the intran averages on med averages ################################################################################ 
+
+relv.med.formula.10.1 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         instruments), collapse = " + ")))
+relv.med.results.10.1 <- regress.data$lm(relv.med.formula.10.1, vcov.fun = vcovHAC)
+
+#relv.med.instr.1 <- grep("higher|marital|christian", instruments, value = TRUE)
+relv.med.instr.1 <- grep("marital|christian", instruments, value = TRUE)
+
+# Again, as above, only the relv.instr has an F > 10
+relv.med.results.10.1$lht(instruments, test = "F")
+relv.med.results.10.1$lht(relv.med.instr.1, test = "F")
+
+relv.med.formula.10.2 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         relv.med.instr.1), collapse = " + ")))
+relv.med.results.10.2 <- regress.data$lm(relv.med.formula.10.2, vcov.fun = vcovHAC)
+relv.med.results.10.2$lht(relv.med.instr.1, test = "F")
 
 # Med influencers ################################################################################  
 
@@ -129,6 +191,51 @@ within.exogen.only.results.10_20 <- regress.data.10$plm(circum ~ birth.year.fac 
 #within.exogen.only.results <- regress.data$plm(circum ~ governorate + birth.year.fac + wealth.index.2 + educ.lvl + marital.age + mother.circum.fac + religion + hh.head.sex + urban.rural + order + I(order^2) + grpavg.urban.rural_urban + grpavg.wealth.index.2_rich + grpavg.educ.lvl_primary + grpavg.educ.lvl_secondary + grpavg.educ.lvl_higher + grpavg.marital.age + grpavg.mother.circum.fac_yes + grpavg.religion_christian + grpavg.hh.head.sex_female + grpavg.med.help.distance.fac_big_problem, effect = "twoways", model = "within", index = c("hh.id", "order.fac"))
 
 # Exogenous/Endogenous effects using IV ################################################################################   
+
+exog.regs <- c(hh.regs, daughter.regs,
+               get.grpavg.regs(regress.data, radius = 10),
+               get.grpavg.regs(regress.data, radius = 10, delivery = TRUE))
+exog.regs.eqn <- paste(exog.regs, collapse = " + ")
+instr.eqn <- paste(instruments, collapse = " + ")
+relv.instr.eqn.1 <- paste(relv.instr.1, collapse = " + ")
+relv.instr.eqn.2 <- paste(c(relv.instr.1, relv.med.instr.1), collapse = " + ")
+
+# OLS regressions
+main.reg.formula.1 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10", exog.regs.eqn))
+main.reg.results.1 <- regress.data$lm(main.reg.formula.1, vcov.fun = vcovHAC)
+
+# Same as above, but I add spat.grpavg.med.circum.  No difference is found
+main.reg.formula.2 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10", exog.regs.eqn))
+main.reg.results.2 <- regress.data$lm(main.reg.formula.2, vcov.fun = vcovHAC)
+
+# 2SLS
+main.reg.formula.eqn.3 <- sprintf("circum ~ %s + spat.grpavg.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
+main.reg.results.3 <- regress.data$ivreg(main.reg.formula.eqn.3, vcov.fun = vcovHAC)
+
+# Shea's test
+
+
+# Add spat.grpavg.med.circum (assumed exogenous)
+main.reg.formula.eqn.4 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + spat.grpavg.med.circum.10 + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
+main.reg.results.4 <- regress.data$ivreg(main.reg.formula.eqn.4, vcov.fun = vcovHAC)
+
+# Add spat.grpavg.med.circum (assumed endogenous)
+main.reg.formula.eqn.5 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
+main.reg.results.5 <- regress.data$ivreg(main.reg.formula.eqn.5, vcov.fun = vcovHAC)
+
+# 2SLS (with relevant instruments only)
+main.reg.formula.eqn.6 <- sprintf("circum ~ %s + spat.grpavg.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
+main.reg.results.6 <- regress.data$ivreg(main.reg.formula.eqn.6, vcov.fun = vcovHAC)
+
+# Add spat.grpavg.med.circum (assumed exogenous)
+main.reg.formula.eqn.7 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + spat.grpavg.med.circum.10 + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
+main.reg.results.7 <- regress.data$ivreg(main.reg.formula.eqn.7, vcov.fun = vcovHAC)
+
+# Add spat.grpavg.med.circum (assumed endogenous)
+main.reg.formula.eqn.8 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2)
+main.reg.results.8 <- regress.data$ivreg(main.reg.formula.eqn.8, vcov.fun = vcovHAC)
+
+# Old Exogenous/Endogenous effects using IV ################################################################################   
 
 pooled.se.results.10 <- regress.data$plm(formula(sprintf("circum ~ %s + (%s) * spat.grp.size.10 + spat.grpavg.circum.10 * spat.grp.size.10 | . - spat.grpavg.circum.10 * spat.grp.size.10 + (%s) * spat.grp.size.10", 
                                                          paste(c(hh.regs, daughter.regs, "I(order^2)"), collapse = " + "),
