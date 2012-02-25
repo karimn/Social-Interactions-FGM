@@ -300,7 +300,7 @@ SpatialData$methods(plot.gvis.map = function(tip.col, ...) {
 
 # Regression methods
 
-SpatialData$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
+SpatialData$methods(lm = function(formula, vcov.fun = NULL, ...) {
     r <- stats::lm(formula, data = spatial.data)
 
     if (!is.null(vcov.fun)) {
@@ -312,7 +312,7 @@ SpatialData$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-SpatialData$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
+SpatialData$methods(tsls = function(formula, vcov.fun = NULL, ...) {
     r <- sem::tsls(formula, formula, data = spatial.data)
 
     if (!is.null(vcov.fun)) {
@@ -323,7 +323,7 @@ SpatialData$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-SpatialData$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
+SpatialData$methods(ivreg = function(formula, vcov.fun = NULL, ...) {
     r <- AER::ivreg(formula, formula, data = spatial.data)
 
     if (!is.null(vcov.fun)) {
@@ -334,7 +334,7 @@ SpatialData$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-SpatialData$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
+SpatialData$methods(plm = function(formula, model, ..., vcov.fun = NULL) {
     r <- plm::plm(formula, model = model, ..., data = spatial.data@data)
 
     if (!is.null(vcov.fun)) {

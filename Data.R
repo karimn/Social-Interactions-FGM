@@ -188,7 +188,7 @@ Data$methods(merge = function(other.data, ...) {
 
 # Regression methods
 
-Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
+Data$methods(lm = function(formula, vcov.fun = NULL, ...) {
     r <- stats::lm(formula, data = data)
 
     if (!is.null(vcov.fun)) {
@@ -200,7 +200,7 @@ Data$methods(lm = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
+Data$methods(tsls = function(formula, vcov.fun = NULL, ...) {
     r <- sem::tsls(formula, formula, data = data)
 
     if (!is.null(vcov.fun)) {
@@ -211,7 +211,7 @@ Data$methods(tsls = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
+Data$methods(ivreg = function(formula, vcov.fun = NULL, ...) {
     r <- AER::ivreg(formula, formula, data = data)
 
     if (!is.null(vcov.fun)) {
@@ -222,7 +222,7 @@ Data$methods(ivreg = function(formula, vcov.fun = vcovHAC, ...) {
     }
   })
 
-Data$methods(plm = function(formula, model, ..., vcov.fun = vcovSCC) {
+Data$methods(plm = function(formula, model, ..., vcov.fun = NULL) {
     r <- plm::plm(formula, model = model, data = data, ...)
 
     if (!is.null(vcov.fun)) {
