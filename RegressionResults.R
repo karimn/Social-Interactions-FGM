@@ -6,7 +6,10 @@ RegressionResults <- setRefClass("RegressionResults",
     vcov = "matrix",
     regress.formula = "formula",
     data = "Data",
+    fitted.values = function(val) results$fitted.values,
+    residuals = function(val) results$residuals,
     na.action = function(val) if (missing(val)) results$na.action else stop("na.action is not mutable"),
+    ssr = function(val) sum(results$residuals^2),
     r.squared = function(val) base::summary(results)$r.squared,
     adj.r.squared = function(val) base::summary(results)$adj.r.squared) )
 
