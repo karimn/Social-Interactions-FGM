@@ -91,7 +91,8 @@ relv.formula.10.1 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.re
 relv.results.10.1 <- regress.data$lm(relv.formula.10.1, vcov.fun = vcovHAC)
 
 #relv.instr.1 <- grep("urban\\.rural|higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
-relv.instr.1 <- grep("higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
+#relv.instr.1 <- grep("higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
+relv.instr.1 <- grep("higher|mother\\.circum|christian", instruments, value = TRUE)
 
 # I'm getting an F stat that is > 10 only with the relv.instr.1 (Staiger and Stock (1997) in Cameron and Trivedi p.105)
 relv.results.10.1$lht(instruments, test = "F") 
@@ -122,7 +123,25 @@ relv.results.10.2$lht(relv.instr.1, test = "F")
 
 # Shea's test regressions #################################################################################################### 
 
-# (5.
+# (5.40) in Wooldridge (2010)
+
+# I need to remove the rows that were removed by "model.frame"
+shea.data <- regress.data$copy()
+shea.data$spatial.data <- shea.data$spatial.data[-(relv.results.10.2$na.action),]
+
+shea.formula.stage.1 <- formula(sprintf("relv.results.10.2$fitted.values ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE)), collapse = " + ")))
+shea.results.stage.1 <- shea.data$lm(shea.formula.stage.1, vcov.fun = vcovHAC)
+
+shea.formula.stage.1.2 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE)), collapse = " + ")))
+shea.results.stage.1.2 <- shea.data$lm(shea.formula.stage.1.2, vcov.fun = vcovHAC)
+
+shea.measure.1 <- sum(shea.results.stage.1$results$residuals^2) / sum(shea.results.stage.1.2$results$residuals^2)
 
 # Test the strength of the intran averages on med averages ################################################################################ 
 
@@ -212,8 +231,6 @@ main.reg.results.2 <- regress.data$lm(main.reg.formula.2, vcov.fun = vcovHAC)
 main.reg.formula.eqn.3 <- sprintf("circum ~ %s + spat.grpavg.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
 main.reg.results.3 <- regress.data$ivreg(main.reg.formula.eqn.3, vcov.fun = vcovHAC)
 
-# Shea's test
-
 
 # Add spat.grpavg.med.circum (assumed exogenous)
 main.reg.formula.eqn.4 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + spat.grpavg.med.circum.10 + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
@@ -226,6 +243,29 @@ main.reg.results.5 <- regress.data$ivreg(main.reg.formula.eqn.5, vcov.fun = vcov
 # 2SLS (with relevant instruments only)
 main.reg.formula.eqn.6 <- sprintf("circum ~ %s + spat.grpavg.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
 main.reg.results.6 <- regress.data$ivreg(main.reg.formula.eqn.6, vcov.fun = vcovHAC)
+
+# Hausman-Sargan test ((6.31) in Wooldridge (2010))
+main.reg.data.6 <- regress.data$copy()
+main.reg.data.6$spatial.data <- main.reg.data.6$spatial.data[-(main.reg.results.6$na.action), ]
+
+# Homoskedastic test
+main.reg.hs.test.formula.6.1 <- formula(sprintf("main.reg.results.6$residuals ~ %s + %s", exog.regs.eqn, relv.instr.eqn.1))
+main.reg.hs.test.results.6.1 <- main.reg.data.6$lm(main.reg.hs.test.formula.6.1)
+hs.test.stat.6.1 <- main.reg.hs.test.results.6.1$r.squared * main.reg.data.6$nrow
+pchisq(hs.test.stat.6.1, df = 2, lower.tail = FALSE)
+
+# Heteroskedastic test
+main.reg.hs.test.formula.6.2.1 <- formula(sprintf("spat.intran.grpavg.educ.lvl_higher.10 ~ %s + relv.results.10.2$fitted.values", exog.regs.eqn))
+main.reg.hs.test.formula.6.2.2 <- formula(sprintf("spat.intran.grpavg.mother.circum.fac_yes.10 ~ %s + relv.results.10.2$fitted.values", exog.regs.eqn))
+main.reg.hs.test.results.6.2.1 <- main.reg.data.6$lm(main.reg.hs.test.formula.6.2.1)
+main.reg.hs.test.results.6.2.2 <- main.reg.data.6$lm(main.reg.hs.test.formula.6.2.2)
+
+test.res.reg.1 <- main.reg.results.6$residuals * main.reg.hs.test.results.6.2.1$residuals
+test.res.reg.2 <- main.reg.results.6$residuals * main.reg.hs.test.results.6.2.2$residuals
+
+main.reg.hs.test.results.6.2 <- lm(rep(1, length(test.res.reg.1)) ~ -1 + test.res.reg.1 + test.res.reg.2)
+
+pchisq(length(test.res.reg.1) - sum(main.reg.hs.test.results.6.2$residuals^2), df = 2, lower.tail = FALSE)
 
 # Add spat.grpavg.med.circum (assumed exogenous)
 main.reg.formula.eqn.7 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + spat.grpavg.med.circum.10 + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
