@@ -1,11 +1,13 @@
 library(car)
+library(lmtest)
+library(plm)
 
 RegressionResults <- setRefClass("RegressionResults",
   fields = list(
     results = "lm", 
     vcov = "matrix",
     regress.formula = "formula",
-    data = "Data",
+    #     data = "Data",
     fitted.values = function(val) results$fitted.values,
     residuals = function(val) results$residuals,
     na.action = function(val) if (missing(val)) results$na.action else stop("na.action is not mutable"),
@@ -13,7 +15,7 @@ RegressionResults <- setRefClass("RegressionResults",
     r.squared = function(val) base::summary(results)$r.squared,
     adj.r.squared = function(val) base::summary(results)$adj.r.squared) )
 
-RegressionResults$lock("results", "regress.formula", "data")
+RegressionResults$lock("results", "regress.formula") #, "data")
 
 RegressionResults$methods(initialize = function(...) {
     initFields(...)
@@ -47,8 +49,8 @@ RegressionResults$methods(lht = function(hypothesis, test = c("Chisq", "F"), vco
 PanelRegressionResults <- setRefClass("PanelRegressionResults",
   contains = "RegressionResults",
   fields = list(
-    r.square = function(val) base::summary(results)$r.squared["rsq"],
-    adj.r.square = function(val) base::summary(results)$r.squared["adjrsq"] )
+    r.squared = function(val) base::summary(results)$r.squared["rsq"],
+    adj.r.squared = function(val) base::summary(results)$r.squared["adjrsq"] )
 
 #  methods = list(
 #    r.squared = function()

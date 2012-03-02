@@ -306,9 +306,9 @@ SpatialData$methods(lm = function(formula, vcov.fun = NULL, ...) {
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...)
 
-        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+        RegressionResults$new(results = r, regress.formula = formula, vcov = vcov)
     } else {
-        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+        RegressionResults$new(results = r, regress.formula = formula) 
     }
   })
 
@@ -317,9 +317,9 @@ SpatialData$methods(tsls = function(formula, vcov.fun = NULL, ...) {
 
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...) 
-        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+        RegressionResults$new(results = r, regress.formula = formula, vcov = vcov)
     } else {
-        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+        RegressionResults$new(results = r, regress.formula = formula) 
     }
   })
 
@@ -328,9 +328,9 @@ SpatialData$methods(ivreg = function(formula, vcov.fun = NULL, ...) {
 
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...) 
-        RegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+        RegressionResults$new(results = r, regress.formula = formula, vcov = vcov)
     } else {
-        RegressionResults$new(results = r, regress.formula = formula, data = .self) 
+        RegressionResults$new(results = r, regress.formula = formula) 
     }
   })
 
@@ -339,9 +339,9 @@ SpatialData$methods(plm = function(formula, model, ..., vcov.fun = NULL) {
 
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r) 
-        PanelRegressionResults$new(results = r, regress.formula = formula, data = .self, vcov = vcov)
+        PanelRegressionResults$new(results = r, regress.formula = formula, vcov = vcov)
     } else {
-        PanelRegressionResults$new(results = r, regress.formula = formula, data = .self) 
+        PanelRegressionResults$new(results = r, regress.formula = formula) 
     }
   }
 )
