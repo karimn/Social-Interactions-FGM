@@ -1,7 +1,8 @@
 <<label=init, echo=FALSE, results=hide>>=
-load("new_results.RData")
+source("table.global.R")
 
-youngest.cohort <- 1996
+load("regress.data.RData")
+fgm <- regress.data$spatial.data@data 
 @
 
 \begin{table}
@@ -23,7 +24,6 @@ youngest.cohort <- 1996
 \cmidrule{2-10}
 
 <<label=governsumstat, echo=FALSE, results=tex>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
 govern.names <- levels(fgm$ADM1NAME)
 
 cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
