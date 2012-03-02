@@ -27,7 +27,9 @@ FgmData.cols = quote(c(v000, v001, v002, v003, v004, v005, v023, v024, v025, v10
                                                g102, g106, g107, g118, g119, sgovern, s103g, s912, s915, s916,
                                                v394,
                                                s917a:s917x,
-                                               v3a08j, v3a08q))
+                                               v3a08j, v3a08q,
+                                               ADM1NAME)) # This is actually in the GPS data
+
 #                                               m2a, m2b, m2g, m2k, m2n,
 #                                               m3a, m3b, m3g, m3k, m3n,
 #                                               m14, m15, m43, m44, m57a, m57b, m57e, m57f, m57g,
@@ -72,6 +74,7 @@ BaseFgmData <- setRefClass("BaseFgmData",
   contains = "SpatialData",
   fields = list(
     dist.mat = "matrix",
+    hh.mat = "matrix",
     cluster.info = "SpatialData"), ##"SpatialPointsDataFrame"), #"data.frame"), 
 
   methods = list(
@@ -274,8 +277,23 @@ BaseFgmData$methods(get.dist.matrix = function(subset, ...) {
     return(l.dist.mat)
 })
 
+BaseFgmData$methods(get.hh.matrix = function() {
+    ret.mat <- matrix(0, ncol = nrow, nrow = nrow)
+
+    for (curr.hh.id in levels(spatial.data$hh.id)) {
+        hh.mask <- spatial.data$hh.id == curr.hh.id
+        ret.mat[hh.mask, hh.mask] <- 1
+    }
+
+    return(ret.mat)
+})
+
 BaseFgmData$methods(calc.dist.matrix = function() {
     dist.mat <<- get.dist.matrix()
+})
+
+BaseFgmData$methods(calc.hh.matrix = function() {
+    hh.mat <<- get.hh.matrix()
 })
 
 BaseFgmData$methods(get.spatial.adj.matrix = function(radius, recalc.dist.matrix = FALSE, subset) {
