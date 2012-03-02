@@ -267,7 +267,7 @@ DaughterFgmData$methods(generate.reg.means.spatial = function(radius,
     if (!use.all.cohorts.data) {
         adj.matrix <- get.spatial.adj.matrix(radius)
         cohort.adj.matrix <- get.cohort.adj.matrix(cohort.range, range.type, year.offset = year.offset)
-        adj.matrix <- adj.matrix * cohort.adj.matrix
+        adj.matrix <- adj.matrix * cohort.adj.matrix * (!hh.mat) # Also removing members of own household
 
         reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
     } else {
