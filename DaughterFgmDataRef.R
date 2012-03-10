@@ -125,7 +125,7 @@ DaughterFgmData <- setRefClass("DaughterFgmData",
   contains = "BaseFgmData",
   fields = list(
     all.cohorts.spdf = "BaseFgmData", # "SpatialPointsDataFrame",
-    all.cohorts.dist.mat = "matrix",
+    all.cohorts.dist.mat = "AdjMatrix", #"matrix",
     individual.controls = "character",
     other.grpavg.controls = "character",
     birth.data = "data.frame"))
@@ -194,6 +194,7 @@ DaughterFgmData$methods(initialize = function(ir.file = NULL, br.file = NULL, gp
               married <- ifelse(mar.status == 1, 1, 0)
               birth.year.fac <- factor(birth.year)
               daughter.id <- seq_along(age) # Create a unique id per daughter
+              hh.id <- factor(hh.id)
             })
 
             all.cohorts.spdf <<- BaseFgmData$new(copy = .self)
@@ -267,41 +268,45 @@ DaughterFgmData$methods(generate.reg.means.spatial = function(radius,
     if (!use.all.cohorts.data) {
         adj.matrix <- get.spatial.adj.matrix(radius)
         cohort.adj.matrix <- get.cohort.adj.matrix(cohort.range, range.type, year.offset = year.offset)
-        adj.matrix <- adj.matrix * cohort.adj.matrix * (!hh.mat) # Also removing members of own household
+        adj.matrix$mat <- adj.matrix$mat * cohort.adj.matrix$mat * (!hh.mat$mat) # Also removing members of own household
 
         reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = spatial.data)[, -1]
     } else {
-        adj.matrix <- ifelse(all.cohorts.dist.mat <= radius, 1, 0) # This seems to be faster
+        adj.matrix <- AdjMatrix$new(nrow = all.cohorts.dist.mat$nrow, ncol = all.cohorts.dist.mat$ncol)
+        #         adj.matrix$mat <- ifelse(all.cohorts.dist.mat$mat <= radius, 1, 0) # This seems to be faster
+        adj.matrix$mat <- all.cohorts.dist.mat$mat <= radius
 
         cohort.adj.matrix <- all.cohorts.spdf$get.cohort.adj.matrix(cohort.range, range.type, year.offset = year.offset, subset = daughter.id %in% spatial.data$daughter.id)
-        adj.matrix <- adj.matrix * cohort.adj.matrix
+        adj.matrix$mat <- adj.matrix$mat * cohort.adj.matrix$mat
 
         reg.matrix <- model.matrix(formula(paste("~", paste(regs, collapse = " + "))), data = all.cohorts.spdf$spatial.data)[, -1]
     }
 
-    diag(adj.matrix) <- 0
+    diag(adj.matrix$mat) <- 0
 
     colnames(reg.matrix) <- clean.grpavg.matrix.colnames(colnames(reg.matrix), regs, prefix, postfix)
     which.rows <- as.integer(rownames(reg.matrix))
 
     if (!use.all.cohorts.data) {
-        adj.matrix <- adj.matrix[which.rows, which.rows]
+        adj.matrix$mat <- adj.matrix$mat[which.rows, which.rows]
     } else {
-        adj.matrix <- adj.matrix[, which.rows]
+        adj.matrix$mat <- adj.matrix$mat[, which.rows]
     }
 
-    w.matrix <- make.row.stochastic(adj.matrix)
+    #     w.matrix <- make.row.stochastic(adj.matrix)
+    w.matrix <- adj.matrix$copy()
+    w.matrix$make.row.stochastic()
    
     if (degree > 1) {
-        original.w.matrix <- w.matrix
+        original.w.matrix <- w.matrix$copy()
         for (curr.deg in 2:degree) {
-            w.matrix <- w.matrix %*% original.w.matrix
+            w.matrix$mat <- w.matrix$mat %*% original.w.matrix$mat
         }
     }
 
-   reg.matrix <- w.matrix %*% reg.matrix
+   reg.matrix <- w.matrix$mat %*% reg.matrix
 
-   grp.size <- adj.matrix %*% rep.int(1, ncol(adj.matrix))
+   grp.size <- adj.matrix$mat %*% rep.int(1, adj.matrix$ncol)
    grp.size.col <- "grp.size"
    if (!is.null(prefix)) grp.size.col <- paste(prefix, grp.size.col, sep = ".")
    if (!is.null(postfix)) grp.size.col <- paste(grp.size.col, postfix, sep = ".")

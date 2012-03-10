@@ -5,13 +5,6 @@ library(sem)
 library(AER)
 library(plm)
 
-make.row.stochastic <- function(adj.matrix) {
-    t(apply(adj.matrix, 1, function(row) {
-          row.sum <- sum(row)
-          if (row.sum > 0) row[row == 1] <- 1/row.sum
-          return(row)
-    }))
-}
 
 test.adj.matrix <- function(adj.matrix) {
     isSymmetric(adj.matrix)
@@ -70,11 +63,29 @@ FgmData.partner.educlvl.labels <- c('no educ', 'incomplete primary', 'complete p
 FgmData.grpavg.prefix = "grpavg"
 FgmData.lagged.grpavg.prefix = "lagged.grpavg"
 
+AdjMatrix <- setRefClass("AdjMatrix",
+
+                         fields = list(
+                            mat = "matrix",
+                            nrow = function(val) return(base::nrow(mat)),
+                            ncol = function(val) return(base::ncol(mat))),
+
+                         methods = list(
+                            initialize = function(data = NA, nrow = 0, ncol = 0) mat <<- matrix(data = data, nrow = nrow, ncol = ncol),
+                            make.row.stochastic = function() {
+                                mat <<- t(apply(mat, 1, function(row) {
+                                  row.sum <- sum(row)
+                                  if (row.sum > 0) row[row == 1] <- 1/row.sum
+                                  return(row)
+                                }))
+                            }
+                         ))
+
 BaseFgmData <- setRefClass("BaseFgmData",
   contains = "SpatialData",
   fields = list(
-    dist.mat = "matrix",
-    hh.mat = "matrix",
+    dist.mat = "AdjMatrix", # "matrix",
+    hh.mat = "AdjMatrix", # "matrix",
     cluster.info = "SpatialData"), ##"SpatialPointsDataFrame"), #"data.frame"), 
 
   methods = list(
@@ -272,18 +283,36 @@ BaseFgmData$methods(get.dist.matrix = function(subset, ...) {
           return(ret.mat)
     }, subset = subset, .eval.frame.n = n + 1))
 
-    l.dist.mat <- l.dist.mat[order(l.dist.mat[, nrow + 1]), 1:nrow]
+    ret.dist.mat <- AdjMatrix$new(0, nrow = nrow, ncol = nrow)
+    ret.dist.mat$mat <- l.dist.mat[order(l.dist.mat[, nrow + 1]), 1:nrow]
 
-    return(l.dist.mat)
+    return(ret.dist.mat)
 })
 
 BaseFgmData$methods(get.hh.matrix = function() {
-    ret.mat <- matrix(0, ncol = nrow, nrow = nrow)
+    ret.mat <- AdjMatrix$new(0, ncol = nrow, nrow = nrow) # matrix(0, ncol = nrow, nrow = nrow)
 
-    for (curr.hh.id in levels(spatial.data$hh.id)) {
-        hh.mask <- spatial.data$hh.id == curr.hh.id
-        ret.mat[hh.mask, hh.mask] <- 1
-    }
+    ##
+
+    #     hh.grps <- base::tapply(spatial.data$hh.id, spatial.data$hh.id)
+    # 
+    #     for (hh.grp in unique(hh.grps)) {
+    #         hh.row.ids <- which(hh.grps == hh.grp) # spatial.data$hh.id == curr.hh.id
+    #         ret.mat$mat[hh.row.ids, hh.row.ids] <- 1
+    #     }
+    # 
+    #     return(ret.mat)
+
+    ret.mat$mat <- do.call(rbind, apply("hh.id", function(all.data, grp.ids, grp.index.col.value) {
+          ret.sub.mat <- matrix(0, ncol = nrow + 1, nrow = length(grp.ids))
+
+          ret.sub.mat[, 1:nrow] <- matrix(all.data$spatial.data$hh.id == all.data$spatial.data$hh.id[grp.ids[1]], ncol = nrow, nrow = length(grp.ids), byrow = TRUE)
+          ret.sub.mat[, nrow + 1] <- grp.ids
+
+          return(ret.sub.mat)
+    }))
+
+    ret.mat$mat <- ret.mat$mat[order(ret.mat$mat[, nrow + 1]), 1:nrow]
 
     return(ret.mat)
 })
@@ -297,17 +326,20 @@ BaseFgmData$methods(calc.hh.matrix = function() {
 })
 
 BaseFgmData$methods(get.spatial.adj.matrix = function(radius, recalc.dist.matrix = FALSE, subset) {
-    if (!recalc.dist.matrix && missing(subset)) {
-        return(ifelse(dist.mat <= radius, 1, 0))
-    }
+    spat.adj.mat <- AdjMatrix$new(nrow = dist.mat$nrow, ncol = dist.mat$ncol)
 
-    if (missing(subset)) {
+    if (!recalc.dist.matrix && missing(subset)) {
+        # Nothing
+    } else if (missing(subset)) {
         dist.matrix <- get.dist.matrix()
     } else {
         dist.matrix <- get.dist.matrix(subset, .eval.frame.n = 2)
     }
 
-    return(ifelse(dist.matrix <= radius, 1, 0))
+    spat.adj.mat$mat <- ifelse(dist.mat$mat <= radius, 1, 0)
+    return(spat.adj.mat)
+
+    #     return(ifelse(dist.matrix <= radius, 1, 0))
 })
 
 BaseFgmData$methods(get.cohort.adj.matrix = function(cohort.range = 1, cohort.range.type = c("both", "older"), year.offset = 0, subset, ...) {
@@ -334,9 +366,10 @@ BaseFgmData$methods(get.cohort.adj.matrix = function(cohort.range = 1, cohort.ra
           return(ret.mat)
     }, cohort.range, cohort.range.type, year.offset, subset = subset, .eval.frame.n = n + 1))
 
-    cohort.adj.mat <- cohort.adj.mat[order(cohort.adj.mat[, nrow + 1]), 1:nrow]
+    ret.coh.adj.mat <- AdjMatrix$new(nrow = nrow, ncol = nrow)
+    ret.coh.adj.mat$mat <- cohort.adj.mat[order(cohort.adj.mat[, nrow + 1]), 1:nrow]
 
-    return(cohort.adj.mat)
+    return(ret.coh.adj.mat)
 })
 
 
