@@ -1,3 +1,4 @@
+source("RegressionResults.R")
 
 print.row <- function(results, reg.name, label, cutpoints, symbols, indent = 0, tex.newline = TRUE) {
   cat(sprintf("%s%s ", paste(rep("~", indent), collapse = ""), if (is.null(label)) reg.name else label))
@@ -60,11 +61,11 @@ print.reg.list <- function(results, reg.dict, cutpoints, symbols, last.tex.newli
   }
 }
 
-print.nrow <- function(results, data) {
+print.nrow <- function(results) {
   cat(" N ")
   for (r in results) {
-    cat(sprintf("& %i", data$nrow))
-    #cat(sprintf("& %i", r$na.action))
+        #cat(sprintf("& %i", r$na.action))
+      cat(sprintf("& %i", length(r$results$residuals)))
   }
   cat("\\\\\n")
 }
@@ -85,7 +86,22 @@ print.adj.r.squared <- function(results) {
   cat("\\\\\n")
 }
 
-print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, other.fac = NULL, data = NULL, table.type = "tabular", inter.results.space = FALSE, est.stderr.header = TRUE, col.num.header = TRUE, show.r.squared = TRUE, show.n = !is.null(data)) {
+handle.row.callback <- function(cb, results, cutpoints, symbols) {
+    if ("label" %in% names(cb)) {
+        cat(sprintf(" %s ", cb$label))
+    } 
+
+    if ("fun" %in% names(cb)) {
+        for (r in results) {
+            cat(sprintf("& %s ", cb$fun(r, cutpoints, symbols)))
+        }
+    }
+
+    cat("\\\\\n")
+}
+
+print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, other.fac = NULL, table.type = "tabular", inter.results.space = FALSE, est.stderr.header = TRUE, col.num.header = TRUE, show.r.squared = TRUE, show.n = TRUE, column.labels = NULL, row.callbacks = NULL) {
+  stopifnot(is.null(column.labels) || (length(column.labels) == length(results))) 
   num.col <- length(results)
   cat(sprintf("\\begin{%s}{l*{%d}{c}}\n", table.type, num.col))
 
@@ -100,8 +116,15 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
   if (col.num.header) {
     cat(paste(sprintf("& (%d)", 1:num.col), collapse = " "))
     cat("\\\\\n")
+
+    if (!is.null(column.labels)) {
+        cat(paste(sprintf("& %s", column.labels), collapse = " "))
+        cat("\\\\\n")
+    }
+
     cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
   }
+
 
   if (!is.null(other.fac)) {
       for (fac in other.fac) {
@@ -121,9 +144,16 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
   if (!is.null(grpavg.reg.dict))
     print.reg.list(results, grpavg.reg.dict, cutpoints, symbols)
 
+  if (!is.null(row.callbacks)) {
+    cat("\\midrule\n")
+    for (cb in row.callbacks) {
+        handle.row.callback(cb, results, cutpoints, symbols)
+    }
+  }
+
   if (show.n) { 
     cat("\\midrule\n")
-    print.nrow(c(results), data)
+    print.nrow(c(results))
   }
 
   if (show.r.squared) {
