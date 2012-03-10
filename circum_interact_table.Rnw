@@ -1,0 +1,31 @@
+<<label=init, echo=FALSE, results=hide>>=
+source("print.results.R")
+
+source("table.global.R")
+
+load("exog.endog.effects.fe.RData")
+@
+
+\begin{table}
+  \centering
+  \caption{Urban/Rural and Medical Help Interactions}\label{tab:interact}
+  \begin{threeparttable}
+  \begin{tabular}{lcc}
+    \toprule
+    & \multicolumn{2}{c}{Estimate} \\
+    & \multicolumn{2}{c}{($p$-value)} \\
+    \cmidrule{2-3}
+    & Rural & Urban \\
+    \cmidrule{2-3}
+<<echo=FALSE,results=tex>>=
+print.interact.table(main.reg.results.17, "spat.grpavg.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+@
+    \bottomrule
+  \end{tabular}
+  \begin{tablenotes}
+    %\item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
+    \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+    \item[2] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
+  \end{tablenotes}
+  \end{threeparttable}
+\end{table}
