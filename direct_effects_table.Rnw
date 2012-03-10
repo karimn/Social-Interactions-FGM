@@ -29,7 +29,7 @@ load("direct.effects.RData")
                received.info.circum.facyes = "Received Info on FGM",
                n.ord = "Number of Daughters")
 
-  print.results.table(results, regs, cohort.range, educ.regs, NULL, cutpoints, symbols, other.fac = list(birth.order.fac.info), data = regress.data) 
+  print.results.table(results, regs, cohort.range, educ.regs, NULL, cutpoints, symbols, other.fac = list(birth.order.fac.info), column.labels = c("OLS", "FE")) 
 @
 \begin{tablenotes}
   \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.

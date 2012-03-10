@@ -1,3 +1,5 @@
+\usepackage[landscape]{geometry}
+
 <<label=init, echo=FALSE, results=hide>>=
 source("RegressionResults.R")
 source("print.results.R")
@@ -7,13 +9,14 @@ source("table.global.R")
 load("exog.endog.effects.RData")
 @
 
+\begin{landscape}
 \begin{table}
 \scriptsize
 \centering
 \begin{threeparttable}
-\caption{FGM Endogenous Effects Regression}
+\caption{FGM Endogenous Effects Regression (Pooled)}
 <<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
-  results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.6, main.reg.results.7, main.reg.results.8) 
+  results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5) 
 
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
@@ -29,12 +32,18 @@ load("exog.endog.effects.RData")
 
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
-                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$")
-                      #                       "spat.grpavg.circum:urban.ruralurban.10" = "$\\overline{fgm}_{jt} \\times$ Urban",
-                      #                       "spat.grpavg.circum:discuss.circum.facyes.10" = "$\\overline{fgm}_{jt} \\times$ Discussed FGM",
-                      #                       "spat.grpavg.circum:received.info.circum.facyes.10" = "$\\overline{fgm}_{jt} \\times$ Received Info on FGM")
+                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
+                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$",
+                      "spat.grpavg.circum.10:spat.grpavg.med.circum.10" = "$\\overline{fgm}_{jt} \\times \\overline{med}_{jt}$")
+                      #                       "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$",
+                      #                       "spat.grpavg.med.circum.10:urban.ruralurban" = "$\\overline{med}_{jt} \\times$ Urban",
+                      #                       "spat.grpavg.med.circum.10:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times$ Discussed FGM",
+                      #                       "spat.grpavg.med.circum.10:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times$ Received Info on FGM")
 
-  print.results.table(results, regs, 1989:1996, educ.regs, grpavg.regs, cutpoints, symbols, other.fac = list(birth.order.fac.info), data = regress.data)
+  print.results.table(results, regs, NULL, educ.regs, grpavg.regs, cutpoints, symbols) 
+                      #other.fac = list(birth.order.fac.info), 
+                      #column.labels = c("OLS", "OLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS"))
 @
 \begin{tablenotes}
   \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
@@ -42,3 +51,4 @@ load("exog.endog.effects.RData")
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
+\end{landscape}
