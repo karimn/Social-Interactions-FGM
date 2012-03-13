@@ -360,6 +360,12 @@ main.reg.results.2.2 <- regress.data$lm(main.reg.formula.eqn.2.2, vcov.fun = vco
 main.reg.formula.2.3 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10", exog.regs.eqn))
 main.reg.results.2.3 <- regress.data$lm(main.reg.formula.2.3, vcov.fun = vcovHAC)
 
+regress.data$spatial.data@data$spat.grpavg.rel.med.circum.10 <- regress.data$spatial.data$spat.grpavg.med.circum.10 / regress.data$spatial.data$spat.grpavg.circum.10
+regress.data$spatial.data@data$spat.grpavg.rel.med.circum.10[is.nan(regress.data$spatial.data$spat.grpavg.rel.med.circum.10)] <- NA
+
+main.reg.formula.2.4 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.rel.med.circum.10", exog.regs.eqn))
+main.reg.results.2.4 <- regress.data$lm(main.reg.formula.2.4, vcov.fun = vcovHAC)
+
 # 2SLS
 # main.reg.formula.eqn.3 <- sprintf("circum ~ %s + spat.grpavg.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, instr.eqn)
 # main.reg.results.3 <- regress.data$ivreg(main.reg.formula.eqn.3, vcov.fun = vcovHAC)
@@ -413,14 +419,14 @@ pchisq(length(test.res.reg.1) - sum(main.reg.hs.test.results.6.2$residuals^2), d
 main.reg.formula.eqn.7 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + spat.grpavg.med.circum.10 + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
 main.reg.results.7 <- regress.data$ivreg(main.reg.formula.eqn.7, vcov.fun = vcovHAC)
 
-main.reg.formula.eqn.7.2 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + I(spat.grpavg.med.circum.10^2) | %s + spat.grpavg.med.circum.10 + I(spat.grpavg.med.circum.10^2) + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1)
+main.reg.formula.eqn.7.2 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + I(spat.grpavg.circum.10^2) + spat.grpavg.med.circum.10 + I(spat.grpavg.med.circum.10^2) | %s + spat.grpavg.med.circum.10 + I(spat.grpavg.med.circum.10^2) + %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.1, relv.instr.eqn.1.squared)
 main.reg.results.7.2 <- regress.data$ivreg(main.reg.formula.eqn.7.2, vcov.fun = vcovHAC)
 
 # Add spat.grpavg.med.circum (assumed endogenous)
 main.reg.formula.eqn.8 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2)
 main.reg.results.8 <- regress.data$ivreg(main.reg.formula.eqn.8, vcov.fun = vcovHAC)
 
-main.reg.formula.eqn.8.2 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + I(spat.grpavg.med.circum.10^2) | %s + %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2, relv.instr.eqn.3.squared)
+main.reg.formula.eqn.8.2 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + I(spat.grpavg.circum.10^2) + I(spat.grpavg.med.circum.10^2) | %s + %s + %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2, relv.instr.eqn.1.squared, relv.instr.eqn.3.squared)
 main.reg.results.8.2 <- regress.data$ivreg(main.reg.formula.eqn.8.2, vcov.fun = vcovHAC)
 
 main.reg.formula.eqn.8.3 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.5)
@@ -432,6 +438,9 @@ main.reg.results.8.4 <- regress.data$ivreg(main.reg.formula.eqn.8.4, vcov.fun = 
 
 main.reg.formula.eqn.8.5 <- sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.6)
 main.reg.results.8.5 <- regress.data$ivreg(main.reg.formula.eqn.8.5, vcov.fun = vcovHAC)
+
+main.reg.formula.eqn.8.6 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.rel.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.6)
+main.reg.results.8.6 <- regress.data$ivreg(main.reg.formula.eqn.8.6, vcov.fun = vcovHAC)
 
 # Using hh panel data
 main.reg.formula.9 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | . - spat.grpavg.circum.10 + %s", exog.regs.eqn.2, relv.instr.eqn.1))
@@ -461,8 +470,17 @@ main.reg.results.14.4 <- regress.data$plm(main.reg.formula.14.4, effect = "indiv
 main.reg.formula.14.5 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10 | . - (spat.grpavg.circum.10 * spat.grpavg.med.circum.10) + %s", exog.regs.eqn.2, relv.instr.eqn.6))
 main.reg.results.14.5 <- regress.data$plm(main.reg.formula.14.5, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
 
+main.reg.formula.14.6 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.rel.med.circum.10 | . - (spat.grpavg.circum.10 * spat.grpavg.med.circum.10) + %s", exog.regs.eqn.2, relv.instr.eqn.6))
+main.reg.results.14.6 <- regress.data$plm(main.reg.formula.14.6, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
+
 main.reg.formula.15 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + spat.grpavg.med.circum.10 : urban.rural | . - spat.grpavg.circum.10 - spat.grpavg.med.circum.10 - spat.grpavg.med.circum.10 : urban.rural + %s + (%s) : urban.rural", exog.regs.eqn.2, relv.instr.eqn.2, relv.instr.eqn.3))
 main.reg.results.15 <- regress.data$plm(main.reg.formula.15, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
+
+main.reg.formula.15.2 <- formula(sprintf("circum ~ %s + (spat.grpavg.circum.10 + spat.grpavg.med.circum.10 ) * urban.rural - urban.rural | . - (spat.grpavg.circum.10 + spat.grpavg.med.circum.10) * urban.rural + (%s) * urban.rural - urban.rural", exog.regs.eqn.2, relv.instr.eqn.2))
+main.reg.results.15.2 <- regress.data$plm(main.reg.formula.15.2, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
+
+main.reg.formula.15.3 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10 * urban.rural - urban.rural | . - spat.grpavg.circum.10 * spat.grpavg.med.circum.10 * urban.rural + (%s) * (%s) * urban.rural - urban.rural", exog.regs.eqn.2, relv.instr.eqn.1, relv.instr.eqn.3))
+main.reg.results.15.3 <- regress.data$plm(main.reg.formula.15.3, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
 
 main.reg.formula.16 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + spat.grpavg.med.circum.10 : med.help.distance.fac | . - spat.grpavg.circum.10 - spat.grpavg.med.circum.10 - spat.grpavg.med.circum.10 : med.help.distance.fac + %s + (%s) : med.help.distance.fac", exog.regs.eqn.2, relv.instr.eqn.2, relv.instr.eqn.3))
 main.reg.results.16 <- regress.data$plm(main.reg.formula.16, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
@@ -484,6 +502,9 @@ main.reg.results.17.4 <- regress.data$plm(main.reg.formula.17.4, effect = "indiv
 
 main.reg.formula.17.5 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10 + (spat.grpavg.med.circum.10) : (urban.rural * med.help.money.fac) | . - (spat.grpavg.circum.10 * spat.grpavg.med.circum.10) - (spat.grpavg.med.circum.10) : (urban.rural * med.help.money.fac) + %s + (%s) : (urban.rural * med.help.money.fac)", exog.regs.eqn.2, relv.instr.eqn.6, relv.instr.eqn.3))
 main.reg.results.17.5 <- regress.data$plm(main.reg.formula.17.5, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
+
+main.reg.formula.17.6 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 * spat.grpavg.med.circum.10 + (spat.grpavg.med.circum.10) : (urban.rural * med.help.distance.fac) | . - (spat.grpavg.circum.10 * spat.grpavg.med.circum.10) - (spat.grpavg.med.circum.10) : (urban.rural * med.help.distance.fac) + %s + (%s) : (urban.rural * med.help.distance.fac)", exog.regs.eqn.2, relv.instr.eqn.6, relv.instr.eqn.3))
+main.reg.results.17.6 <- regress.data$plm(main.reg.formula.17.6, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
 
 main.reg.formula.19 <- formula(sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 * del.spat.grpavg.delivered.by.daya_yes.10 | . - spat.grpavg.circum.10 - spat.grpavg.med.circum.10 + %s + (%s) * del.spat.grpavg.delivered.by.daya_yes.10 ", exog.regs.eqn.2, relv.instr.eqn.1, relv.instr.eqn.3))
 main.reg.results.19 <- regress.data$plm(main.reg.formula.19, effect = "individual", model = "within", index = c("hh.id", "order.fac"), vcov.fun = vcovHC)
@@ -520,7 +541,8 @@ main.reg.results.18 <- regress.data$ivreg(main.reg.formula.eqn.18, vcov.fun = vc
 
 save(regress.data, file = "regress.data.RData")
 save(med.data, file = "med.data.RData")
-save(dir.reg.results.1, dir.reg.results.2, regress.data, file = "direct.effects.RData") 
-save(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5, regress.data, file = "exog.endog.effects.RData")
-save(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2, main.reg.results.14.5, main.reg.results.17, main.reg.results.17.4, main.reg.results.17.5, regress.data, file = "exog.endog.effects.fe.RData")
-save(relv.results.10.1, relv.results.10.2, file = "circum.1s.RData")
+save(relv.results.10.1, relv.results.10.5, file = "circum.1s.RData")
+save(relv.med.results.10.1, relv.med.results.10.3, file = "med.1s.RData")
+save(dir.reg.results.1, dir.reg.results.2, file = "direct.effects.RData") 
+save(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5, file = "exog.endog.effects.RData")
+save(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2, main.reg.results.14.5, main.reg.results.17, main.reg.results.17.4, file = "exog.endog.effects.fe.RData")
