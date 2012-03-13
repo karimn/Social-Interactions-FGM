@@ -4,16 +4,16 @@ source("print.results.R")
 
 source("table.global.R")
 
-load("circum.1s.RData")
+load("med.1s.RData")
 @
 
 \begin{table}
 \scriptsize
 \centering
 \begin{threeparttable}
-\caption{FGM Endogenous Social Effect First Stage Regression}\label{tab:circum_1s}
+\caption{Medicalization Endogenous Social Effect First Stage Regression}\label{tab:med_1s}
 <<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
-  results <- c(relv.results.10.1, relv.results.10.5)
+  results <- c(relv.med.results.10.1, relv.med.results.10.3)
 
 #   regs <- list(wealth.index.2rich = "Wealth (Rich)",
 #                urban.ruralurban = "Residence (Urban)",

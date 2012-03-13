@@ -22,8 +22,12 @@ load("exog.endog.effects.fe.RData")
     \cmidrule{2-3}
 <<echo=FALSE,results=tex>>=
 print.interact.table(main.reg.results.17, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+# cat("\\midrule\n")
+# print.interact.table(main.reg.results.17.6, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 cat("\\midrule\n")
 print.interact.table(main.reg.results.17.4, "spat.grpavg.med.circum.10", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+# cat("\\midrule\n")
+# print.interact.table(main.reg.results.17.5, "spat.grpavg.med.circum.10", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
 @
     \bottomrule
   \end{tabular}
