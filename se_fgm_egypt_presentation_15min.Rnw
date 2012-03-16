@@ -1,0 +1,355 @@
+ \documentclass[presentation,10pt]{beamer}
+%\documentclass{article}
+
+\mode<presentation>{ 
+  \usetheme[secheader]{Boadilla}
+} 
+
+\mode<article>{ 
+  \usepackage{beamerarticle}
+  \usepackage{fullpage} 
+}
+
+%\usepackage{beamerthemesplit}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{rotating}
+% \usepackage{graphics}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{url}
+\usepackage[round]{natbib}
+\usepackage[utf8x]{inputenc}
+\usepackage{verbatim}
+\usepackage{multirow}
+\usepackage{pstricks,pst-node,pst-tree}
+\usepackage{Sweave}
+
+\SweaveOpts{width=8, height=6, strip.white=FALSE}
+
+<<label=init, echo=FALSE, print=FALSE, results=hide>>=
+library(lattice)
+library(ggplot2)
+
+source("print.results.R")
+
+source("table.global.R")
+
+load("regress.data.RData")
+
+fgm <- regress.data$spatial.data@data
+all.coh.fgm <- regress.data$all.cohorts.spdf$spatial.data@data
+@
+
+%\usepackage{pgf}
+
+%\setbeameroption{show notes}
+
+\title[The Effects of Social Interactions on FGM]{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt} 
+\institute[BU]{Boston University}
+\author{Karim Naguib}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\section{Introduction}
+
+\begin{frame}{What is Female Genital Mutilation?}
+  \begin{itemize}
+    \item It is the removal of part or the whole of the female external genitalia. 
+    \item In some of its forms, the vaginal opening is sealed.
+    \item In its less severe forms it is no more than a small cut.
+    \item Mostly done as a rite of passage into adulthood, an act of `cleansing' in preparation for marriage, and/or a method of curbing sexuality to ensure fidelity.
+    \item No medical benefit, only harm (infections, infertility, childbirth complications)
+    \item Internationally recognized as a violation of human rights
+  \end{itemize}
+\end{frame}
+
+\begin{comment}
+\begin{frame}{Key Facts}
+  \begin{itemize}
+    \item An estimated 100 to 140 million women and girls suffer from the consequences of FGM worldwide.
+      \begin{itemize}
+	\item In Africa, an estimate of 92 million girls of 10 years of age and above have undergone FGM.
+	\item In Africa, about 3 million girls at risk of FGM annually.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \includegraphics[scale=0.75]{Fgm_map}
+\end{frame}
+
+\begin{frame}{FGM in Egypt}
+  \begin{itemize}
+    \item As high as 91\% of women between the ages of 15 and 49 have undergone FGM
+    \item Since 1995 the Egyptian government and religious establishment has attempted to address the question of the legitimacy of FGM
+    \item FGM was banned in 1997 it wasn't until 2007 that a legal loophole allowing medical practitioners to carry out the operation 
+    \item Practiced by both Muslims and Christians---contrary to beliefs no religious texts prescribe it.
+  \end{itemize}
+\end{frame}
+\end{comment}
+
+\begin{frame}{Research Questions}
+  \begin{itemize}
+    \item To what extent are households influenced when making their FGM decision by their peers' 
+      \begin{itemize}
+        \item FGM decisions
+        \item FGM medicalization decision 
+      \end{itemize}
+    \item Medicalization refers to opting to have the procedure carried out by a medical practitioner as opposed to a traditional circumciser 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Motivation}
+    \begin{itemize}
+        \item While FGM is a form of violence, it is not recognized as such in the societies that practice it
+        \item FGM is ultimately a social practice
+        \item It is crucial to understand what role medicalization plays
+            \begin{itemize}
+                \item Targeting medicalization has been the main policy at elimination FGM in Egypt
+                \item ``Do no harm'' vs. harm reduction \citep{Shell-Duncan2001}
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{comment}
+\begin{frame}{Literature}
+  \begin{itemize}
+    \item FGM 
+      \begin{itemize}
+	\item \citet{Chesnokova2010} model FGM as a premarital investment that could result in inefficient levels of FGM in the marriage market
+	\item \citet{Yount} investigates the fundamental determinants of FGM 
+	\item \citet{Hayford} attempts to determine whether ``convention theory'' explains FGM decisions
+      \end{itemize}
+    \item Marriage markets and premarital investment
+      \begin{itemize}
+	\item \citet{Becker1981}
+	\item \citet{Burdett2001}, \citet{Peters2002}
+      \end{itemize}
+      \item Social interactions 
+	\begin{itemize}
+	  \item \citet{Manski} and \citet{Moffitt2001}
+	  \item \citet{Case1991}, \citet{Crane1991}, \citet{Evans1992}, \citet{Bertrand2000}, \citet{Angrist2004}, \citet{Kremer2007}, \citet{lin10}, and \citet{Conleya}
+	  \item \citet{Blume2010}
+	\end{itemize}
+  \end{itemize}
+\end{frame}
+\end{comment}
+
+\section{Data}
+
+\begin{frame}{Demographics and Health Survey}
+  \begin{itemize}
+    \item Data used is from the Demographic and Health Survey conducted in Egypt in 2008
+    \item Eight prior surveys were conducted, two to three years apart
+    \item 16,527 ever-married women, aged 15-49, were interviewed
+    \item Data is available on the respondents' wealth, education, urban/rural residence, marital age, religion, sex of the head of the household, difficulty in accessing medical help due to distance or cost
+    \item For each sample cluster, GPS coordinates are available
+    \item Data is available on the 6 most recent births
+    \item Women were asked about their FGM status, knowledge and attitudes
+    \item Respondents were asked about the FGM status of up to 6 of their daughters who are unmarried and reside in the same household
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Reference Group}
+  \begin{itemize}
+    \item The reference or peer group is based on geography and cohort
+    \item It is assumed that the decision with respect to each daughter is influenced by decisions of daughters of the same cohort (or younger/older by one year), and residing within 10 kilometers 
+    \item Analysis is restricted to daughters born in 1988-1996, only those 12 years of age or older
+  \end{itemize}
+\end{frame}
+
+<<echo=FALSE>>=
+txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
+all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+
+med.dp <- densityplot(~ age.circum, group = med.circum, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = c("Traditional", "Medical.")), main = "FGM Density Plot (Medicalization vs. Traditional)", panel = function(x, ...)
+{
+  panel.densityplot(x, ...)
+  panel.abline(v = 12, col = "red")
+})
+@
+
+\begin{frame}
+  \begin{figure}
+  \begin{center}
+<<fig=TRUE, echo=FALSE>>=
+plot(all.dp)
+@
+  \end{center}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+  \begin{center}
+<<fig=TRUE, echo=FALSE>>=
+plot(med.dp)
+@
+  \end{center}
+  \end{figure}
+\end{frame}
+
+\begin{comment}
+\begin{frame}
+  \begin{tiny}
+    \input{sumstat_table}
+  \end{tiny}
+\end{frame}
+\end{comment}
+
+<<echo=FALSE>>=
+fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
+fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
+
+fgm.circum.only <- subset(fgm, circum.fac == "yes")
+
+prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
+
+circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
+med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+@
+
+\begin{comment}
+\begin{frame}[fragile]
+    \input{governsum_table}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE>>=
+plot(circum.bc)
+@
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE>>=
+plot(med.bc)
+@
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Mean Circumcision By Governorate}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+print(ggplot(all.coh.fgm, aes(birth.year, grpavg.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Circumcision"))
+@
+\end{center}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Mean Medicalization By Governorate}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+circum.data <- subset(all.coh.fgm, circum == 1)
+print(ggplot(circum.data, aes(birth.year, grpavg.med.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Medicalization"))
+@
+\end{center}
+\end{figure}
+\end{frame}
+\end{comment}
+
+\section{Econometric Model}
+
+\begin{frame}{Linear-in-means Model}
+    \begin{equation*}
+        y_{ihr} = \mathbf{\beta} \cdot \mathbf{x}_i + \mathbf{\delta} \cdot \sum_{j \in \mathcal{P}_i} \frac{\mathbf{x}_j}{n_i} + \gamma \sum_{j \in \mathcal{P}_i} \frac{y_j}{n_i} + \lambda \sum_{j \in \mathcal{P}_i} \frac{m_j}{n_i} + \eta_h + \rho_r + \varepsilon_{ihr}
+    \end{equation*}
+    The indices are
+    \begin{itemize}
+        \item $i = \{1,\dots,N\}$ identifies daughters (the observations of interest),
+        \item $h = \{1,\dots,M\}$ their household, 
+        \item $r = \{1,\dots,R_h\}$ their order of birth within their household, where $R_h$ is the number of daughters in household $h$.
+    \end{itemize}
+    The variables are
+    \begin{description}
+        \item[y] is a binary variable indicating FGM status
+        \item[x] is a vector of daughter and household characteristics
+        \item[m] is a binary variable indicating whether FGM was medicalized
+        \item[$\eta$] is the household effect
+        \item[$\rho$] is the birth order effect
+    \end{description}
+\end{frame}
+
+\begin{frame}{Linear-in-means Model (cont.)}
+    \begin{equation*}
+        \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{W} \mathbf{m} \lambda + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} 
+    \end{equation*}
+    Identification challenges:
+    \begin{itemize}
+        \item Simultaneity
+        \item Correlated Effects
+        \item Peer Endogeneity
+    \end{itemize}
+    The solution proposed by \citet{bramoulleetal09} is to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instruments for $\mathbf{Wy}$ since
+    \begin{equation*}
+        \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho})
+    \end{equation*}
+\end{frame}
+
+\begin{frame}{IV Example}
+    \begin{center}
+        \includegraphics{network_example}
+    \end{center}
+\end{frame}
+
+
+\begin{frame}{Choice of Instrumental Variables}
+    \input{circum_1s_pres_table}
+\end{frame}
+
+\begin{frame}{Modernization and Medicalization}
+  \begin{itemize}
+    \item Modernization is likely to negatively influence a household's FGM decision
+    \item However, modernization is an unobserved group characteristic, and it is likely to be correlated with medicalization.
+    \item The fraction of deliveries carried out my medical practitioners as opposed to traditional midwives, $\overline{daya}_{ihr}$, is used as a proxy for modernization
+	  \begin{align*}
+          \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = \mathbb{E}(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
+          L(modern_{ihr}|1, \mathbf{z}_{ihr}, \overline{daya}_{ihr}) = L(modern_{ihr}|1, \overline{daya}_{ihr})
+	  \end{align*}
+	  where $z_{ihr}$ are all other observed regressors and $modern_{ihr}$ is the unobserved modernization regressor.
+  \end{itemize}
+\end{frame}
+
+\section{Results}
+
+\input{presentation_tables}
+
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Findings:
+      \begin{itemize}
+	\item Households are positively influenced in their FGM decision by the FGM decision of their peers %, with lower sensitivity to social links for richer and more educated households.
+	\item Households are negatively influenced in their FGM decision by the medicalization decision of their peers.
+      \end{itemize}
+    \item Possible mechanisms for the negative effect of medicalization
+      \begin{itemize}
+	\item FGM moving from the marriage market to healthcare sphere, resulting in a more amendable position to the discontinuity of FGM.
+	\item FGM being an unobservable characteristic required \emph{dayas} to function as certifiers of `quality'
+      \end{itemize}
+    \item Must be cautious against advocating medicalization---the possible legitimizing effect of this is unknown.
+  \end{itemize}
+\end{frame}
+
+\bibliographystyle{plainnat}
+\bibliography{$HOME/Documents/library}
+
+\end{document}
+
