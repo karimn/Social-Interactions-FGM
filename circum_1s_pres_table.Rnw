@@ -1,0 +1,27 @@
+<<label=init, echo=FALSE, results=hide>>=
+source("print.results.R")
+
+source("table.global.R")
+
+load("circum.1s.RData")
+@
+
+\begin{table}
+\tiny
+\centering
+\begin{threeparttable}
+<<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
+  results <- c(relv.results.10.1, relv.results.10.5)
+
+  regs <- NULL
+
+  joint.f.test.cb <- list(label = "F-test on instruments", fun = function(result,...) {
+    instruments <- grep("intran", names(result$results$coefficients), value = TRUE)
+    f.test <- result$lht(instruments, test = "F")
+    return(sprintf("%.3f", f.test$F[2]))
+  })
+
+  print.results.table(results, regs, NULL, NULL, exog.se.intran.regs, cutpoints, symbols, row.callbacks = list(joint.f.test.cb))
+@
+\end{threeparttable}
+\end{table}

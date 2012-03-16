@@ -14,7 +14,7 @@
 \usepackage{booktabs}
 \usepackage{threeparttable}
 \usepackage{rotating}
-\usepackage{graphics}
+% \usepackage{graphics}
 \usepackage{amsmath}
 \usepackage{enumerate}
 \usepackage{url}
@@ -29,21 +29,16 @@
 
 <<label=init, echo=FALSE, print=FALSE, results=hide>>=
 library(lattice)
-library(car)
 library(ggplot2)
 
-source("BaseFgmDataRef.R")
-source("DaughterFgmDataRef.R")
 source("print.results.R")
 
-load("new_results.RData")
+source("table.global.R")
 
-youngest.cohort <- 1996
+load("regress.data.RData")
 
-cutpoints <- c(0, 0.01, 0.05, 0.1, 1)
-symbols <- c("***", "**", "*", " ")
-
-educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
+fgm <- regress.data$spatial.data@data
+all.coh.fgm <- regress.data$all.cohorts.spdf$spatial.data@data
 @
 
 %\usepackage{pgf}
@@ -52,7 +47,7 @@ educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", 
 
 \title[The Effects of Social Interactions on FGM]{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt} 
 \institute[BU]{Boston University}
-\author{Karim Nagib}
+\author{Karim Naguib}
 
 \begin{document}
 
@@ -65,7 +60,7 @@ educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", 
     \item It is the removal of part or the whole of the female external genitalia. 
     \item In some of its forms, the vaginal opening is sealed.
     \item In its less severe forms it is no more than a small cut.
-    \item Mostly done as a rite of passage into adulthood, an act of ``cleansing'' in preparation for marriage, and/or a method of curbing sexuality to ensure fidelity.
+    \item Mostly done as a rite of passage into adulthood, an act of `cleansing' in preparation for marriage, and/or a method of curbing sexuality to ensure fidelity.
     \item No medical benefit, only harm (infections, infertility, childbirth complications)
     \item Internationally recognized as a violation of human rights
   \end{itemize}
@@ -81,6 +76,9 @@ educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", 
   \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \includegraphics[scale=0.75]{Fgm_map}
+\end{frame}
 
 \begin{frame}{FGM in Egypt}
   \begin{itemize}
@@ -149,7 +147,6 @@ educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", 
 \end{frame}
 
 <<echo=FALSE>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
 txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
 all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
 {
@@ -191,7 +188,6 @@ plot(med.dp)
 \end{frame}
 
 <<echo=FALSE>>=
-fgm <- subset(spdf@data, birth.year <= youngest.cohort)
 fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
 fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
 
@@ -230,11 +226,12 @@ plot(med.bc)
 \end{figure}
 \end{frame}
 
+\begin{comment}
 \begin{frame}{Mean Circumcision By Governorate}
 \begin{figure}
 \begin{center}
-<<echo=FALSE, fig=TRUE>>=
-print(ggplot(spdf@data, aes(birth.year, grpavg.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Circumcision"))
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+print(ggplot(all.coh.fgm, aes(birth.year, grpavg.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Circumcision"))
 @
 \end{center}
 \end{figure}
@@ -243,139 +240,86 @@ print(ggplot(spdf@data, aes(birth.year, grpavg.circum, color = governorate)) + g
 \begin{frame}{Mean Medicalization By Governorate}
 \begin{figure}
 \begin{center}
-<<echo=FALSE, fig=TRUE>>=
-circum.data <- subset(spdf@data, circum == 1)
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+circum.data <- subset(all.coh.fgm, circum == 1)
 print(ggplot(circum.data, aes(birth.year, grpavg.med.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Medicalization"))
 @
 \end{center}
 \end{figure}
 \end{frame}
+\end{comment}
 
 \section{Econometric Model}
 
 \begin{frame}{Linear-in-means Model}
-  The \citet{Blume2010} model of social interaction is 
-  \begin{equation}
-    \omega_{ig} = k + c \cdot x_{ig} + d \cdot y_g + J \cdot m_{g} + \varepsilon_{ig}\label{eqn:main}. 
-  \end{equation}
-  $i$ is an individual's index, and $g$ is a reference group's index (an individual's peer group). $\omega_{ig}$ is the dependent variable representing individual action or behavior, and 
-  \begin{itemize}
-    \item $x_{ig}$ are individual controls
-    \item $y_g$ are group level contextual controls
-    \item $m_{g}$ denotes the group's average behavior.  
-      \begin{equation*}
-	m_g \equiv \bar{\omega}_g = \frac{k + c \cdot \bar{x}_g + d \cdot y_g}{1 - J} 
-      \end{equation*}
-  \end{itemize}
+    \begin{equation*}
+        y_{ihr} = \mathbf{\beta} \cdot \mathbf{x}_i + \mathbf{\delta} \cdot \sum_{j \in \mathcal{P}_i} \frac{\mathbf{x}_j}{n_i} + \gamma \sum_{j \in \mathcal{P}_i} \frac{y_j}{n_i} + \eta_h + \rho_r + \varepsilon_{ihr}
+    \end{equation*}
+    The indices are
+    \begin{itemize}
+        \item $i = \{1,\dots,N\}$ identifies daughters (the observations of interest),
+        \item $h = \{1,\dots,M\}$ their household, 
+        \item $r = \{1,\dots,R_h\}$ their order of birth within their household, where $R_h$ is the number of daughters in household $h$.
+    \end{itemize}
+    \begin{equation*}
+        \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon}
+    \end{equation*}
 \end{frame}
 
-\begin{frame}{Linear-in-means Model (cont.)}
-  \begin{equation*}
-    \omega_{ig} = \frac{k}{1-J} + c \cdot x_i + \frac{Jc}{1-J} \cdot\bar{x}_g + \frac{d}{1-J} \cdot y_g + \varepsilon_{ig}.
-  \end{equation*}
-  However, in \citep{Manski} it is assumed that $y_g = \bar{x}_g$ which makes 
-  \begin{equation*}
-    m^e_{ig} = m_g \equiv \frac{k + (c + d) \cdot \bar{x}_g}{1 - J}.
-  \end{equation*}
-  and
-  \begin{equation*}
-    \omega_{ig} = \frac{k}{1-J} + c \cdot x_i + \frac{Jc + d}{1-J} \cdot\bar{x}_g + \varepsilon_{ig}.
-  \end{equation*}
+\begin{frame}{Identification Challenges}
+    \begin{equation*}
+        \mathbf{y} = (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{X}\mathbf{\beta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{W}\mathbf{X}\mathbf{\delta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1} \mathbf{\eta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\rho} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\varepsilon}
+    \end{equation*}
+    \begin{itemize}
+        \item Simultaneity
+        \item Correlated Effects
+        \item Peer Endogeneity
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Instrumental Variable Approach}
-  Since
-  \begin{equation*}
-    m_g \equiv \frac{k + c \cdot \bar{x}_g + d \cdot y_g}{1 - J} 
-  \end{equation*}
-  If $y_g \ne \bar{x}_g$, there are elements of $\bar{x}_g$ that are not in $y_g$ then we can use them as instruments for $m_g$ in equation (\ref{eqn:main}) \citep{Blume2010}.
+    The solution proposed by \citet{bramoulleetal09} is to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instruments for $\mathbf{Wy}$ since
+    \begin{equation*}
+        \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho})
+    \end{equation*}
 \end{frame}
 
-\begin{frame}{FGM Linear-in-means Model}
-  \begin{equation*}
-    f_{ijht} = k_t + c\cdot x_{ijht} + d_j + J \cdot f^e_{jht} + \varepsilon_{ijht}
-  \end{equation*}
-  The indices in this model are:
-  \begin{itemize}
-    \item $i$: index for daughters
-    \item $j$: index for region (governorate)
-    \item $h$: index for household
-    \item $t$: daughter $i$'s cohort
-  \end{itemize}
+\begin{frame}{Instrumental Variable Approach}
+    The solution proposed by \citet{bramoulleetal09} is to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instruments for $\mathbf{Wy}$ since
+    \begin{equation*}
+        \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho})
+    \end{equation*}
 \end{frame}
 
-\begin{frame}{Endogenous Social Variable}
-  \begin{equation*}
-    f^e_{jht} = \bar{f}_{jt} \equiv \frac{k_t + c \cdot \bar{x}_{jt} + d_j}{1 - J}
-  \end{equation*}
-  Using the same approach mentioned before, if we are able to find elements of $\bar{x}_{jt}$ that have an effect on $\bar{f}_{jt}$ and that don't influence $f_{ijht}$ directly we can use them as instruments.
+\begin{frame}{IV Example}
+    \begin{center}
+        \includegraphics{network_example}
+    \end{center}
 \end{frame}
+
 
 \begin{frame}{Choice of Instrumental Variables}
-  \begin{table}
-  \centering
-  \tiny
-  \begin{threeparttable}
-<<keep.source=TRUE, echo=FALSE, results=tex>>=
-  results <- c(r0.1, r0.2)
-  regs <- list(grpavg.urban.rural_urban = "$\\overline{urban}_{jt}$",
-	       grpavg.wealth.index.2_rich = "$\\overline{rich}_{jt}$",
-	       grpavg.educ.lvl_primary = "$\\overline{primary\\_educ}_{jt}$",
-	       grpavg.educ.lvl_secondary = "$\\overline{secondary\\_educ}_{jt}$",
-	       grpavg.educ.lvl_higher = "$\\overline{higher\\_educ}_{jt}$",
-	       grpavg.marital.age = "$\\overline{mother\\_marital\\_age}_{jt}$", 
-	       grpavg.mother.circum.fac_yes = "$\\overline{mother\\_circum}_{jt}$",
-	       grpavg.religion_christian = "$\\overline{christian}_{jt}$",
-	       grpavg.hh.head.sex_female = "$\\overline{female\\_head\\_hh}_{jt}$",
-	       grpavg.med.help.distance.fac_big_problem = "$\\overline{med\\_help\\_distance}_{jt}$")
-
-  print.results.table(results, regs, NULL, NULL, NULL, cutpoints, symbols, est.stderr.header = FALSE, col.num.header = FALSE)
-@
-  \end{threeparttable}
-  \end{table}
-\end{frame}
-
-\begin{frame}{Choice of Instrumental Variables (cont.)}
-  \begin{description}
-    \item[Mothers' Education] It is assumed that even if the education level in a household's peer group is observable it is not likely to determine its FGM decision.
-    \item[Mothers' FGM Status] Considering the taboo on talking about adults' FGM status, it is not likely that a household can observe a peer group's FGM status and be influenced by it. 
-    \item[Urban Residence] The exogeneity of this instrument is based on \emph{negative} effect of a household's urban residence (shown later), in contrast to \emph{positive} effect of mean urban residence on mean FGM decision.
-  \end{description}
-\end{frame}
-
-\begin{frame}{Unobservable Household Heterogeneity}
-  \begin{equation*}
-    f_{ijht} = k_t + c\cdot x_{ijht} + d_j + J \cdot f^e_{jht} + q_h + \varepsilon_{ijht}
-  \end{equation*}
-  Since we possibly observe multiple choices for the same household (decisions of FGM and medicalization for multiple daughters in the same household), we can difference out the household fixed effects.
-  \begin{equation*}
-    \tilde{f}_{ijht} = \tilde{k}_t + J \cdot \tilde{f^e}_{jht} + \tilde{\varepsilon}_{ijht}
-  \end{equation*}
+    \input{circum_1s_pres_table}
 \end{frame}
 
 \begin{frame}{Medicalization Effect}
-  \begin{align*}
-    f_{ijht} &= k_t + d_j + c\cdot x_{ijht} + J \cdot f^e_{jht} + L \cdot m^e_{jht} + \varepsilon_{ijht}  \\
-    m_{ijht} &= k^m_t + d^m_j + c^{m}\cdot x_{ijht} + J^m \cdot m^e_{jht} + L^m \cdot f^e_{jht} + \nu_{ijht} 
-  \end{align*}
-where $m$ is a binary variable indicating the household's decision to opt for medicalized FGM as opposed to traditional FGM.  If we can make the assumption that $L^m = 0$, we can define
-    \[m^e_{jht} = \bar{m}_{(-i)jt}.\]
+    In order to address the question of medicalization the model is modified to include $\mathbf{Wm}$ where $\mathbf{m}$ is vector of binary variables indicating whether a daughter who has undergone FGM had it done by a doctor or nurse.
+    \begin{equation*}
+        \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{W} \mathbf{m} \lambda + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} 
+    \end{equation*}
+    In order to circumvent any similar endogeneity problems as in $\mathbf{Wy}$ we use a similar instrumental variable strategy.
 \end{frame}
 
 \begin{frame}{Modernization and Medicalization}
   \begin{itemize}
     \item Modernization is likely to negatively influence a household's FGM decision
     \item However, modernization is an unobserved group characteristic, and it is likely to be correlated with medicalization.
-    \item Two approaches are attempted to address this problem
-      \begin{itemize}
-	\item Interacting the medicalization variable with different measures of access to medical help
-	\item Using the fraction of deliveries carried out my medical practitioners as opposed to traditional midwives as a proxy for modernization.
+    \item The fraction of deliveries carried out my medical practitioners as opposed to traditional midwives, $\overline{daya}_{ihr}$, is used as a proxy for modernization
 	  \begin{align*}
-	    E(f_{ijht}|z_{ijht}, modern_{jt}, \overline{daya}_{jt}) = E(f_{ijht}|z_{ijht}, modern_{jt}) \\
-	    L(modern_{jt}|1, z_{ijht}, \overline{daya}_{jt}) = L(modern_{jt}|1, \overline{daya}_{jt})
+          \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = E(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
+          L(modern_{ihr}|1, \mathbf{z}_{ihr}, \overline{daya}_{ihr}) = L(modern_{ihr}|1, \overline{daya}_{ihr})
 	  \end{align*}
-	  where $z_{ijht}$ are all other regressors and $modern_{jt}$ is unobserved modernization.
-      \end{itemize}
+	  where $z_{ihr}$ are all other observed regressors and $modern_{ihr}$ is the unobserved modernization regressor.
   \end{itemize}
 \end{frame}
 
@@ -389,18 +333,17 @@ where $m$ is a binary variable indicating the household's decision to opt for me
   \begin{itemize}
     \item Findings:
       \begin{itemize}
-	\item Households are positively influenced in their FGM decision by the FGM decision of their peers, with lower sensitivity to social links for richer and more educated households.
+	\item Households are positively influenced in their FGM decision by the FGM decision of their peers %, with lower sensitivity to social links for richer and more educated households.
 	\item Households are negatively influenced in their FGM decision by the medicalization decision of their peers.
       \end{itemize}
     \item Possible mechanisms for the negative effect of medicalization
       \begin{itemize}
 	\item FGM moving from the marriage market to healthcare sphere, resulting in a more amendable position to the discontinuity of FGM.
-	\item FGM being an unobservable characteristic required \emph{dayas} to function as certifiers of ``quality''
+	\item FGM being an unobservable characteristic required \emph{dayas} to function as certifiers of `quality'
       \end{itemize}
     \item Must be cautious against advocating medicalization---the possible legitimizing effect of this is unknown.
   \end{itemize}
 \end{frame}
-
 
 \bibliographystyle{plainnat}
 \bibliography{$HOME/Documents/library}
