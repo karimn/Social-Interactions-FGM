@@ -25,6 +25,8 @@ radii <- c(10, 15, 20)
 # radii <- 10
 # coh.adj.mat <- regress.data$get.cohort.adj.matrix()
 
+original.data$generate.reg.means(exclude.self = TRUE)
+
 for (radius in radii) {
     original.data$generate.reg.means.spatial(radius = radius, regs = del.regs, prefix = "del.spat.grpavg", postfix = as.character(radius), use.all.cohorts.data = TRUE, year.offset = del.year.offset)
     original.data$generate.reg.means.spatial(radius = radius, postfix = as.character(radius))
