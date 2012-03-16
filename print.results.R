@@ -113,7 +113,7 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
     cat(sprintf("\\cmidrule{2-%d}\n", num.col + 1))
   }
 
-  if (col.num.header) {
+  if (col.num.header && (num.col > 1)) {
     cat(paste(sprintf("& (%d)", 1:num.col), collapse = " "))
     cat("\\\\\n")
 
