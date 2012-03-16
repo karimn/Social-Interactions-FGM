@@ -241,7 +241,7 @@ One problem in linear-in-means models, raised by \citet{Manski}, is the use of s
 
 One remaining concerning is that our estimation might suffer from omitted variable bias because of possible unobservable influence of `modernization' in medical care on the FGM decision.  As different areas become more modernized they would perhaps become less likely to opt for a traditional practice such as FGM, and should they decide to have it done they would seek a medical practitioner rather than a traditional \emph{daya}---it would be correlated with the $\mathbf{W}\mathbf{m}$.  In order to control for this unobservable modernization effect, we use some proxy variables related to the child delivery choices of neighbors, such as the fraction of households in the peer group that decided to have their child delivered by a \emph{daya} as opposed to a medical practitioner, and the location of delivery. We calculate these averages for births during the same period the FGM decision is made\footnote{Data is only available for child births preceding the time of survey by six years.}. In other words, focusing one such proxy, $\overline{daya}_{ihr}$, we make the following assumptions
   \begin{align*}
-      \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = E(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
+      \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = \mathbb{E}(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
       L(modern_{ihr}|1, \mathbf{z}_{ihr}, \overline{daya}_{ihr}) = L(modern_{ihr}|1, \overline{daya}_{ihr})
     \end{align*}
 where $\mathbf{z}_{ihr}$ are all other regressors and $modern_{ihr}$ is unobserved modernization. 
