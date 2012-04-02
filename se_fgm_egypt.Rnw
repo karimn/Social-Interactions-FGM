@@ -16,6 +16,7 @@
 \usepackage{rotating}
 \usepackage{multirow}
 \usepackage{paralist}
+\usepackage{bbm}
 % \usepackage[landscape]{geometry}
 \usepackage{Sweave}
 
@@ -165,7 +166,7 @@ The subscript $i = \{1,\dots,N\}$ identifies daughters (the observations of inte
 \end{itemize}
 
 We transform this model to use matrix notation to facilitate the use of an interaction matrix to represent peer groups \citep{bramoulleetal09}. We use the logical $N \times N$ matrix $\mathbf{\widetilde{W}}$ to indicate whether any two daughters are considered peers (we will further explain what defines peers for the purposes of this model).
-\[ (\mathbf{\widetilde{W}_{ij}}) = \mathbf{1}\{i\text{ and }j\text{ are peers}\} \]
+\[ (\mathbf{\widetilde{W}_{ij}}) = \mathbbm{1}\{i\text{ and }j\text{ are peers}\} \]
 We further normalize this matrix to the row stochastic $\mathbf{W}$, where
 \[ (\mathbf{W_{ij}}) = \frac{\mathbf{\widetilde{W}_{ij}}}{n_i} \]
 Our model now becomes
@@ -181,9 +182,9 @@ where $\mathbf{y}$ is $N \times 1$ vector of FGM status, $\mathbf{X}$ is a $N \t
 In order to carry out our social effects analysis we need to define each daughter's peer group $\mathcal{P}_i$ or the interaction matrix $\mathbf{W}$.  First we define the logical matrices
 
 \begin{align*}
-    \mathbf{\widetilde{A}}&: (\mathbf{\widetilde{A}_{ij}}) = \mathbf{1}\{dist_{ij} \leq 10 \text{ kilometers}\footnotemark\} \\
-    \mathbf{\widetilde{C}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbf{1}\{|age_i - age_j| \leq 1 \text{ year}\} \\
-    \mathbf{\widetilde{H}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbf{1}\{household_i = household_j\} \\
+    \mathbf{\widetilde{A}}&: (\mathbf{\widetilde{A}_{ij}}) = \mathbbm{1}\{dist_{ij} \leq 10 \text{ kilometers}\footnotemark\} \\
+    \mathbf{\widetilde{C}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbbm{1}\{|age_i - age_j| \leq 1 \text{ year}\} \\
+    \mathbf{\widetilde{H}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbbm{1}\{household_i = household_j\} \\
 \end{align*}
 \footnotetext{Any smaller range would be problematic according to the DHS because of location displacement, whereby GPS coordinates are randomly altered in order to preserve survey subjects' privacy.  This is also the reason we don't rely on the distance between clusters to weigh our interaction matrix \citep{DHS2012}}
 
