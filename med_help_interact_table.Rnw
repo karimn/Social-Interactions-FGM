@@ -34,7 +34,6 @@ print.interact.table(main.reg.results.17.4, "spat.grpavg.med.circum.10", "med.he
   \begin{tablenotes}
     %\item[1] See $t$-statistic and standard error in Table \ref{tab:endo_med_results}
     \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
-    \item[2] Linear hypotheses testing done with \texttt{linearHypothesis} R function from the \texttt{car} package \citep{Fox2011}.
   \end{tablenotes}
   \end{threeparttable}
 \end{table}
