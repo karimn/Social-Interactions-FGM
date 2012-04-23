@@ -100,8 +100,8 @@ handle.row.callback <- function(cb, results, cutpoints, symbols) {
     cat("\\\\\n")
 }
 
-print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, other.fac = NULL, table.type = "tabular", inter.results.space = FALSE, est.stderr.header = TRUE, col.num.header = TRUE, show.r.squared = TRUE, show.n = TRUE, column.labels = NULL, row.callbacks = NULL) {
-  stopifnot(is.null(column.labels) || (length(column.labels) == length(results))) 
+print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, grpavg.reg.dict, cutpoints, symbols, other.fac = NULL, table.type = "tabular", inter.results.space = FALSE, est.stderr.header = TRUE, col.num.header = TRUE, show.r.squared = TRUE, show.n = TRUE, column.labels = NULL, column.labels.desc = NULL, row.callbacks = NULL) {
+    #   stopifnot(is.null(column.labels) || (length(column.labels) == length(results))) 
   num.col <- length(results)
   cat(sprintf("\\begin{%s}{l*{%d}{c}}\n", table.type, num.col))
 
@@ -118,7 +118,16 @@ print.results.table <- function(results, reg.dict, cohort.range, educ.reg.dict, 
     cat("\\\\\n")
 
     if (!is.null(column.labels)) {
-        cat(paste(sprintf("& %s", column.labels), collapse = " "))
+        if (!is.null(column.labels.desc)) {
+            cat(sprintf("%s ", column.labels.desc))
+        }
+
+        if (is.list(column.labels)) {
+            cat(paste(sprintf("& \\multicolumn{%d}{c}{%s}", unlist(column.labels), names(column.labels)), collapse = " "))
+        } else {
+            cat(paste(sprintf("& %s", column.labels), collapse = " "))
+        }
+
         cat("\\\\\n")
     }
 
