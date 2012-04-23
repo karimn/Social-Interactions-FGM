@@ -1,5 +1,4 @@
- \documentclass[presentation,10pt]{beamer}
-%\documentclass{article}
+\documentclass[presentation,10pt]{beamer}
 
 \mode<presentation>{ 
   \usetheme[secheader]{Boadilla}
@@ -66,19 +65,20 @@ all.coh.fgm <- regress.data$all.cohorts.spdf$spatial.data@data
   \end{itemize}
 \end{frame}
 
-\begin{comment}
-\begin{frame}{Key Facts}
+\begin{frame}{Research Questions}
   \begin{itemize}
-    \item An estimated 100 to 140 million women and girls suffer from the consequences of FGM worldwide.
-      \begin{itemize}
-	\item In Africa, an estimate of 92 million girls of 10 years of age and above have undergone FGM.
-	\item In Africa, about 3 million girls at risk of FGM annually.
-      \end{itemize}
+    \item To what extent are households influenced when making their FGM decision by their peers' 
+      \begin{enumerate}
+        \item FGM decisions
+        \item FGM medicalization decision 
+      \end{enumerate}
+    \item Medicalization refers to opting to have the procedure carried out by a medical practitioner as opposed to a traditional circumciser 
+    \item Findings: 
+        \begin{enumerate}
+            \item Households are positively effected in their FGM decision by their peers' FGM decision (endogenous social effects)
+            \item Households are negatively effected in their FGM decision by their peers' medicalization decision
+        \end{enumerate}
   \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \includegraphics[scale=0.75]{Fgm_map}
 \end{frame}
 
 \begin{frame}{FGM in Egypt}
@@ -89,18 +89,42 @@ all.coh.fgm <- regress.data$all.cohorts.spdf$spatial.data@data
     \item Practiced by both Muslims and Christians---contrary to beliefs no religious texts prescribe it.
   \end{itemize}
 \end{frame}
-\end{comment}
 
-\begin{frame}{Research Questions}
-  \begin{itemize}
-    \item To what extent are households influenced when making their FGM decision by their peers' 
-      \begin{itemize}
-        \item FGM decisions
-        \item FGM medicalization decision 
-      \end{itemize}
-    \item Medicalization refers to opting to have the procedure carried out by a medical practitioner as opposed to a traditional circumciser 
-  \end{itemize}
+\begin{comment}
+\begin{frame}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+plot(circum.bc)
+@
+\end{center}
+\end{figure}
 \end{frame}
+
+\begin{frame}
+\begin{figure}
+\begin{center}
+<<echo=FALSE, fig=TRUE, eval=FALSE>>=
+plot(med.bc)
+@
+\end{center}
+\end{figure}
+\end{frame}
+
+<<echo=FALSE, eval=FALSE>>=
+fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
+fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
+
+fgm.circum.only <- subset(fgm, circum.fac == "yes")
+
+prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
+prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
+
+circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
+med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+@
+
+\end{comment}
 
 \begin{frame}{Motivation}
     \begin{itemize}
@@ -114,29 +138,6 @@ all.coh.fgm <- regress.data$all.cohorts.spdf$spatial.data@data
     \end{itemize}
 \end{frame}
 
-\begin{comment}
-\begin{frame}{Literature}
-  \begin{itemize}
-    \item FGM 
-      \begin{itemize}
-	\item \citet{Chesnokova2010} model FGM as a premarital investment that could result in inefficient levels of FGM in the marriage market
-	\item \citet{Yount} investigates the fundamental determinants of FGM 
-	\item \citet{Hayford} attempts to determine whether ``convention theory'' explains FGM decisions
-      \end{itemize}
-    \item Marriage markets and premarital investment
-      \begin{itemize}
-	\item \citet{Becker1981}
-	\item \citet{Burdett2001}, \citet{Peters2002}
-      \end{itemize}
-      \item Social interactions 
-	\begin{itemize}
-	  \item \citet{Manski} and \citet{Moffitt2001}
-	  \item \citet{Case1991}, \citet{Crane1991}, \citet{Evans1992}, \citet{Bertrand2000}, \citet{Angrist2004}, \citet{Kremer2007}, \citet{lin10}, and \citet{Conleya}
-	  \item \citet{Blume2010}
-	\end{itemize}
-  \end{itemize}
-\end{frame}
-\end{comment}
 
 \section{Data}
 
@@ -196,74 +197,6 @@ plot(med.dp)
   \end{figure}
 \end{frame}
 
-\begin{comment}
-\begin{frame}
-  \begin{tiny}
-    \input{sumstat_table}
-  \end{tiny}
-\end{frame}
-\end{comment}
-
-<<echo=FALSE>>=
-fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
-fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
-
-fgm.circum.only <- subset(fgm, circum.fac == "yes")
-
-prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
-prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
-
-circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
-med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
-@
-
-\begin{comment}
-\begin{frame}[fragile]
-    \input{governsum_table}
-\end{frame}
-
-\begin{frame}
-\begin{figure}
-\begin{center}
-<<echo=FALSE, fig=TRUE>>=
-plot(circum.bc)
-@
-\end{center}
-\end{figure}
-\end{frame}
-
-\begin{frame}
-\begin{figure}
-\begin{center}
-<<echo=FALSE, fig=TRUE>>=
-plot(med.bc)
-@
-\end{center}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Mean Circumcision By Governorate}
-\begin{figure}
-\begin{center}
-<<echo=FALSE, fig=TRUE, eval=FALSE>>=
-print(ggplot(all.coh.fgm, aes(birth.year, grpavg.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Circumcision"))
-@
-\end{center}
-\end{figure}
-\end{frame}
-
-\begin{frame}{Mean Medicalization By Governorate}
-\begin{figure}
-\begin{center}
-<<echo=FALSE, fig=TRUE, eval=FALSE>>=
-circum.data <- subset(all.coh.fgm, circum == 1)
-print(ggplot(circum.data, aes(birth.year, grpavg.med.circum, color = governorate)) + geom_line() + xlab("Cohort") + ylab("Mean Medicalization"))
-@
-\end{center}
-\end{figure}
-\end{frame}
-\end{comment}
-
 \section{Econometric Model}
 
 \begin{frame}{Linear-in-means Model}
@@ -290,7 +223,7 @@ print(ggplot(circum.data, aes(birth.year, grpavg.med.circum, color = governorate
     \begin{equation*}
         \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{W} \mathbf{m} \lambda + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} 
     \end{equation*}
-    Identification challenges:
+    Identification challenges\footnote{\citet{Manski, Moffitt2001, Blume2010, bramoulleetal09}}:
     \begin{itemize}
         \item Simultaneity
         \item Correlated Effects
