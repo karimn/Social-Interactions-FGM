@@ -103,12 +103,14 @@ relv.instr.re.1.1 <- "higher|mother\\.circum|christian|hh\\.head"
 relv.instr.re.1.2 <- "higher|mother\\.circum|christian"
 relv.instr.re.1.3 <- "higher|mother\\.circum|christian|rich"
 relv.instr.re.1.4 <- "higher|mother\\.circum|rich"
+relv.instr.re.1.5 <- "mother\\.circum|rich"
 
 #relv.instr.1 <- grep("urban\\.rural|higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
 relv.instr.1 <- grep(relv.instr.re.1.1, instruments, value = TRUE)
 relv.instr.1.2 <- grep(relv.instr.re.1.2, instruments.2, value = TRUE)
 relv.instr.1.3 <- grep(relv.instr.re.1.3, instruments, value = TRUE)
 relv.instr.1.4 <- grep(relv.instr.re.1.4, instruments, value = TRUE)
+relv.instr.1.5 <- grep(relv.instr.re.1.5, instruments, value = TRUE)
 
 relv.formula.10.1 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.regs, 
                                                                          daughter.regs,
@@ -155,6 +157,15 @@ relv.formula.10.5 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.re
 relv.results.10.5 <- regress.data$lm(relv.formula.10.5, vcov.fun = vcovHAC)
 
 relv.results.10.5$lht(relv.instr.1.4, test = "F")
+
+relv.formula.10.6 <- formula(sprintf("spat.grpavg.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         relv.instr.1.5), collapse = " + ")))
+relv.results.10.6 <- regress.data$lm(relv.formula.10.6, vcov.fun = vcovHAC)
+
+relv.results.10.6$lht(relv.instr.1.5, test = "F")
 
 # relv.formula.wt <- list()
 # relv.results.wt <- list()
@@ -428,6 +439,13 @@ main.reg.results.7.2 <- regress.data$ivreg(main.reg.formula.eqn.7.2, vcov.fun = 
 main.reg.formula.eqn.8 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 | %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2)
 main.reg.results.8 <- regress.data$ivreg(main.reg.formula.eqn.8, vcov.fun = vcovHAC)
 
+# Heterosk. overidentification test
+main.reg.data.8 <- regress.data$copy(shallow = TRUE)
+main.reg.data.8$spatial.data <- main.reg.data.8$spatial.data[-(main.reg.results.8$na.action), ]
+main.reg.hs.test.formula.8.1 <- formula(sprintf("spat.intran.grpavg.religion_christian.10 ~ %s + relv.results.10.5$fitted.values + relv.med.results.10.3$fitted.values", exog.regs.eqn))
+main.reg.hs.test.results.8.1 <- main.reg.data.8$lm(main.reg.hs.test.formula.8.1)
+test.reg.8 <- main.reg.data.8$lm(main.reg.results.8$residuals ~ -1 + main.reg.hs.test.results.8.1$residuals) 
+
 main.reg.formula.eqn.8.2 <- sprintf("circum ~ %s + spat.grpavg.circum.10 + spat.grpavg.med.circum.10 + I(spat.grpavg.circum.10^2) + I(spat.grpavg.med.circum.10^2) | %s + %s + %s + %s", exog.regs.eqn, exog.regs.eqn, relv.instr.eqn.2, relv.instr.eqn.1.squared, relv.instr.eqn.3.squared)
 main.reg.results.8.2 <- regress.data$ivreg(main.reg.formula.eqn.8.2, vcov.fun = vcovHAC)
 
@@ -546,5 +564,6 @@ save(med.data, file = "med.data.RData")
 save(relv.results.10.1, relv.results.10.5, file = "circum.1s.RData")
 save(relv.med.results.10.1, relv.med.results.10.3, file = "med.1s.RData")
 save(dir.reg.results.1, dir.reg.results.2, file = "direct.effects.RData") 
+save(test.reg.8, file = "overident.test.RData")
 save(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5, file = "exog.endog.effects.RData")
 save(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2, main.reg.results.14.5, main.reg.results.17, main.reg.results.17.4, file = "exog.endog.effects.fe.RData")
