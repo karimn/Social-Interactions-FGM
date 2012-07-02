@@ -7,12 +7,13 @@ fgm <- regress.data$spatial.data@data
 
 \begin{table}
 \centering
+\begin{threeparttable}
 \caption{Summary Statistics}\label{tab:sumstat}
 \begin{tabular}{lcccc}
   \toprule
   & \multicolumn{1}{c}{All} 
   & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization} 
+  & \multicolumn{1}{c}{Medicalization\tnote{1}} 
   & \multicolumn{1}{c}{N} \\
   \cmidrule{2-5}
 
@@ -100,4 +101,8 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
 @
   \bottomrule
 \end{tabular}
+\begin{tablenotes}
+    \item[1] Conditional on circumcision 
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
