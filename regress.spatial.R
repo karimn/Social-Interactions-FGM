@@ -91,19 +91,20 @@ get.grpavg.regs <- function(data, radius, weighted = FALSE, spat = TRUE, intran 
     return(grep(reg.pattern, data$names, value = TRUE, perl = TRUE))
 }
 
-hh.regs <- c("governorate", "wealth.index.2", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "urban.rural", "med.help.distance.fac", "med.help.money.fac", "n.ord", "discuss.circum.fac", "received.info.circum.fac")
+hh.regs <- c("governorate", "wealth.index", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "urban.rural", "med.help.distance.fac", "med.help.money.fac", "n.ord", "discuss.circum.fac", "received.info.circum.fac")
 daughter.regs <- c("birth.year.fac", "order.fac")
 
 instruments <- get.grpavg.regs(regress.data, radius = 10, intran = TRUE)
+instruments <- setdiff(instruments, grep("wealth\\.index.2", instruments, value = TRUE))
 instruments.2 <- grep("intran3\\.grpavg\\.(?!med\\.circum|circum|grp\\.size)", regress.data$names, value = TRUE, perl = TRUE)
 
 # Test the strength of the intran averages on circum averages (1st stage of 2SLS) ################################################################################ 
 
 relv.instr.re.1.1 <- "higher|mother\\.circum|christian|hh\\.head"
 relv.instr.re.1.2 <- "higher|mother\\.circum|christian"
-relv.instr.re.1.3 <- "higher|mother\\.circum|christian|rich"
-relv.instr.re.1.4 <- "higher|mother\\.circum|rich"
-relv.instr.re.1.5 <- "mother\\.circum|rich"
+relv.instr.re.1.3 <- "higher|mother\\.circum|christian|richest"
+relv.instr.re.1.4 <- "higher|mother\\.circum|richest"
+relv.instr.re.1.5 <- "mother\\.circum|richest"
 
 #relv.instr.1 <- grep("urban\\.rural|higher|mother\\.circum|christian|hh\\.head", instruments, value = TRUE)
 relv.instr.1 <- grep(relv.instr.re.1.1, instruments, value = TRUE)
@@ -206,6 +207,8 @@ relv.circum.grpavg.instr <- relv.instr.1.4
 relv.med.instr.re.1 <- "christian"
 relv.med.instr.re.2 <- "wealth"
 relv.med.instr.re.3 <- "wealth|christian"
+relv.med.instr.re.4 <- "received|christian"
+relv.med.instr.re.5 <- "christian|marital.age"
 
 #relv.med.instr.1 <- grep("higher|marital|christian", instruments, value = TRUE)
 relv.med.instr.1 <- grep("marital|christian", instruments, value = TRUE)
@@ -213,6 +216,8 @@ relv.med.instr.2 <- grep(relv.med.instr.re.1, instruments, value = TRUE)
 relv.med.instr.3 <- grep(relv.med.instr.re.1, instruments.2, value = TRUE)
 relv.med.instr.4 <- grep(relv.med.instr.re.2, instruments, value = TRUE)
 relv.med.instr.5 <- grep(relv.med.instr.re.3, instruments, value = TRUE)
+relv.med.instr.6 <- grep(relv.med.instr.re.4, instruments, value = TRUE)
+relv.med.instr.7 <- grep(relv.med.instr.re.5, instruments, value = TRUE)
 
 relv.med.formula.10.1 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste(c(hh.regs, 
                                                                          daughter.regs,
@@ -248,6 +253,22 @@ relv.med.formula.10.4 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste
                                                                          relv.med.instr.5), collapse = " + ")))
 relv.med.results.10.4 <- regress.data$lm(relv.med.formula.10.4, vcov.fun = vcovHAC)
 relv.med.results.10.4$lht(relv.med.instr.5, test = "F")
+
+relv.med.formula.10.5 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         relv.med.instr.6), collapse = " + ")))
+relv.med.results.10.5 <- regress.data$lm(relv.med.formula.10.5, vcov.fun = vcovHAC)
+relv.med.results.10.5$lht(relv.med.instr.6, test = "F")
+
+relv.med.formula.10.6 <- formula(sprintf("spat.grpavg.med.circum.10 ~ %s", paste(c(hh.regs, 
+                                                                         daughter.regs,
+                                                                         get.grpavg.regs(regress.data, radius = 10),
+                                                                         get.grpavg.regs(regress.data, radius = 10, delivery = TRUE),
+                                                                         relv.med.instr.7), collapse = " + ")))
+relv.med.results.10.6 <- regress.data$lm(relv.med.formula.10.6, vcov.fun = vcovHAC)
+relv.med.results.10.6$lht(relv.med.instr.7, test = "F")
 
 # Shea's test regressions (med.circum grpavg) #################################################################################################### 
 

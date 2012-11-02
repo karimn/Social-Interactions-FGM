@@ -1,32 +1,44 @@
-\documentclass[12pt]{article}
+\def \Els {}
+
+%\documentclass[12pt]{article}
+
+%\usepackage{endnotes}
+%\usepackage[round]{natbib}
+%\usepackage{url}
+%\usepackage{enumerate}
+%\usepackage[utf8x]{inputenc}
+%\usepackage{verbatim}
+
+\documentclass[12pt,preprint,authoryear,times]{elsarticle}
 
 \usepackage{fullpage}
-\usepackage{longtable}
+%\usepackage{longtable}
 \usepackage{threeparttable}
 \usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{amssymb} 
-\usepackage{amsthm}
-\usepackage[round]{natbib}
-\usepackage{url}
-\usepackage{enumerate}
-\usepackage[utf8x]{inputenc}
-\usepackage{verbatim}
+\usepackage{paralist}
+\usepackage{bbm}
 \usepackage{pdflscape}
 \usepackage{rotating}
 \usepackage{multirow}
-\usepackage{paralist}
-\usepackage{bbm}
-\usepackage{endnotes}
-% \usepackage[landscape]{geometry}
+\usepackage{comment}
 \usepackage{Sweave}
 
-%\renewcommand{\baselinestretch}{2}
-
-\SweaveOpts{keep.source=TRUE, strip.white=FALSE}
+\ifx \Els \undefined
+\makeatletter
+\def\ps@pprintTitle{%
+ \let\@oddhead\@empty
+ \let\@evenhead\@empty
+ \def\@oddfoot{\footnotesize\itshape\hfill\today}%
+ \let\@evenfoot\@oddfoot}
+\makeatother
+\else
+\fi
 
 <<label=init, echo=FALSE, results=hide>>=
-library(lattice)
+library(ggplot2)
+library(grid)
 
 source("print.results.R")
 
@@ -38,18 +50,27 @@ load("overident.test.RData")
 fgm <- regress.data$spatial.data@data
 @
 
-\newtheorem{prop}{Proposition}
-
-\title{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt\footnote{Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, and Wesley Yin for their advice and suggestions. I'm also grateful to Emily Gee for reviewing this paper and suggesting corrections.} \footnote{Awarded the 2011 Rosenstein-Rodan Prize} \\ \\ WORKING PAPER}
-\author{Karim Naguib\footnote{Boston University. Email: \protect\url{karimn@bu.edu}}}
 
 \begin{document}
 
-\maketitle
+\title{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt}
+
+\author{Karim Naguib} %\corref{cor1}}
+\ead{karimn@bu.edu}
+\address{Boston University, Department of Economics, 270 Bay State Road, Boston MA 02215, USA}
+
+
+%\cortext[cor1]{Tel: 206-973-7215, Fax: 617-353-4449}
 
 \begin{abstract}
-Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons---typically as a signal of `quality' in the marriage market. It has been found by the World Health Organization to be harmful to the health of women, and is considered illegal internationally. It is mostly prevalent in Africa and the Middle East with about 140 million females estimated to be currently living with its effects.  This paper attempts to identify the social or peer effects of both FGM and its medicalization---the shift from traditional practitioners to professional health providers---on a household's decision to opt for FGM, controlling for household fixed effects and using instrumental variables based on spatial location. What is found is that FGM itself has a strong social effect: households are more likely to opt for FGM the more widely adopted it is adopted among their peers. On the other hand, medicalization is found to have a significant negative effect in some areas: households are less likely to opt for FGM the more widely is medicalization utilized among their peers.
+Female genital mutilation (FGM) is a traditional procedure of removing the whole or part of the female genitalia for non-medical reasons---typically as a signal of `quality' in the marriage market. It has been found by the World Health Organization to be harmful to the health of women, and is internationally recognized as illegal.  This paper attempts to identify the social effects of FGM and its medicalization---the shift from traditional practitioners to professional health providers---on a household's decision to opt for FGM using instrumental variables based on spatial location. We find that FGM itself has a strong social effect: households are more likely to opt for FGM the more widely adopted it is adopted among their peers, while medicalization is found to have a significant negative effect in some areas: households are less likely to opt for FGM the more widely is medicalization utilized among their peers.
 \end{abstract}
+
+\begin{keyword}
+    Female genital mutilation \sep Medicalization \sep Egypt \sep Social norms \sep Social interactions \sep Peer effects \JEL{I15, I18, J13, R29, Z18}
+\end{keyword}
+
+\maketitle
 
 \section{Introduction}
 
@@ -90,24 +111,13 @@ The survey sample was selected over three stages:
 \begin{figure}
 \begin{center}
 <<label=fgmagedensity, fig=TRUE, echo=FALSE>>=
-txt.lvls <- levels(fgm$birth.year.fac)[summary(fgm$birth.year.fac) > 0]
-all.dp <- densityplot(~ age.circum, group = birth.year.fac, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = txt.lvls, title = "Cohort"), main = "FGM Density Plot by Cohort", panel = function(x, ...)
-{
-  panel.densityplot(x, ...)
-  panel.abline(v = 12, col = "red")
-})
+ac.data <- fgm[, c("age.circum", "birth.year.fac", "med.circum")]
+ac.data <- ac.data[!is.na(ac.data$age.circum) & (ac.data$age.circum < 98),]
 
-med.dp <- densityplot(~ age.circum, group = med.circum, data = fgm, subset = (age.circum < 98), plot.points = FALSE, ref = TRUE, xlab = "Age at FGM", auto.key = list(columns = 1, space = "right", text = c("Traditional", "Medical.")), main = "FGM Density Plot (Medicalization vs. Traditional)", panel = function(x, ...)
-{
-  panel.densityplot(x, ...)
-  panel.abline(v = 12, col = "red")
-})
-
-plot(all.dp, split = c(1, 1, 1, 2))
-plot(med.dp, split = c(1, 2, 1, 2), newpage = FALSE)
+ggplot(ac.data, aes(age.circum)) + geom_freqpoly(aes(y = ..density.., linetype = factor(med.circum)), binwidth = 1) + facet_wrap(~ birth.year.fac) + labs(x = "Age", y = "Density") + geom_vline(aes(xintercept = 12)) + scale_linetype("FGM Method", labels = c("Traditional", "Medicalized"), breaks = c(0,1)) + theme(legend.position = "top")
 @
 \end{center}
-\caption{FGM Density Plot}
+\caption{FGM Density Plots By Cohort}
 \label{fig:fgmagedensity}
 \end{figure}
 
@@ -126,19 +136,18 @@ Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, 
 \begin{figure}
 \begin{center}
 <<label=fgmprop, echo=FALSE, fig=TRUE>>=
-fgm$circum.fac <- factor(fgm$circum, level = c(1, 0), labels = c("yes", "no"))
-fgm$med.circum.fac <- factor(fgm$med.circum, level = c(1, 0), labels = c("yes", "no"))
+circum.data <- fgm[, c("circum", "med.circum", "birth.year.fac", "urban.rural")]
+circum.only.data <- circum.data[circum.data$circum == 1,]
 
-fgm.circum.only <- subset(fgm, circum.fac == "yes")
+ circum.plot <- ggplot(circum.data, aes(birth.year.fac)) + geom_bar(aes(fill = factor(circum, levels = c(1, 0))), position = "fill") + scale_fill_grey("FGM Status", labels = c("Yes", "No")) + labs(x = "Cohort", y = "Frequency") 
 
-prop.circum <- prop.table(xtabs(~ birth.year.fac + circum.fac, data = fgm, drop.unused.levels = TRUE), margin = 1)
-prop.med <- prop.table(xtabs(~ birth.year.fac + med.circum.fac, data = fgm.circum.only, drop.unused.levels = TRUE), margin = 1)
+med.plot <- ggplot(circum.only.data, aes(birth.year.fac)) + geom_bar(aes(fill = factor(med.circum, levels = c(1, 0))), position = "fill") + scale_fill_grey("Medicalization", labels = c("Yes", "No")) + labs(x = "Cohort", y = "Frequency")
 
-circum.bc <- barchart(prop.circum, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of FGM")
-med.bc <- barchart(prop.med, horizontal = FALSE, xlab = "Cohort", ylab = 'Frequency', auto.key = list(columns = 2, text = c("Yes", "No")), main = "Proportion of Medicalization")
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(2, 1)))
+print(circum.plot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(med.plot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 
-plot(circum.bc, split = c(1, 1, 1, 2))
-plot(med.bc, split = c(1, 2, 1, 2), newpage = FALSE)
 @
 \end{center}
 \caption{FGM Proportions by Cohort}
@@ -227,7 +236,7 @@ It is clear from equation (\ref{eqn:reduced}) that we cannot separately identify
     \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho}) \label{eqn:e_wy}
 \end{equation}
 
-According to \citet{bramoulleetal09}, if the matrices $\mathbf{I}$, $\mathbf{W}$, and $\mathbf{W}^2$ are linearly independent the social effects are separately identified\footnote{Note that $\mathbf{W}^k$ provides an interaction matrix for all neighbors at a distance of $k$, where two nodes are said to be of $k$ distance from each other if there exists a path between them passing through $k$ other nodes. The concept of `distance' here is based on network links, not spatial distance.}. What this entails is the existence of intransitive triads in the social network: daughters that have a common peer but are not each other's peers (see Figure \ref{fig:nw_ex}).  This allows us to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instrumental variables for $\mathbf{Wy}$ in equation (\ref{eqn:struct_matrix_model}). As shown in equation (\ref{eqn:e_wy}) these variables influence $\mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}]$ without having a direct effect on $y$.  In other words, we can use the exogenous social effects of a daughter's peers' peers (their exogenous characteristics) as instruments for endogenous social effects (the peer households' endogenous FGM decision), as long as there exists intransitive triads.
+According to \citet{bramoulleetal09}, if the matrices $\mathbf{I}$, $\mathbf{W}$, and $\mathbf{W}^2$ are linearly independent the social effects are separately identified. Note that $\mathbf{W}^k$ provides an interaction matrix for all neighbors at a distance of $k$, where two nodes are said to be of $k$ distance from each other if there exists a path between them passing through $k$ other nodes. The concept of `distance' here is based on network links, not spatial distance. What this entails is the existence of intransitive triads in the social network: daughters that have a common peer but are not each other's peers (see Figure \ref{fig:nw_ex}).  This allows us to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instrumental variables for $\mathbf{Wy}$ in equation (\ref{eqn:struct_matrix_model}). As shown in equation (\ref{eqn:e_wy}) these variables influence $\mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}]$ without having a direct effect on $y$.  In other words, we can use the exogenous social effects of a daughter's peers' peers (their exogenous characteristics) as instruments for endogenous social effects (the peer households' endogenous FGM decision), as long as there exists intransitive triads.
 
 % \subsubsection{Correlated Effects}
 
@@ -352,11 +361,19 @@ However, we must be cautious in making any recommendations calling for a rollbac
 % \nocite{El-Gibaly2002}
 % \nocite{R}
 
+\begin{comment}
 \endnotetext[1]{All econometric analysis was carried out by the R statistical analysis programming language \citeyearpar{R}.  Robust standard errors were calculated using the \texttt{vcovHAC} and \texttt{vcovHC} functions of the \texttt{sandwich} package \citep{Zeileis2004,Zeileis2006} and the \texttt{plm} package \citep{Croissant2008}. Linear hypotheses testing was done with \texttt{linearHypothesis} function from the \texttt{car} package \citep{Fox2011}.}
 
 \theendnotes
+\end{comment}
 
-\bibliographystyle{plainnat}
+\section*{Acknowledgments}
+Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, Wesley Yin, Kehinde Ajayi, Julian TszKin Chan, and Giulia La Mattina for their advice and suggestions. I'm also grateful to Emily Gee and Marcella Bombardieri for reviewing this paper and suggesting corrections.
+
+\section*{References}
+
+\bibliographystyle{plain}
 \bibliography{$HOME/Documents/library}
+%\thebibliography
 
 \end{document} 

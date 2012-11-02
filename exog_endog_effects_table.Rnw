@@ -16,8 +16,7 @@ load("exog.endog.effects.RData")
 <<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
   results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5) 
 
-  regs <- list(wealth.index.2rich = "Wealth (Rich)",
-               urban.ruralurban = "Residence (Urban)",
+  regs <- list(urban.ruralurban = "Residence (Urban)",
                marital.age = "Marital Age",
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
@@ -40,13 +39,13 @@ load("exog.endog.effects.RData")
                       #                       "spat.grpavg.med.circum.10:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times$ Discussed FGM",
                       #                       "spat.grpavg.med.circum.10:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times$ Received Info on FGM")
 
-  print.results.table(results, regs, NULL, educ.regs, grpavg.regs, cutpoints, symbols, 
-                      #other.fac = list(birth.order.fac.info), 
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols, 
+                      #other.fac = list(wealth.index.fac.info), 
                       column.labels = c("OLS", "OLS", "OLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS"))
 @
 \begin{tablenotes}
-  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
-  \item[2] Other regressors not shown: governorate fixed effects, cohort (year of birth) fixed effects, order of birth fixed effects, `modernization' proxy variables, and peer group means of exogenous household characteristics (exogenous social effects).
+  \item[a] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[b] Other regressors not shown: residence, mother's marital age, mother's FGM status, religion, whether the head of household is female, difficulty in accessing medical help due to distance or cost, whether there is discussion of FGM with peers, whether household received information on FGM, governorate fixed effects, cohort (year of birth) fixed effects, order of birth fixed effects, number of daughters, `modernization' proxy variables, and peer group means of exogenous household characteristics (exogenous social effects).
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
