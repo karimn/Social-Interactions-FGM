@@ -2,13 +2,18 @@ cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
 symbols <- c("***", "**", "*", "$\\cdot$", " ")
 
 educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
+wealth.regs <- list(wealth.indexpoorer = "Poorer", wealth.indexmiddle = "Middle", wealth.indexricher = "Richer", wealth.indexrichest = "Richest")
 birth.order.regs <- list(order.fac2 = 2, order.fac3 = 3, order.fac4 = 4, order.fac5 = 5, order.fac6 = 6)
 birth.order.fac.info <- list(label = "Birth Order", dict = birth.order.regs)
+wealth.index.fac.info <- list(label = "Wealth", dict = wealth.regs)
 cohort.range <- 1989:1996
 youngest.cohort <- max(cohort.range) 
 
 exog.se.regs <- list(
- spat.grpavg.wealth.index.2_rich.10 = "Wealth (Rich)",
+ spat.grpavg.wealth.index_poorer.10 = "Wealth (Poorer)",
+ spat.grpavg.wealth.index_middle.10 = "Wealth (Middle)",
+ spat.grpavg.wealth.index_richer.10 = "Wealth (Richer)",
+ spat.grpavg.wealth.index_richest.10 = "Wealth (Richest)",
  spat.grpavg.urban.rural_urban.10 = "Residence (Urban)",
  spat.grpavg.educ.lvl_primary.10 = "Education (Primary)",
  spat.grpavg.educ.lvl_secondary.10 = "Education (Secondary)",
@@ -23,7 +28,10 @@ exog.se.regs <- list(
 )
 
 exog.se.intran.regs <- list(
- spat.intran.grpavg.wealth.index.2_rich.10 = "Wealth (Rich)",
+ spat.intran.grpavg.wealth.index_poorer.10 = "Wealth (Poorer)",
+ spat.intran.grpavg.wealth.index_middle.10 = "Wealth (Middle)",
+ spat.intran.grpavg.wealth.index_richer.10 = "Wealth (Richer)",
+ spat.intran.grpavg.wealth.index_richest.10 = "Wealth (Richest)",
  spat.intran.grpavg.urban.rural_urban.10 = "Residence (Urban)",
  spat.intran.grpavg.educ.lvl_primary.10 = "Education (Primary)",
  spat.intran.grpavg.educ.lvl_secondary.10 = "Education (Secondary)",

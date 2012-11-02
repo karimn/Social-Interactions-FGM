@@ -36,7 +36,7 @@ load("circum.1s.RData")
   print.results.table(results, regs, NULL, NULL, exog.se.intran.regs, cutpoints, symbols, row.callbacks = list(joint.f.test.cb))
 @
 \begin{tablenotes}
-  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[a] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

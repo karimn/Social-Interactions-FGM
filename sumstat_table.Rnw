@@ -13,7 +13,7 @@ fgm <- regress.data$spatial.data@data
   \toprule
   & \multicolumn{1}{c}{All} 
   & \multicolumn{1}{c}{Circumcised}
-  & \multicolumn{1}{c}{Medicalization\tnote{1}} 
+  & \multicolumn{1}{c}{Medicalization\tnote{a}} 
   & \multicolumn{1}{c}{N} \\
   \cmidrule{2-5}
 
@@ -38,22 +38,33 @@ by.cohort <- function (df, total)
   }
 }
 
-fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
+for (wealth.lvl in levels(fgm$wealth.index)) {
+    fgm.wealth <- fgm[fgm$wealth.index == wealth.lvl,]
 
-cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
-            nrow(fgm.rich)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
-            nrow(fgm.rich)))
+    cat(sprintf("\\\\\nBy Wealth Index (%s) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+                sub("^(.)", "\\U\\1", wealth.lvl, perl = TRUE),
+                nrow(fgm.wealth)/nrow(fgm)*100,
+                nrow(fgm.circum[fgm.circum$wealth.index == wealth.lvl,])/nrow(fgm.wealth)*100,
+                nrow(fgm.med[fgm.med$wealth.index == wealth.lvl,])/nrow(fgm.circum[fgm.circum$wealth.index == wealth.lvl,])*100,
+                nrow(fgm.wealth)))
+}
 
-fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
+#fgm.rich <- fgm[fgm$wealth.index.2 == "rich",]
 
-cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
-            nrow(fgm.poor)/nrow(fgm)*100,
-            nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
-            nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
-            nrow(fgm.poor)))
-
+# cat(sprintf("\\\\\nBy Wealth Index (Rich) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+#             nrow(fgm.rich)/nrow(fgm)*100,
+#             nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])/nrow(fgm.rich)*100,
+#             nrow(fgm.med[fgm.med$wealth.index.2 == "rich",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "rich",])*100,
+#             nrow(fgm.rich)))
+# 
+# fgm.poor <- fgm[fgm$wealth.index.2 == "poor",]
+# 
+# cat(sprintf("\\\\\nBy Wealth Index (Poor) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\\\* \n", 
+#             nrow(fgm.poor)/nrow(fgm)*100,
+#             nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])/nrow(fgm.poor)*100,
+#             nrow(fgm.med[fgm.med$wealth.index.2 == "poor",])/nrow(fgm.circum[fgm.circum$wealth.index.2 == "poor",])*100,
+#             nrow(fgm.poor)))
+# 
 educ.dict <- list("no education" = "None", primary = "Primary", secondary = "Secondary", higher = "Higher")
 
 for (educ.lvl in names(educ.dict)) {
@@ -102,7 +113,7 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
   \bottomrule
 \end{tabular}
 \begin{tablenotes}
-    \item[1] Conditional on circumcision 
+    \item[a] Conditional on circumcision 
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

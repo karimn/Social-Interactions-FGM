@@ -5,33 +5,46 @@ load("regress.data.RData")
 fgm <- regress.data$spatial.data@data 
 @
 
+\begin{landscape}
 \begin{table}
 \scriptsize
 \centering
 \begin{threeparttable}
 \caption{Governorate Summary Statistics}\label{governsumstat}
-\begin{tabular}{*{10}{l}}
+\begin{tabular}{*{16}{l}}
 \toprule
 & \begin{sideways}Circumcized\end{sideways}
 & \begin{sideways}Medicalization\end{sideways}
-& \begin{sideways}Wealth Index (Rich)\end{sideways}
-& \begin{sideways}Rural Residence\end{sideways}
+& \begin{sideways}Wealth Index (Poorest)\end{sideways}
+& \begin{sideways}Wealth Index (Poorer)\end{sideways}
+& \begin{sideways}Wealth Index (Middle)\end{sideways}
+& \begin{sideways}Wealth Index (Richer)\end{sideways}
+& \begin{sideways}Wealth Index (Richest)\end{sideways}
+& \begin{sideways}Residence (Rural)\end{sideways}
+& \begin{sideways}Residence (Urban)\end{sideways}
 & \begin{sideways}Religion (Christian)\end{sideways}
+& \begin{sideways}Religion (Muslim)\end{sideways}
 & \begin{sideways}Mother Circumcized\end{sideways}
 & \begin{sideways}Mother's Marital Age\end{sideways}
 & \begin{sideways}Age of Circumcision\end{sideways} 
 & N \\
-\cmidrule{2-10}
+\cmidrule{2-16}
 
 <<label=governsumstat, echo=FALSE, results=tex>>=
 govern.names <- levels(fgm$ADM1NAME)
 
-cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
             nrow(fgm[fgm$circum == 1,])/nrow(fgm)*100,
             nrow(fgm[(fgm$circum == 1) & (fgm$med.circum == 1),])/nrow(fgm)*100,
-            nrow(fgm[fgm$wealth.index.2 == "rich",])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index == "poorest",])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index == "poorer",])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index == "middle",])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index == "richer",])/nrow(fgm)*100,
+            nrow(fgm[fgm$wealth.index == "richest",])/nrow(fgm)*100,
             nrow(fgm[fgm$urban.rural == "rural",])/nrow(fgm)*100,
+            nrow(fgm[fgm$urban.rural == "urban",])/nrow(fgm)*100,
             nrow(fgm[fgm$religion == "christian",])/nrow(fgm)*100,
+            nrow(fgm[fgm$religion == "muslim",])/nrow(fgm)*100,
             nrow(fgm[fgm$mother.circum == 1,])/nrow(fgm)*100,
             mean(fgm$marital.age), sd(fgm$marital.age),
             mean(fgm[(fgm$circum == 1) & (fgm$age.circum < 98),"age.circum"], na.rm = TRUE),
@@ -42,13 +55,19 @@ for (n in govern.names)
 {
   fgm.govern <- fgm[fgm$ADM1NAME == n,]
   if (nrow(fgm.govern) > 0) 
-    cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
+    cat(sprintf("%s & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",
 		n,
 		nrow(fgm.govern[fgm.govern$circum == 1,])/nrow(fgm.govern)*100,
 		nrow(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$med.circum == 1),])/nrow(fgm.govern)*100,
-		nrow(fgm.govern[fgm.govern$wealth.index.2 == "rich",])/nrow(fgm.govern)*100,
+        nrow(fgm.govern[fgm.govern$wealth.index == "poorest",])/nrow(fgm.govern)*100,
+        nrow(fgm.govern[fgm.govern$wealth.index == "poorer",])/nrow(fgm.govern)*100,
+        nrow(fgm.govern[fgm.govern$wealth.index == "middle",])/nrow(fgm.govern)*100,
+        nrow(fgm.govern[fgm.govern$wealth.index == "richer",])/nrow(fgm.govern)*100,
+        nrow(fgm.govern[fgm.govern$wealth.index == "richest",])/nrow(fgm.govern)*100,
 		nrow(fgm.govern[fgm.govern$urban.rural == "rural",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$urban.rural == "urban",])/nrow(fgm.govern)*100,
 		nrow(fgm.govern[fgm.govern$religion == "christian",])/nrow(fgm.govern)*100,
+		nrow(fgm.govern[fgm.govern$religion == "muslim",])/nrow(fgm.govern)*100,
 		nrow(fgm.govern[fgm.govern$mother.circum == 1,])/nrow(fgm.govern)*100,
 		mean(fgm.govern$marital.age), sd(fgm.govern$marital.age),
 		mean(fgm.govern[(fgm.govern$circum == 1) & (fgm.govern$age.circum < 98),"age.circum"], na.rm = TRUE),
@@ -59,7 +78,8 @@ for (n in govern.names)
 \bottomrule
 \end{tabular}
 \begin{tablenotes}
-\item[1] Standard deviation is reported between parenthesis
+\item[a] Standard deviation is reported between parenthesis
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
+\end{landscape}

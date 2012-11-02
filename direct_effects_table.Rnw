@@ -15,8 +15,7 @@ load("direct.effects.RData")
 <<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
   results <- c(dir.reg.results.1, dir.reg.results.2)
 
-  regs <- list(wealth.index.2rich = "Wealth (Rich)",
-               urban.ruralurban = "Residence (Urban)",
+  regs <- list(urban.ruralurban = "Residence (Urban)",
                marital.age = "Marital Age",
                mother.circum.facyes = "Mother FGM",
                religionchristian = "Religion (Christian)",
@@ -30,11 +29,11 @@ load("direct.effects.RData")
                received.info.circum.facyes = "Received Info on FGM",
                n.ord = "Number of Daughters")
 
-  print.results.table(results, regs, cohort.range, educ.regs, NULL, cutpoints, symbols, other.fac = list(birth.order.fac.info), column.labels = c("OLS", "FE")) 
+  print.results.table(results, regs, cohort.range, educ.regs, NULL, cutpoints, symbols, other.fac = list(birth.order.fac.info, wealth.index.fac.info), column.labels = c("OLS", "FE")) 
 @
 \begin{tablenotes}
-  \item[1] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
-  \item[2] In the OLS regression, fixed effects for governorates were also used.
+  \item[a] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[b] In the OLS regression, fixed effects for governorates were also used.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}

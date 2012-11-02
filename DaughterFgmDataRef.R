@@ -115,7 +115,7 @@ cleanup.by.hh <- function(df.obj) {
   return(df.obj)
 }
 
-DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "med.help.distance.fac", "discuss.circum.fac", "received.info.circum")
+DaughterFgmData.individual.controls <- c("wealth.index", "urban.rural", "educ.lvl", "marital.age", "mother.circum.fac", "religion", "hh.head.sex", "med.help.distance.fac", "discuss.circum.fac", "received.info.circum")
                                          
 #DaughterFgmData.individual.controls <- c("wealth.index.2", "urban.rural", "educ.lvl", "med.help.permission.fac", "med.help.distance.fac", 
 #                                         "med.help.transportation.fac", "marital.age", "mother.circum.fac", "occupation.2.fac", "religion", 
