@@ -44,6 +44,7 @@ fgm <- regress.data$spatial.data@data
 \author{Karim Naguib\footnote{Boston University. Email: \protect\url{karimn@bu.edu}}}
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \maketitle
 
