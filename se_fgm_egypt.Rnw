@@ -52,6 +52,7 @@ fgm <- regress.data$spatial.data@data
 
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 \title{The Effects of Social Interactions on\\Female Genital Mutilation: Evidence from Egypt}
 

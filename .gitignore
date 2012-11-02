@@ -11,4 +11,4 @@
 *.log
 *.pdf
 *.eps
-*.tex
+.Rproj.user
