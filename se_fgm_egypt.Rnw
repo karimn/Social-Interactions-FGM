@@ -3,7 +3,6 @@
 %\documentclass[12pt]{article}
 
 %\usepackage{endnotes}
-%\usepackage[round]{natbib}
 %\usepackage{url}
 %\usepackage{enumerate}
 %\usepackage[utf8x]{inputenc}
@@ -11,6 +10,7 @@
 
 \documentclass[12pt,preprint,authoryear,times]{elsarticle}
 
+%\usepackage[round]{natbib}
 \usepackage{fullpage}
 %\usepackage{longtable}
 \usepackage{threeparttable}
@@ -24,6 +24,7 @@
 \usepackage{multirow}
 \usepackage{comment}
 \usepackage{Sweave}
+
 
 \ifx \Els \undefined
 \makeatletter
@@ -373,7 +374,7 @@ Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, Wesley Yin
 
 \section*{References}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \bibliography{$HOME/Documents/library}
 %\thebibliography
 
