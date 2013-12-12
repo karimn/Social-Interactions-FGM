@@ -7,7 +7,7 @@ source("RegressionResults.R")
 
 # library(igraph)
 
-original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5AFF.dbf', other.grpavg.controls = c("med.circum", "circum")) #, skip.cleanup = T))
+original.data <- DaughterFgmData$new(ir.file = '~/Data/EDHS/2008/EGIR5AFL.DTA', br.file = '~/Data/EDHS/2008/EGBR5AFL.DTA', gps.file = '~/Data/EDHS/2008/EGGE5DFL.dbf', other.grpavg.controls = c("med.circum", "circum")) #, skip.cleanup = T))
 original.data$relevel("urban.rural", ref = "rural")
 original.data$relevel("med.help.distance.fac", ref = "not big problem")
 original.data$relevel("med.help.money.fac", ref = "not big problem")

@@ -1,5 +1,5 @@
 library(sp)
-library(spatstat)
+#library(spatstat)
 library(maptools)
 library(sandwich)
 library(lmtest)

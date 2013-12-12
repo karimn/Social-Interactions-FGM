@@ -11,7 +11,7 @@ Data <- setRefClass("Data",
         ncol = function(value) base::ncol(data)))
 
 Data$methods(init.from.list = function(obj.list) {
-    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) | is.empty(obj.list))
+    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) || (length(obj.list) == 0))
 
     data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$data))
 })

@@ -30,7 +30,7 @@ SpatialData <- setRefClass("SpatialData",
 SpatialData$lock(c("coordinate.names", "proj4string", "data"))
 
 SpatialData$methods(init.from.list = function(obj.list) {
-    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) | is.empty(obj.list))
+    stopifnot(all(base::sapply(obj.list, function(obj) is(obj, getClass()))) || (length(obj.list) == 0))
 
     spatial.data <<- do.call(base::rbind, base::lapply(obj.list, function(obj) obj$spatial.data))
     coordinate.names <<- obj.list[[1L]]$coordinate.names
@@ -50,7 +50,7 @@ SpatialData$methods(initialize = function(data, columns, new.column.names, coord
 
         callSuper(coordinate.names = coordinate.names, proj4string = proj4string, ...)
 
-        if (!is.empty(temp.data) & !is.null(coordinate.names)) {
+        if ((NROW(temp.data) > 0) & !is.null(coordinate.names)) {
             coordinates(temp.data) <- coordinate.names
             proj4string(temp.data) <- proj4string 
 
