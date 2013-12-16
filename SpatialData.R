@@ -324,7 +324,7 @@ SpatialData$methods(tsls = function(formula, vcov.fun = NULL, ...) {
   })
 
 SpatialData$methods(ivreg = function(formula, vcov.fun = NULL, ...) {
-    r <- AER::ivreg(formula, formula, data = spatial.data)
+    r <- AER::ivreg(formula, data = spatial.data)
 
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...) 

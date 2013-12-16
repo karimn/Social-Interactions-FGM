@@ -212,7 +212,7 @@ Data$methods(tsls = function(formula, vcov.fun = NULL, ...) {
   })
 
 Data$methods(ivreg = function(formula, vcov.fun = NULL, ...) {
-    r <- AER::ivreg(formula, formula, data = data)
+    r <- AER::ivreg(formula, data = data)
 
     if (!is.null(vcov.fun)) {
         vcov <- vcov.fun(r, ...) 

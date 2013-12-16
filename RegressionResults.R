@@ -4,7 +4,7 @@ library(plm)
 
 RegressionResults <- setRefClass("RegressionResults",
   fields = list(
-    results = "lm", 
+    results = "ANY",  # because in the PanelRegressionResults subclass I need to have a "plm" object stored here 
     vcov = "matrix",
     regress.formula = "formula",
     #     data = "Data",
@@ -15,7 +15,7 @@ RegressionResults <- setRefClass("RegressionResults",
     r.squared = function(val) base::summary(results)$r.squared,
     adj.r.squared = function(val) base::summary(results)$adj.r.squared) )
 
-RegressionResults$lock("results", "regress.formula") #, "data")
+RegressionResults$lock("regress.formula") #, "data") "results", 
 
 RegressionResults$methods(initialize = function(...) {
     initFields(...)
@@ -49,6 +49,7 @@ RegressionResults$methods(lht = function(hypothesis, test = c("Chisq", "F"), vco
 PanelRegressionResults <- setRefClass("PanelRegressionResults",
   contains = "RegressionResults",
   fields = list(
+    #results = "list",
     r.squared = function(val) base::summary(results)$r.squared["rsq"],
     adj.r.squared = function(val) base::summary(results)$r.squared["adjrsq"] )
 
