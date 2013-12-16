@@ -18,7 +18,7 @@ load("exog.endog.effects.fe.RData")
     & Rural & Urban \\
     \cmidrule{2-3}
 <<echo=FALSE,results=tex>>=
-print.interact.table(main.reg.results.17, "spat.grpavg.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+print.interact.table(main.reg.results.17, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 @
     \bottomrule
   \end{tabular}
