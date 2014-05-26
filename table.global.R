@@ -1,5 +1,5 @@
-cutpoints <- c(0, 0.001, 0.01, 0.05, 0.1, 1)
-symbols <- c("***", "**", "*", "$\\cdot$", " ")
+cutpoints <- c(0, 0.01, 0.05, 0.1, 1)
+symbols <- c("***", "**", "*", " ")
 
 educ.regs <- list(educ.lvlprimary = "Primary", educ.lvlsecondary = "Secondary", educ.lvlhigher = "Higher")
 wealth.regs <- list(wealth.indexpoorer = "Poorer", wealth.indexmiddle = "Middle", wealth.indexricher = "Richer", wealth.indexrichest = "Richest")
