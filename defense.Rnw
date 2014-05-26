@@ -1,0 +1,171 @@
+<<init, include=FALSE>>=
+library(sp)
+
+source("print.results.R")
+
+source("table.global.R")
+
+opts_chunk$set(fig.align='center', fig.width=14, cache.path="se-fgm-defense-cache/", fig.path="se-fgm-defense-fig/", cache=TRUE)
+@
+
+<<load-data, include=FALSE>>=
+load("direct.effects.RData")
+load("exog.endog.effects.RData")
+load("exog.endog.effects.fe.RData")
+@
+
+\begin{comment}
+\begin{frame}
+  \begin{table}
+  \caption{Direct Effects Only}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  regs <- list(wealth.index.2rich = "Wealth (Rich)",
+               urban.ruralurban = "Residence (Urban)",
+               marital.age = "Marital Age",
+               mother.circum.facyes = "Mother FGM",
+               religionchristian = "Religion (Christian)",
+               hh.head.sexfemale = "HH Head Sex (Female)",
+               "med.help.distance.facbig problem" = "Medical Help Dist. (Big Problem)",
+               "med.help.money.facbig problem" = "Medical Help Cost (Big Problem)",
+               discuss.circum.facyes = "Discussed FGM",
+               received.info.circum.facyes = "Received Info on FGM")
+
+  print.results.table(c(dir.reg.results.1), regs, NULL, educ.regs, NULL, cutpoints, symbols, show.n = FALSE, show.r.squared = FALSE) #, column.labels = c("OLS", "FE")) 
+@
+  \end{threeparttable}
+  \end{table}
+  \begin{center}
+    {\tiny continued}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{table}
+  \caption{Direct Effects Only (cont.)}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  regs <- list(n.ord = "Number of Daughters")
+
+  print.results.table(c(dir.reg.results.1, dir.reg.results.2), regs, cohort.range, NULL, NULL, cutpoints, symbols, other.fac = list(birth.order.fac.info), est.stderr.header = FALSE) #, column.labels = c("OLS", "FE")) 
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+\end{comment}
+
+\begin{frame}
+  \begin{table}
+  \caption{FGM and Medicalization Endogenous Effects Regression (Pooled)}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  results <- c(main.reg.results.1, main.reg.results.2) #, main.reg.results.2.3) 
+
+  grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$")
+                      #"spat.grpavg.circum.10:spat.grpavg.med.circum.10" = "$\\overline{fgm}_{jt} \\times \\overline{med}_{jt}$")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols,
+                      column.labels = c("OLS", "OLS")) #, "OLS")) #, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}
+  \begin{table}
+  \caption{FGM and Medicalization Endogenous Effects Regression (Pooled)}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2) #, main.reg.results.8.5) 
+
+  grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
+                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
+                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$")
+                      #"spat.grpavg.circum.10:spat.grpavg.med.circum.10" = "$\\overline{fgm}_{jt} \\times \\overline{med}_{jt}$")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols,
+                      column.labels = c("OLS", "OLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS", "2SLS")) #, "2SLS")) #, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}
+  \begin{table}
+  \caption{FGM and Medicalization Endogenous Effects Regression (Fixed Effects)}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  results <- c(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2) #, main.reg.results.14.5) 
+
+  grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
+                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
+                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$")
+                      #"spat.grpavg.circum.10:spat.grpavg.med.circum.10" = "$\\overline{fgm}_{jt} \\times \\overline{med}_{jt}$")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols) #, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}
+  \begin{table}
+  \caption{FGM and Medicalization Endogenous Effects Regression (Fixed Effects)}
+  \tiny
+  \centering
+  \begin{threeparttable}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+  results <- c(main.reg.results.17, main.reg.results.17.4)
+
+  grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
+                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
+                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$",
+                      "spat.grpavg.med.circum.10:urban.ruralurban" = "$\\overline{med}_{jt} \\times$ Urban",
+                      "spat.grpavg.med.circum.10:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Med. Help Dist.",
+                      "spat.grpavg.med.circum.10:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Med. Help Dist.",
+                      "spat.grpavg.med.circum.10:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times$ Medical Help Cost",
+                      "spat.grpavg.med.circum.10:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Med. Help Cost")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols) #, est.stderr.header = FALSE, col.num.header = FALSE)
+@
+  \end{threeparttable}
+  \end{table}
+\end{frame}
+
+\begin{frame}
+    \begin{table}
+      \caption{Urban/Rural and Medical Help Interactions}
+      \tiny
+      \centering
+      \begin{threeparttable}
+      \begin{tabular}{lcc}
+        \toprule
+        & \multicolumn{2}{c}{Estimate} \\
+        & \multicolumn{2}{c}{($p$-value)} \\
+        \cmidrule{2-3}
+        & Rural & Urban \\
+        \cmidrule{2-3}
+<<echo=FALSE, results='asis', warning=FALSE>>=
+    print.interact.table(main.reg.results.17, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
+    cat("\\midrule\n")
+    print.interact.table(main.reg.results.17.4, "spat.grpavg.med.circum.10", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
+@
+        \bottomrule
+      \end{tabular}
+      \end{threeparttable}
+    \end{table}
+\end{frame}
