@@ -4,6 +4,8 @@ source("print.results.R")
 
 source("table.global.R")
 
+library(AER)
+
 load("exog.endog.effects.RData")
 @
 
