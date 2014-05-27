@@ -1,18 +1,91 @@
-<<init, include=FALSE>>=
+<<init-se-fgm, include=FALSE, cache=FALSE>>=
 library(sp)
 
 source("print.results.R")
-
 source("table.global.R")
 
-opts_chunk$set(fig.align='center', fig.width=14, cache.path="se-fgm-defense-cache/", fig.path="se-fgm-defense-fig/", cache=TRUE)
+#opts_chunk$set(fig.align='center', fig.width=14, cache.path="se-fgm-defense-cache/", fig.path="se-fgm-defense-fig/", cache=TRUE)
 @
 
-<<load-data, include=FALSE>>=
+<<load-data-se-fgm, include=FALSE>>=
 load("direct.effects.RData")
 load("exog.endog.effects.RData")
 load("exog.endog.effects.fe.RData")
+
 @
+
+\begin{frame}{Research Questions}
+  \begin{itemize}
+    \item To what extent are households influenced when making their FGM decision by their peers' 
+      \begin{itemize}
+	\item FGM decisions
+	\item FGM medicalization decision 
+      \end{itemize}
+    \item Medicalization refers to opting to have the procedure carried out by a medical practitioner as opposed to a traditional circumciser 
+    \item Targeting medicalization has been the main policy at elimination FGM in Egypt
+    \item ``Do no harm'' vs. harm reduction \autocite{Shell-Duncan2001}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Linear-in-means Model}
+    \begin{equation*}
+        y_{ihr} = \mathbf{\beta} \cdot \mathbf{x}_i + \mathbf{\delta} \cdot \sum_{j \in \mathcal{P}_i} \frac{\mathbf{x}_j}{n_i} + \gamma \sum_{j \in \mathcal{P}_i} \frac{y_j}{n_i} + \eta_h + \rho_r + \varepsilon_{ihr}
+    \end{equation*}
+    The indices are
+    \begin{itemize}
+        \item $i = \{1,\dots,N\}$ identifies daughters (the observations of interest),
+        \item $h = \{1,\dots,M\}$ their household, 
+        \item $r = \{1,\dots,R_h\}$ their order of birth within their household, where $R_h$ is the number of daughters in household $h$.
+    \end{itemize}
+    \begin{equation*}
+        \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon}
+    \end{equation*}
+\end{frame}
+
+\begin{frame}{Identification Challenges}
+    \begin{equation*}
+        \mathbf{y} = (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{X}\mathbf{\beta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{W}\mathbf{X}\mathbf{\delta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1} \mathbf{\eta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\rho} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\varepsilon}
+    \end{equation*}
+    \begin{itemize}
+        \item Simultaneity
+        \item Correlated Effects
+        \item Peer Endogeneity
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Instrumental Variable Approach}
+    The solution proposed by \textcite{bramoulleetal09} is to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instruments for $\mathbf{Wy}$ since
+    \begin{equation*}
+        \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho})
+    \end{equation*}
+\end{frame}
+
+\begin{frame}{IV Example}
+    \begin{center}
+        \includegraphics[scale=0.4]{network_example}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Medicalization Effect}
+    In order to address the question of medicalization the model is modified to include $\mathbf{Wm}$ where $\mathbf{m}$ is vector of binary variables indicating whether a daughter who has undergone FGM had it done by a doctor or nurse.
+    \begin{equation*}
+        \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{W} \mathbf{m} \lambda + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} 
+    \end{equation*}
+    In order to circumvent any similar endogeneity problems as in $\mathbf{Wy}$ we use a similar instrumental variable strategy.
+\end{frame}
+
+\begin{frame}{Modernization and Medicalization}
+  \begin{itemize}
+    \item Modernization is likely to negatively influence a household's FGM decision
+    \item However, modernization is an unobserved group characteristic, and it is likely to be correlated with medicalization.
+    \item The fraction of deliveries carried out my medical practitioners as opposed to traditional midwives, $\overline{daya}_{ihr}$, is used as a proxy for modernization
+	  \begin{align*}
+          \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = E(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
+          L(modern_{ihr}|1, \mathbf{z}_{ihr}, \overline{daya}_{ihr}) = L(modern_{ihr}|1, \overline{daya}_{ihr})
+	  \end{align*}
+	  where $z_{ihr}$ are all other observed regressors and $modern_{ihr}$ is the unobserved modernization regressor.
+  \end{itemize}
+\end{frame}
 
 \begin{comment}
 \begin{frame}
@@ -21,7 +94,7 @@ load("exog.endog.effects.fe.RData")
   \tiny
   \centering
   \begin{threeparttable}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<direct-reg, echo=FALSE, results='asis', warning=FALSE, eval=FALSE>>=
   regs <- list(wealth.index.2rich = "Wealth (Rich)",
                urban.ruralurban = "Residence (Urban)",
                marital.age = "Marital Age",
@@ -64,7 +137,7 @@ load("exog.endog.effects.fe.RData")
   \tiny
   \centering
   \begin{threeparttable}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<endog-pooled-1, echo=FALSE, results='asis', warning=FALSE>>=
   results <- c(main.reg.results.1, main.reg.results.2) #, main.reg.results.2.3) 
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
@@ -84,7 +157,7 @@ load("exog.endog.effects.fe.RData")
   \tiny
   \centering
   \begin{threeparttable}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<endog-pooled-2, echo=FALSE, results='asis', warning=FALSE>>=
   results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2) #, main.reg.results.8.5) 
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
@@ -106,7 +179,7 @@ load("exog.endog.effects.fe.RData")
   \tiny
   \centering
   \begin{threeparttable}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<endog-fe-1, echo=FALSE, results='asis', warning=FALSE>>=
   results <- c(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2) #, main.reg.results.14.5) 
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
@@ -127,13 +200,11 @@ load("exog.endog.effects.fe.RData")
   \tiny
   \centering
   \begin{threeparttable}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<endog-fe-2, echo=FALSE, results='asis', warning=FALSE>>=
   results <- c(main.reg.results.17, main.reg.results.17.4)
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
-                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
                       spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
-                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$",
                       "spat.grpavg.med.circum.10:urban.ruralurban" = "$\\overline{med}_{jt} \\times$ Urban",
                       "spat.grpavg.med.circum.10:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Med. Help Dist.",
                       "spat.grpavg.med.circum.10:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Med. Help Dist.",
@@ -141,6 +212,7 @@ load("exog.endog.effects.fe.RData")
                       "spat.grpavg.med.circum.10:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Med. Help Cost")
 
   print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols) #, est.stderr.header = FALSE, col.num.header = FALSE)
+
 @
   \end{threeparttable}
   \end{table}
@@ -159,7 +231,7 @@ load("exog.endog.effects.fe.RData")
         \cmidrule{2-3}
         & Rural & Urban \\
         \cmidrule{2-3}
-<<echo=FALSE, results='asis', warning=FALSE>>=
+<<interact, echo=FALSE, results='asis', warning=FALSE>>=
     print.interact.table(main.reg.results.17, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
     cat("\\midrule\n")
     print.interact.table(main.reg.results.17.4, "spat.grpavg.med.circum.10", "med.help.money.facbig problem", "urban.ruralurban", c("Medical Help Cost (No Problem)", "Medical Help Cost (Problem)"), cutpoints, symbols)
@@ -168,4 +240,20 @@ load("exog.endog.effects.fe.RData")
       \end{tabular}
       \end{threeparttable}
     \end{table}
+\end{frame}
+
+\begin{frame}{Conclusion}
+  \begin{itemize}
+    \item Findings:
+      \begin{itemize}
+	\item Households are positively influenced in their FGM decision by the FGM decision of their peers 
+	\item Households are negatively influenced in their FGM decision by the medicalization decision of their peers.
+      \end{itemize}
+    \item Possible mechanisms for the negative effect of medicalization
+      \begin{itemize}
+	\item FGM moving from the marriage market to healthcare sphere, resulting in a more amendable position to the discontinuity of FGM.
+	\item FGM being an unobservable characteristic required \emph{dayas} to function as certifiers of `quality'
+      \end{itemize}
+    \item Must be cautious against advocating medicalization---the possible legitimizing effect of this is unknown.
+  \end{itemize}
 \end{frame}
