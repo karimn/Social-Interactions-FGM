@@ -284,13 +284,6 @@ print(ggplot(circum.data, aes(birth.year, grpavg.med.circum, color = governorate
     \end{equation*}
 \end{frame}
 
-\begin{frame}{Instrumental Variable Approach}
-    The solution proposed by \citet{bramoulleetal09} is to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instruments for $\mathbf{Wy}$ since
-    \begin{equation*}
-        \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho})
-    \end{equation*}
-\end{frame}
-
 \begin{frame}{IV Example}
     \begin{center}
         \includegraphics{network_example}
