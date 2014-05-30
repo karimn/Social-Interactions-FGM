@@ -1,0 +1,357 @@
+<<init, include=FALSE>>=
+library(ggplot2)
+library(grid)
+library(sp)
+library(lmtest)
+
+source("print.results.R")
+
+source("table.global.R")
+
+load("regress.data.RData")
+load("overident.test.RData")
+
+fgm <- regress.data$spatial.data@data
+@
+
+\section{Introduction}
+
+An important determinant of human behavior is social interaction: individuals and households are often influenced in their decisions by their neighborhood and peer's characteristics, or their peer's decisions. Different motivations could be driving this, such as learning, whereby agents use the experience of others to guide their choices; imitation, possibly in response to social pressure or the need to conform; or coordination, such as the adoption of a technology that is only useful when widely adopted.  Therefore, any examination of economic and social behavior that fails to identify such peer effects would be incomplete.  This is especially true if we are interested in properly assessing the effects of an intervention or policy, whether economic, social, or health related.  In the economics literature this phenomena has been studied in various areas such as education, crime, and health.  Similarly, in this paper, we are interested in how social interactions influence the adoption of a traditional practice with severe repercussions on the welfare of female children, \emph{female genital mutilation}. % education (*), crime (*), and health(*)
+
+Female genital mutilation (FGM)\footnote{This is sometimes referred to with the less severe terms of ``circumcision'' and ``cutting''. We use these terms synonymously.} is the removal of the whole or part of the external female genitalia of girls, from infancy to 15 years of age, for non-medical reasons. It is mostly done as a rite of passage into female adulthood, an act of `cleansing' in preparation for marriage, and/or a method of curbing sexuality to ensure virginal purity before marriage and fidelity after \autocite{whofs241}. It is prevalent to different degrees in Africa; its prevalence could be as high as 91\% for women between the ages of 15 and 49, in countries like Egypt \autocite{whoprev, El-Zanat}. World-wide, between 100 to 140 million girls are estimated to have undergone this procedure \autocite{whofs241}. It has been found to cause a variety of health problems if carried out in an non-sanitary environment (by traditional circumcisers, for example), as well as long term problems and complications in childbirth \textcite{Mackie2003}. No health benefits have been found. Additionally, it has been internationally recognized as a violation of the human rights of girls who are forced to undergo this procedure \autocite{whofs241}. It has been compared to foot-binding in being a harmful traditional practice, ethically indefensible due to its permanent physical and psychological damage \autocite{Mackie1996}. The World Health Organization (WHO) has directed its advocacy and research efforts towards the elimination of this practice, in conjunction with local governments \autocite{whofs241}. 
+
+Typically, the procedure of FGM is done by a traditional circumciser\footnote{In Egypt, mostly midwives (\emph{daya}) and barbers}, but increasingly professional health providers, such as doctors or nurses, are also doing it. This is referred to as the \emph{medicalization} of FGM, which has become a major concern for the WHO and many anti-FGM activists. The WHO declared that under no circumstances should health professionals preform FGM, regarding it as violation of the medical ethic of ``Do no harm''. There are also fears that medicalization might legitimize the practice, giving it the appearance of being beneficial, and hence rolling back the gains made in the elimination of FGM \autocite{OHCHR}. A more amendable position views medicalization as a harm reducing temporary solution in societies where a sudden elimination of FGM is unlikely to take place. Such a view regards the resistance to medicalization as counterproductive and harmful to the young girls who would then have to suffer the painful procedure without anesthetics and proper sanitation and care \autocite{Shell-Duncan2001}.  
+
+Our goal is to study how households are influenced by their peers' FGM adoption decision when making their own FGM adoption decision, using Demographic and Health Survey data from Egypt, a country where over 90\% of women in rural areas live with FGM.  We want to see if a household's probability of choosing FGM for their daughters was affected by its neighbors' decision, controlling for contextual effects---being in the same environment---and exogenous social effects---being influenced by the demographic characteristics of their neighbors as opposed to their behavior. More importantly, we are interested in how, in Egypt, the increasing confluence of decisions with respect to tradition and health, as observed in the increasing trend for medicalization (see Figure \ref{fig:fgmprop}), has impacted FGM.  More precisely, we want to test the hypotheses that a household's \begin{inparaenum}[(a)]
+\item neighbors' FGM decision (\emph{FGM social effect}) and
+\item neighbors' FGM medicalization decision (\emph{medicalization social effect}), conditional on opting for FGM,
+\end{inparaenum}
+have a significant effect on the household's FGM decision.  While the former effect is useful in learning to what extent there is a social multiplier effect in the adoption of FGM, the latter is of greater importance since government policy has mainly focused on fighting medicalization to eliminate FGM.  The FGM social effect could almost be predicted simply based on intuition, but the medicalization social effect in unclear, and hence it is critical to study in order to assess the consequences of policy.  Unsurprisingly, we do find that FGM social effect is strong and positive, and, interestingly, the medicalization social effect is negative in some areas.
+
+Identification of peer effects, however, must deal with a number of challenges: simultaneity (the reflection problem), selection, and disentangling social and contextual effects \autocite{Manski, Moffitt2001a, Blume2010}---social effects could be split into endogenous effects, the effect of peers' behavior, and exogenous effects, the effect of peers' characteristics.  Previous work in the peer effects literature has had to either assume that some of the social/contextual effects and/or the contextual effects are not present; rely on exogenous variation in neighborhoods; or rely on an instrumental variable strategy.  The identification strategy we use in this paper relies on geographic location of households (as will be shown later, we define peer `neighborhoods' on geographic proximity) to generate instrumental variables; we adapt to our data a method proposed by \textcite{bramoulleetal09} to identify peer effects in social networks. In addition, since for each household we observe decisions made for each daughter, we use fixed effects in our estimation. % the contextual effects are not present (*); rely on exogenous variation in neighborhoods (*); or rely on an instrumental variable strategy.
+
+%In addition to health-related or ethical objections to FGM, it has been estimated in a study conducted by the WHO, that the cost of obstetric complications caused by FGM to be \$3.7 million (PPP) \autocite{Bishai2010}. 
+
+%This paper investigates the social effects of both circumcision and medicalization. It attempts to shed light on the extent to which members of a social reference group influence each other, setting up convention. The aim of this is to aid policy makers in understanding the consequences of possible interventions targeting the banned practice. Recently, economists have taken a strong interest in studying such nonmarket interactions between agents. There is now a recognition of the need to go beyond the conventional model of \emph{homo economicus} in order to respond to public policy questions on social behavior. Any attempt to investigate persistent social behavior, such as poverty or in our case FGM, without incorporating the influence of peers and family would be grievously incomplete \autocite{Durlauf2001}.  Of the literature dealing with social/peer effects, this paper follows research on social networks and welfare use \autocite{Bertrand2000}; family and neighborhood effects that influence criminal activity, drug and alcohol use, school dropout, and teenage behavior \autocite{Case1991, Crane1991, Evans1992}.  
+
+%It should be noted that this work does not undertake to discover the mechanisms driving peer influence; it only attempts to show the causal influence of peer decisions (FGM and its medicalization) on households' decisions. The possible stories mentioned above, possibly explaining our results, are not explicitly tested, and neither are some of the common theories in the literature on FGM\footnote{For more on theory see \textcite{Mackie1996} and \textcite{Mackie2009}.  For a recent work on testing theory see \cite{Hayford} and \textcite{Shell-Duncan2011}.}. 
+
+%This paper follows Becker's \citeyearpar{Becker1981} classical work on marriage markets.  This work is particularly important in studying low-income countries, where marriage is a critical aspect of a woman's life, in the face of low education and few employment opportunities outside the role of wife and mother. 
+
+This paper was inspired by %Chesnokova and Vaithianathan's 
+\textcite{Chesnokova2010} work on the persistence of FGM as an equilibrium in society, using DHS data from Burkina Faso. They find that as long there exist some circumcised women and circumcision is viewed as a desirable quality by men, there will always be an incentive to have FGM done to girls to improve marriageability\footnote{A finding that \textcite{Shell-Duncan2011} find weak evidence for in Senegambia.}.  While, from our results, we cannot draw any conclusions about the effect of the marriage market on FGM, we will discuss below some possible links that might explain what we observe.
+
+FGM is a form of domestic violence: physical harm is brought to a vulnerable population because they are female children.  Since society cannot solely depend on economic development to bring an end to this practice, policy must be relied on \autocite{Duflo2011} (we do observe a reduction in FGM with richer, better educated households, but we cannot make an causal conclusions about this).  The problem in Egypt is that the enforcement policy used to fight FGM is threatening a phenomena that could accelerate its elimination.
+
+%The paper also follows the literature on pre-marital investment \autocite{Burdett2001, Peters2002}.  In terms of method, this work is inspired by \textcite{bramoulleetal09} and \textcite{Blume2010} which attempt to address some of the econometric challenges raised by \textcite{Manski} and \textcite{Moffitt2001a}.
+
+This paper is organized as follows: In section \ref{sec:data} the data used to produce our results is described, in section \ref{sec:method} our empirical strategy is presented, our results are presented in section \ref{sec:results} and discussed in section \ref{sec:discussion}, and finally we conclude with section \ref{sec:conclusion}.
+
+\section{Data}\label{sec:data}
+
+In this paper we utilize the Egyptian Demographic and Health Survey data for the year 2008 (EDHS 2008). This is the ninth such survey in Egypt, conducted every two or three years since 1988. The survey focuses on a wide set of population, health, fertility, and nutrition indicators. In 2008, 16,527 ever-married women of ages between 15 and 49 were interviewed, as well as a subsample of 5,430 men of ages between 15 to 59 who are residing in one in four of the womens' households. Relevant to this paper, the survey also collected data on FGM status for the interviewed women and their daughters, by whom the procedure was done, at what age was it done, intentions to circumcise uncircumcised daughters, exposure to information on FGM, and attitudes towards FGM \autocite{El-Zanat}. The DHS survey design is standardized across countries and surveys data is made available in a standard recode.  The survey aims for national population and geographic coverage, representing the entire population across all domains, relying on random probability sampling.  For EDHS 2008, surveyed households were clustered into 1,241 clusters with an average of 14.3 households per cluster (with a minimum of 1 and a maximum of 45).  Observations were gathered from all the 27 governorates of Egypt in 2008 \autocite{DHSSample}.  Actual field work was conducted between 15 March 2008 and late May 2008.
+
+\begin{comment}
+The survey sample was selected over three stages: 
+\begin{inparaenum}[1)]
+  \item the primary selection unit was done on the level of towns (\emph{shiakhas}) in urban areas and villages in rural areas.  This produced 610 primary sampling units (275 towns and 335 villages).
+  \item PSUs were further divided into parts with a population of about 5,000.  Depending on the total population of the Primary Sampling Unit (PSU) between one to three parts were selected.  This resulted in 998 parts selected.
+  \item further segmentation into about 200 household units on which a quick count in the field was conducted.
+  \item a final sample is randomly selected from these segments.
+\end{inparaenum}
+\end{comment}
+
+% FGM age density plot
+
+\begin{figure}
+\begin{center}
+<<fgmagedensity, echo=FALSE>>=
+ac.data <- fgm[, c("age.circum", "birth.year.fac", "med.circum")]
+ac.data <- ac.data[!is.na(ac.data$age.circum) & (ac.data$age.circum < 98),]
+
+ggplot(ac.data, aes(age.circum)) + geom_freqpoly(aes(y = ..density.., linetype = factor(med.circum)), binwidth = 1) + facet_wrap(~ birth.year.fac) + labs(x = "Age", y = "Density") + geom_vline(aes(xintercept = 12)) + scale_linetype("FGM Method", labels = c("Traditional", "Medicalized"), breaks = c(0,1)) + theme(legend.position = "top")
+@
+\end{center}
+\caption{FGM Density Plots By Cohort}
+\label{fig:fgmagedensity}
+\end{figure}
+
+The primary data survey used in this paper is that of the unmarried daughters residing in the household.  Each eligible woman was asked about the FGM status of her daughters and other related information.  In our data, each observation corresponds to a daughter of a surveyed woman, and for each we have their FGM characteristics and their household's characteristics: the parent's education levels, occupation, wealth level, etc. In addition, for each cluster, we have GPS coordinates, which we use in our spatial analysis to infer social effects.  The full survey produced 17,991 observations from 9,963 households.  However, since the majority of girls are circumcised around the age of puberty, only those born before 1996 are considered (ages 12 and above).  The upper plot in Figure \ref{fig:fgmagedensity} shows the density distribution of the daughter's sample.  The vertical line shows the cut off age for our sample in order not to bias our estimates with younger girls who have not yet reached the age at which they are risk of FGM.  Using the entire sample, we find that only 5\% of girls would undergo the FGM procedure after they have reached the age of 12.  The subsample that we use for our analysis is composed of 6,563 observations in 4,619 households.
+
+%Another strategy used to address this problem is to do our inference using the mother's response to whether they intend to circumcise the uncircumcised daughters. The lower plot shows the density differentiated by medicalization verus traditional FGM.  Both plot show little different between cohorts or method of circumcision.
+
+% Summary stats
+
+%\input{sumstat_table}
+<<sumstat-table, child="sumstat_table.Rnw">>=
+@
+
+Table \ref{tab:sumstat} gives descriptive statistics for the considered sample, stratified by wealth level, urban/rural residence, and religion. We see a greater tendency for FGM among the poorer, rural and Muslim households. Also noticeable is a greater tendency for medicalization for richer, urban, and Muslim households. In Figure \ref{fig:fgmprop}, we notice a decrease over cohorts in the rate of overall circumcision with increase in the rate of medicalization.
+
+% FGM, Med. proportions
+
+\begin{figure}
+\begin{center}
+<<fgmprop, echo=FALSE>>=
+circum.data <- fgm[, c("circum", "med.circum", "birth.year.fac", "urban.rural", "governorate")]
+circum.only.data <- circum.data[circum.data$circum == 1,]
+
+coord <- coord_cartesian(ylim = c(0.3, 0.9))
+
+#circum.plot <- ggplot(circum.data, aes(birth.year.fac)) + geom_bar(aes(fill =
+#factor(circum, levels = c(1, 0))), position = "fill") + scale_fill_grey("FGM Status", labels = c("Yes", "No")) + labs(x = "Cohort", y = "Frequency") 
+circum.plot <- ggplot(circum.data, aes(birth.year.fac)) + stat_summary(aes(y = circum), fun.dat = "mean_cl_boot") + labs(x = "Cohort", y = "FGM") + coord
+
+#med.plot <- ggplot(circum.only.data, aes(birth.year.fac)) + geom_bar(aes(fill = factor(med.circum, levels = c(1, 0))), position = "fill") + scale_fill_grey("Medicalization", labels = c("Yes", "No")) + labs(x = "Cohort", y = "Frequency")
+med.plot <- ggplot(circum.only.data, aes(birth.year.fac)) + stat_summary(aes(y = med.circum), fun.dat = "mean_cl_boot") + labs(x = "Cohort", y = "Medicalization") + coord
+
+grid.newpage()
+pushViewport(viewport(layout = grid.layout(2, 1)))
+print(circum.plot, vp = viewport(layout.pos.row = 1, layout.pos.col = 1))
+print(med.plot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
+@
+\end{center}
+\caption{FGM Trends: points on the plot indicate the proportion of households of a particular cohort opting for FGM or medicalization, respectively.  The vertical lines represent the 95\% confidence interval.}
+\label{fig:fgmprop}
+\end{figure}
+
+% Governorate Summary
+
+%\begin{landscape}
+%\input{governsum_table}
+<<governsum-table, child="governsum_table.Rnw">>=
+@
+%\end{landscape}
+
+\section{Empirical Strategy}\label{sec:method}
+
+\subsection{The Model}
+
+The linear-in-means model that we are interested in estimating is
+
+\begin{equation}
+    y_{ihr} = \mathbf{\beta} \cdot \mathbf{x}_i + \mathbf{\delta} \cdot \sum_{j \in \mathcal{P}_i} \frac{\mathbf{x}_j}{n_i} + \gamma \sum_{j \in \mathcal{P}_i} \frac{y_j}{n_i} + \eta_h + \rho_r + \varepsilon_{ihr}
+\end{equation}
+and where $\mathbb{E}[\varepsilon_{ihr}|\mathbf{x}_{(1,h)}, \dots, \mathbf{x}_{(R_h,h)}, \eta_h, \rho_1, \dots, \rho_{R_h}] = 0$. 
+
+The subscript $i = \{1,\dots,N\}$ identifies daughters (the observations of interest), $h = \{1,\dots,M\}$ their household, and $r = \{1,\dots,R_h\}$ their order of birth within their household, where $R_h$ is the number of daughters in household $h$.  The variable $y_{ihr}$ is a indicator of whether a particular daughter has undergone FGM.  Each daughter $i$ has a peer group whose characteristics and behavior might influence $i$'s household's FGM decision.  In this specification, we model it as the set observations $\mathcal{P}_i$ ($n_i = |\mathcal{P}_i|$ is the number of $i$'s neighbors).  The dependent variable is regressed on 
+
+\begin{itemize}
+    \item The $K \times 1$ vector $\mathbf{x}_i$ of a daughter's individual characteristics, composed of daughter-specific regressors and household-invariant regressors  
+    \item The mean of $\mathbf{x}$ of a daughter's peer group $\mathcal{P}_i$, and whose $K \times 1$ vector of coefficients, $\mathbf{\delta}$, represents exogenous social effects
+    \item The mean of $y$ of a daughter's peer group $\mathcal{P}_i$, and whose coefficient, $\gamma$, represents endogenous social effects
+    \item The household fixed effect $\eta_h$
+    \item The birth order fixed effect $\rho_r$
+\end{itemize}
+
+We transform this model to use matrix notation to facilitate the use of an interaction matrix to represent peer groups \autocite{bramoulleetal09}. We use the logical $N \times N$ matrix $\mathbf{\widetilde{W}}$ to indicate whether any two daughters are considered peers (we will further explain what defines peers for the purposes of this model below).
+\[ (\mathbf{\widetilde{W}_{ij}}) = \mathbbm{1}\{i\text{ and }j\text{ are peers}\} \]
+We further normalize this matrix to the row stochastic $\mathbf{W}$, where
+\[ (\mathbf{W_{ij}}) = \frac{\mathbf{\widetilde{W}_{ij}}}{n_i} \]
+Our model now becomes
+
+\begin{equation}
+    \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} \label{eqn:struct_matrix_model}
+\end{equation}
+
+where $\mathbf{y}$ is $N \times 1$ vector of FGM status, $\mathbf{X}$ is a $N \times K$ matrix of daughters' characteristics, $\mathbf{\eta}$ is a $N \times 1$ vector of $\{\eta_1,\dots,\eta_M\}$, each repeated $R_h$ times, and $\mathbf{\rho}$ is a $N \times 1$ vector of $\{\rho_1,\dots, \rho_{R_h}\}$. 
+
+\subsubsection{Reference Group}
+
+In order to carry out our social effects analysis we need to define each daughter's peer group $\mathcal{P}_i$ or the interaction matrix $\mathbf{W}$.  First we define the logical matrices
+
+\begin{align*}
+    \mathbf{\widetilde{A}}&: (\mathbf{\widetilde{A}_{ij}}) = \mathbbm{1}\{dist_{ij} \leq 10 \text{ kilometers}\footnotemark\} \\
+    \mathbf{\widetilde{C}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbbm{1}\{|age_i - age_j| \leq 1 \text{ year}\} \\
+    \mathbf{\widetilde{H}}&: (\mathbf{\widetilde{C}_{ij}}) = \mathbbm{1}\{household_i = household_j\} \\
+\end{align*}
+\footnotetext{Any smaller range would be problematic according to the DHS because of location displacement, whereby GPS coordinates are randomly altered in order to preserve survey subjects' privacy.  This is also the reason we do not rely on the distance between clusters to weigh our interaction matrix \autocite{DHS2012}.}
+
+from which we define the interaction matrix, excluding all same household daughters from the peer group, since we are ultimately interested in estimating the influence of peers on a household's decision making.
+\[ \mathbf{\widetilde{W}} = \mathbf{\widetilde{A}} \circ \mathbf{\widetilde{C}} \circ \neg \mathbf{\widetilde{H}} \]
+
+This means we define the peer group that would influence a household's FGM decision for daughter $i$ as all daughters
+\begin{inparaenum}[i)] 
+    \item not in the same household, 
+    \item who are within a ten kilometer radius, 
+    \item and whose absolute age difference does not exceed one year.
+\end{inparaenum}
+
+While we do model the peer groups or `neighborhoods' as a network (as is commonly done in the social networks literature), we do not mean to model explicit social links between households or daughters.  A daughter's peer group is used to estimate what is common practice in the area of residence\footnote{Inference based on such estimated averages is further discussed below.}.  In other words, we decide to consider two daughters as network neighbors if all the conditions outlined above are true. It might be more intuitive to understand how this is modeled by viewing the space of observations as divided into planes, with each plane representing a cohort group, and on each plane, observations of that cohort group are placed according to their GPS coordinates.  On each plane we then have overlapping circles, each centered on an observation (or more accurately, its cluster), and any observation within such a circle is considered a neighbor, which we represent by a network link.  Figure \ref{fig:nw_ex} shows an example of such a network.
+
+\begin{figure}
+\begin{center}
+\includegraphics[scale=0.6]{network_example}
+\caption{For node 1, nodes 2-4 are considered direct neighbors, while nodes 5-9 are indirect neighbors. \label{fig:nw_ex}}
+\end{center}
+\end{figure}
+
+\subsubsection{Identification}
+
+So far, this is a typical linear-in-means model with all the identification challenges this entails: simultaneity (the reflection problem), endogeneity, and correlated effects \autocite{Manski, Moffitt2001a, Blume2010, bramoulleetal09}.  The reduced form of this model would be 
+
+\begin{equation}
+    \mathbf{y} = (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{X}\mathbf{\beta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{W}\mathbf{X}\mathbf{\delta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1} \mathbf{\eta} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\rho} + (\mathbf{I} - \mathbf{W}\gamma)^{-1}\mathbf{\varepsilon} \label{eqn:reduced}
+\end{equation}
+
+It is clear from equation (\ref{eqn:reduced}) that we cannot separately identify exogenous and endogenous social effects (the parameters $\mathbf{\delta}$ and $\gamma$).  We therefore follow the identification strategy described by \textcite{bramoulleetal09}.  First they show that by substituting in equation (\ref{eqn:reduced}) the expansion $(\mathbf{I} - \mathbf{W}\gamma)^{-1} = \sum_{k=0}^\infty \gamma^k \mathbf{W}^k$, premultiplying by $\mathbf{W}$, and taking expectation we get
+
+\begin{equation}
+    \mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}] = (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1}) \mathbf{X\beta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+2})\mathbf{X\delta} + (\sum_{k=0}^\infty \gamma^k \mathbf{W}^{k+1})(\mathbf{\eta + \rho}) \label{eqn:e_wy}
+\end{equation}
+
+According to \textcite{bramoulleetal09}, if the matrices $\mathbf{I}$, $\mathbf{W}$, and $\mathbf{W}^2$ are linearly independent the social effects are separately identified. Note that $\mathbf{W}^k$ provides an interaction matrix for all neighbors at a distance of $k$, where two nodes are said to be of $k$ distance from each other if there exists a path between them passing through $k$ other nodes. The concept of `distance' here is based on network links, not spatial distance. What this entails is the existence of intransitive triads in the social network: daughters that have a common peer but are not each other's peers (see Figure \ref{fig:nw_ex}).  This allows us to use $(\mathbf{W}^2\mathbf{X}, \mathbf{W}^3\mathbf{X}, \dots)$ as instrumental variables for $\mathbf{Wy}$ in equation (\ref{eqn:struct_matrix_model}). As shown in equation (\ref{eqn:e_wy}) these variables influence $\mathbb{E}[\mathbf{Wy}|\mathbf{X}, \mathbf{\eta}, \mathbf{\rho}]$ without having a direct effect on $y$.  In other words, we can use the exogenous social effects of a daughter's peers' peers (their exogenous characteristics) as instruments for endogenous social effects (the peer households' endogenous FGM decision), as long as there exists intransitive triads.
+
+% \subsubsection{Correlated Effects}
+
+Another identification problem in linear-in-means models is correlated effects: unobservable neighborhood/regional effects that would influence FGM decision making and are correlated with observed daughter and household characteristics. \textcite{bramoulleetal09} address this problem by introducing either global network fixed effects, a fixed effect for each component in the network, or local network fixed effects, a fixed effect for each individual's direct neighbors.  They then use \emph{within} differencing to eliminate these fixed effects in their estimation.  In this analysis, we introduce a similar fixed effect to capture household hetergeneity.  Since we observe possibly multiple daughters from the same household we rely on a similar \emph{within} transformation. \textcite{bramoulleetal09} show that identification in this case requires the stronger condition of having $\mathbf{I}$, $\mathbf{W}$, $\mathbf{W}^2$, and $\mathbf{W}^3$. 
+
+% They suggest creating a matrix whose columns are the vectorized versions of these matrices and making sure they are of rank four, which we find to be true in our data.
+
+% \subsubsection{Peer Group Endogeneity}
+
+Yet another identification challenge in linear-in-means models is peer group endogeneity: unobservable characteristics that influence FGM decision making and cause households to choose to associate with other households that make similar decisions \autocite{Moffitt2001a}.  We find it improbable that household are going to be driven to select their location of residence based on the FGM decisions of their neighbors.  Nonetheless, we attempt to forestall any possible problems by eliminating from our analysis any households that have not resided in their current location for at least ten years.
+
+\subsubsection{Medicalization}
+
+So far, our model has not deviated much from \textcite{bramoulleetal09}, but since we are mainly interested in the effect of medicalization on a household's decision we modify our model to be
+
+\begin{equation}
+    \mathbf{y} = \mathbf{X} \mathbf{\beta} + \mathbf{W} \mathbf{X} \mathbf{\delta} + \mathbf{W} \mathbf{y} \gamma + \mathbf{W} \mathbf{m} \lambda + \mathbf{\eta} + \mathbf{\rho} + \mathbf{\varepsilon} \label{eqn:med_struct_matrix_model}
+\end{equation}
+
+where $\mathbf{m}$ is a $N \times 1$ vector of binary variables indicating whether a household, conditional on having opted for FGM, decided to rely on a medical practitioner rather than a traditional circumciser. Hence, $\mathbf{W}\mathbf{m}$ results in the $N \times 1$ vector of mean medicalization of a daughter's peer group.  While $\mathbf{W} \mathbf{m}$ is unlikely to suffer from the same simultaneity problems of $\mathbf{W} \mathbf{y}$, since, having opted for FGM, a household is unlikely to be influenced peer's FGM decision, $\mathbf{W} \mathbf{y}$, in choosing $m_{iht}$, we nevertheless rely on the same instrumental variable approach used to identify $\mathbf{W} \mathbf{y}$.
+
+\subsubsection{Generated Regressors}
+
+One problem in linear-in-means models, raised by \textcite{Manski}, is the use of sample peer means as if they are the actual unobserved social influence regressor of interest, effectively neglecting the fact that such sample means are estimates from a first stage estimation.  This could cause problems for inference. In \textcite{Wooldridge2010} such regressors are referred to as \emph{generated regressors}, which are shown to be consistent but the standard errors produced by OLS would be incorrect.  In our case, another advantage of using instrumental variables for identification is that heteroskedasticity robust standard errors are sufficient in testing the significance of our estimates.
+
+\subsubsection{Proxies for Modernization}
+
+One remaining concern is that our estimation might suffer from omitted variable bias because of possible unobservable influence of `modernization' in medical care on the FGM decision: as different areas become more modernized they would perhaps become less likely to opt for a traditional practice such as FGM, and should they decide to have it done they would seek a medical practitioner rather than a traditional \emph{daya}---it would be correlated with the $\mathbf{W}\mathbf{m}$.  In order to control for this unobservable modernization effect, we use some proxy variables related to the child delivery choices of neighbors, such as 
+\begin{inparaenum}[(a)] 
+    \item the fraction of households in the peer group that decided to have their child delivered by a \emph{daya} as opposed to a medical practitioner, 
+    \item and the location of delivery. 
+\end{inparaenum}
+We calculate these averages for births during the same period the FGM decision is made\footnote{Data is only available for child births preceding the time of survey by six years.}. Recall that FGM decision is normally done around the age of twelve, so we are seeing different groups who are making FGM and child delivery decisions. In other words, focusing one such proxy, $\overline{daya}_{ihr}$, we make the following assumptions
+  \begin{align*}
+      \mathbb{E}(y_{ihr}|\mathbf{z}_{ihr}, modern_{ihr}, \overline{daya}_{ihr}) = \mathbb{E}(y_{iht}|\mathbf{z}_{ihr}, modern_{ihr}) \\
+      L(modern_{ihr}|1, \mathbf{z}_{ihr}, \overline{daya}_{ihr}) = L(modern_{ihr}|1, \overline{daya}_{ihr})
+    \end{align*}
+where $\mathbf{z}_{ihr}$ are all other regressors and $modern_{ihr}$ is unobserved modernization. 
+
+\subsection{Implementation}
+
+\subsubsection{Variables}
+
+Of the household characteristics we are interested in we use:
+\begin{itemize}
+  \item Wealth level: `poor' or `rich', with `poor' as the omitted level\footnote{The DHS wealth index is used here, which is divided into quintiles: poorest, poorer, middle, richer, richest.  Calculations of household wealth are based on standard of living measures derived from the survey questionnaires, based on such indicators as the ownership of assets, the characteristics of housing, and the source of drinking water.  In this paper, the wealth levels are reduced to two groups: the poorest/poorer/middle are reclassified as poor, and the rest as rich.}
+  \item Urban or rural residence, with rural residence as the omitted level
+  \item The mother's marital age
+  \item The mother's FGM status
+  \item Religion: Christian or Muslim, with Muslim as the omitted level
+  \item The sex of the head of household, with male as the omitted level
+  \item Whether seeking medical help is `not a problem' or a `big problem' due to distance or cost, with `not a problem' as the omitted level
+  \item Highest level of mother's education: no education, primary education, secondary education, or higher education, with no education as the omitted level
+\end{itemize}
+
+\subsubsection{Instrumental Variables}
+
+The first step in identifying possible instrumental variables for $\mathbf{Wy}$ from $\mathbf{W}^2X$ we run the first stage regression
+\[ \mathbf{Wy} = \theta_1 + \mathbf{W}^2\mathbf{X} \mathbf{\phi}_1 + \mathbf{\nu}_1 \]
+and, similarly to instrument $\mathbf{Wm}$
+\[ \mathbf{Wm} = \theta_2 + \mathbf{W}^2\mathbf{X} \mathbf{\phi}_2 + \mathbf{\nu}_2. \]
+
+Tables \ref{tab:circum_1s} and \ref{tab:med_1s} show the results of these regressions . The first columns shows the regression using all of $\mathbf{W}^2\mathbf{X}$, while the second columns show the regression using the instrumental variables selected for our analysis.  Using a heteroskedastic overidentification test, using three instruments for the two endogenous regressors in equation (\ref{eqn:med_struct_matrix_model}), we fail to reject the hypothesis that the instruments are valid ($p$-value = \Sexpr{test.reg.8$summary()[1, 4]}) \autocite{Wooldridge2010}.
+<<echo=FALSE, results='asis', eval=FALSE>>=
+cat(test.reg.8$summary()[1, 4])
+@
+
+%\input{circum_1s_table}
+<<circum-1st-table, child="circum_1s_table.Rnw">>=
+@
+
+
+%\input{med_1s_table}
+<<med-1s-table, child="med_1s_table.Rnw">>=
+@
+
+\section{Results}\label{sec:results}
+
+\subsection{Direct Effects}
+
+The first regression results presented are those for direct effects of individual characteristics on the likelihood of FGM only (shown in Table \ref{tab:direct_effects}); we want to examine how particular observable characteristics of households influence the FGM decision for their daughters.  The first column shows the results using an OLS regression while the second is shown for a household fixed effects (FE) regression.
+
+The first thing to observe is the apparent increased likelihood of FGM, in the FE results, for daughters of the fifth or sixth birth order.  We also notice, in both estimations, a significant negative likelihood of FGM for younger cohorts, suggesting a decreasing FGM trend across the country over time.  In the OLS regression, we see some expected results: a significant negative likelihood of FGM for wealthier households, households that reside in urban areas, households where mothers got married at an older age, households that discussed FGM with their neighbors, and households where mothers have higher levels of education; and a significant positive likelihood for households with more daughters.  A significant negative likelihood is also found for Christian households (compared to Muslim households), which is somewhat surprising considering that FGM is a practice that predates Islam in Egypt.
+
+%\input{direct_effects_table}
+<<direct-effects-table, child="direct_effects_table.Rnw">>=
+@
+
+% TODO Maybe I need to control for the number of children not the number of daughters
+% TODO double check what "discussed FGM" is exactly
+% TODO Talk more about FGM not being an Islamic practice and how it has possibly been adopted as Islamic in modern times (for example, its adoption in the mostly Muslim Indonesia in recent times)
+
+\subsection{Social Effects}
+
+In this section, we present the results for the main linear-in-means regressions, used to identify the social effects of FGM and its medicalization, on the household FGM decision---how households are influenced by other households' FGM and medicalization decisions.  In Table \ref{tab:exog_endog_effects}, we first consider regression results when we do not use household fixed effects, and in Table \ref{tab:exog_endog_effects_fe} we do. 
+
+In Table \ref{tab:exog_endog_effects}, we do not see any big change in direct effects compared to column (1) in Table \ref{tab:direct_effects}, whether as estimates or standard errors.  In the first three columns, we ran OLS regressions without any instrumental variables.  In these columns, we see that the peer group mean of FGM decision has a positive and significant value.  In columns (2) and (3), we add the group mean for medicalization which is positive but insignificant.  The interaction between FGM and medicalization group means is negative and similarly insignificant.  In column (4), we try the same regression as in (1) but with instrumental variables for the FGM peer group mean, and we find that it has a strong positive effect.  In column (5), we test for nonlinearity by adding a quadratic term, but then all effects become insignificant.  In columns (6) and (8), we add the peer group mean medicalization, and in the latter we use an instrumental variable.  Medicalization is found to have a negative effect, but is only significant in the former specification (not IV).  Peer group means of FGM continue to be positive (with a higher magnitude) and significant.  In columns (7) and (9), we add quadratic terms for peer group means for both FGM and its medicalization.  Again in these specification all effects become insignificant.  Finally, in column (10), we interact the peer group mean regressors.  FGM peer group means are found to be positive and significant, while medicalization peer group means continue to be insignificant.  From this table we suspect that the hypothesis that the peer group mean of FGM has a strong positive effect on a household's FGM decision is probably true, but we are unable to make any clear conclusions about medicalization.  However, as stated above, because of the problem with correlated effects and the possible endogeneity due to unobservable household effects that are correlated with our regressors, we need to leverage the within information we have about households.
+
+% I'm not sure why significance disappears in column (5) above
+
+In Table \ref{tab:exog_endog_effects_fe}, we introduce household fixed effects to address some of these problems, coupled with the existing instrumental variable strategy.  In columns (1) and (2), we regress only on the peer group means of FGM and we continue to find a significant positive effect, with some convexity on introducing a quadratic term.  In columns (3) and (4), we introduce medicalization, and in the latter specification we use instrumental variables.  We now observe a significant negative effect (almost halved in the latter specification).  The effect of peer group FGM means continues to be significantly positive and increases in magnitude.  In columns (5) and (6), we introduced some nonlinearity.  In column (5), there is still a positive and negative effect to peer group means of FGM and medicalization, respectively---with some concavity and convexity, respectively.  In column (6), the significance and direction of effect is unchanged, but the magnitudes are diminished (in this specification we see the highest level of $R^2$ in this table).  There does appear to be a reduced negative effect of medicalization as FGM peer group means increase, but is only significant at the 10\% level.
+
+%\input{exog_endog_effects_table}
+%\input{exog_endog_effects_fe_table}
+<<exog-endog-effects-table, child="exog_endog_effects_table.Rnw">>=
+@
+<<exog-endog-effects-fe-table, child="exog_endog_effects_fe_table.Rnw">>=
+@
+
+Having established that there is a negative effect to medicalization, we introduce some interaction terms in the last two columns of Table \ref{tab:exog_endog_effects_fe} to further investigate how the effect might vary in different contexts, namely, urban versus rural, and with different levels of difficulty accessing medical help (either because of distance or cost).  With three levels of interactions, it is easier to analyze our results by using Table \ref{tab:interact}.  We see that in rural areas medicalization has a negative effect, does not seem to be affected by difficulty in accessing medical help due to distance, and does seem to have a weaker negative effect if the household has difficulty accessing medical help due to cost.  In urban areas, the effect of medicalization is more nuanced; it appears to be negative for households with no problem accessing medical help (for either of the reasons considered), but has significant positive effect if they do have problems accessing medical help.
+
+% Any explanations for the last sentence?
+
+%\input{med_help_interact_table}
+<<med-help-interact-table, child="med_help_interact_table.Rnw">>=
+@
+
+\begin{comment}
+In the first column there are no cohort effects all and in the second we do not detect a trend. Otherwise, the direct household effects are no different than what has previously been observed. In terms of social effects, in the first column we find endogenous social effect of FGM only at the 10\% significance level, and we do not find a significant effect to medicalization. However, in the unobservable household fixed effects regression, we find a positive and significant endogenous FGM effect as witnessed in previous specifications, and, most interestingly, a negative and significant endogenous effect to medicalization. On the addition of interactions with the group average level of medicalization, we see further that the negative influence of medicalization is restricted to urban households (see Table \ref{tab:interact}). No significant different was found between households with difficulty accessing medical assistance due to distance and those without, and it a stronger negative effect is observed for households with no difficulty accessing medical assistance due to cost.
+\end{comment}
+
+\section{Discussion}\label{sec:discussion}
+
+Yet another view sees medicalization as helpful in eroding the traditional practice, as FGM is moved from the traditional community-level domain and marriage market to the domain of modern medicine. It would no longer be a moral issue, but a health issue, and hence would meet with weaker resistance to attempts to completely eliminate it on health grounds. Another contributing factor to this possible story is the unobservable nature of FGM before and after marriage, and hence the possible reliance on traditional circumcisers as certifiers of `quality'. Thus, as FGM is increasingly done in government clinics by professional health providers, who are less connected to the marriage market in local communities, it loses its effectiveness as a signal of `quality'.
+
+The practice of FGM can be viewed as an innovation that has gained wide acceptance and adoption in society, and the move to medicalization can be viewed as a form of re-invention of this practice.  What is interesting about the changes we observe is that this form of re-invention is undermining the overall practice, slowly leading to its discontinuance.  What appears to be the modernization of an entrenched practice that is resistant to policy, actually weakens it by changing its characteristics significantly---moving it from the marriage market to the health domain \autocite{Rogers2003}.  What makes FGM difficult to eliminate is that, while it is a form of physical violence against female children, it is not regarded as such by its practitioners.  In fact, parents would be viewed as negligent were they not to have this procedure done.  Medicalization can then be viewed as taking away this perceived benefit, whether by removing its benefit as a signal of quality in the marriage market, or by changing the method of benefit evaluation---it is evaluated by its health benefit as opposed to its social benefit. 
+
+
+\section{Conclusion}\label{sec:conclusion}
+
+As has been shown by our results, there is a strong social component, in Egypt, to households' decision to circumcise their daughters. Households tended to follow the same behavior as other members of their community. However, in terms of medicalization, there appears to be a negative social effect (for most households with no problems accessing medical help).  Households were less likely to choose FGM for their daughters the more prevalent is medicalization in their peer group. This appears to strengthens the harm reduction argument of those who call for tolerating medicalization in the interest of providing a less painful and sanitary procedure for those who opt for FGM \autocite{Shell-Duncan2001}. These results are also a call on policy makers who are seeking to eliminate FGM, to consider the possible unintended consequences of focusing on eliminating medicalization in government clinics. Our results point to directly influencing households' FGM decision as a possibly more fruitful policy, since we see a strong multiplier effect, since households have a very strong endogenous influence on each other. This could be done by increasing awareness in communities of the harmful nature of this practice as was carried out in Senegal \autocite{Diop2009}, while not pushing them away from medical clinics back into the domain of traditional circumcisers, where they might be less accessible to outreach campaigns. 
+
+One proposed story explaining these findings, is related to the pernicious nature of the marriage market social network in which \emph{dayas} might play the role of `quality certifiers'.  Due to the unobservable and unverifiable nature of FGM, reputation plays a critical role here. As the FGM procedure moves away from the traditional sphere into that of professional healthcare its links to the marriage market is weakened, as healthcare providers are less likely to play a role in the marriage market. We might also be observing a modernization scenario, in which the endogenous social effect of medicalization is a proxy for a move away from traditional practices across all households in a particular area, irrespective of the other observed household characteristics.  As mentioned, we attempt to address this problem by the use of data on child delivery choices contemporary to the FGM decision.
+
+% TODO what happens if I don't use these proxies?
+
+However, we must be cautious in making any recommendations calling for a rollback in the elimination for FGM in medical facilities. There is always the danger that such a reversal of policy might give the impression of greater legitimacy, and households that were previously indecisive about FGM would regard such a move as approving of the procedure.  In fact, some of our results should make us very cautious in dealing with the problem of legitimization. We see a positive effect to medicalization in urban areas with poor access to medical help (either due to distance or cost), which could plausibly be the influence of observing increased medicalization in one's peer group and perceiving it as evidence of its benefit, and without easy access to medical practitioners (and their mitigating influence) FGM is increasingly sought from traditional circumcisers\footnote{Similar fears were raised in response to Indonesia's Ministry of Health publishing guidelines for conduction FGM \autocite{IndoFGM2011}}.
+
+% \nocite{Refaat}
+% \nocite{Yount}
+% \nocite{Hoodfar1997}
+% \nocite{El-Gibaly2002}
+% \nocite{R}
+
+\begin{comment}
+\endnotetext[1]{All econometric analysis was carried out by the R statistical analysis programming language \autocite{R}.  Robust standard errors were calculated using the \texttt{vcovHAC} and \texttt{vcovHC} functions of the \texttt{sandwich} package \autocite{Zeileis2004,Zeileis2006} and the \texttt{plm} package \autocite{Croissant2008}. Linear hypotheses testing was done with \texttt{linearHypothesis} function from the \texttt{car} package \autocite{Fox2011}.}
+
+\theendnotes
+\end{comment}
+
+\section*{Acknowledgments}
+Special thanks to Randall Ellis, Robert E.B. Lucas, Dilip Mookherjee, Wesley Yin, Kehinde Ajayi, Julian TszKin Chan, and Giulia La Mattina for their advice and suggestions. I'm also grateful to Emily Gee and Marcella Bombardieri for reviewing this paper and suggesting corrections.
+
+
