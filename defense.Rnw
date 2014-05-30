@@ -19,6 +19,7 @@ load("exog.endog.effects.fe.RData")
     \item Mostly done as a rite of passage into adulthood, an act of `cleansing' in preparation for marriage, and/or a method of curbing sexuality to ensure fidelity.
     \item No medical benefit, only harm (infections, infertility, childbirth complications)
     \item Internationally recognized as a violation of human rights
+    \item Using 2008 Egypt Demographic and Health Survey data
   \end{itemize}
 \end{frame}
 
