@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<direct-effects-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -12,7 +12,7 @@ load("direct.effects.RData")
 \centering
 \begin{threeparttable}
 \caption{Direct Effects Only}\label{tab:direct_effects}
-<<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
+<<direct-effects, include=FALSE, results='asis'>>=
   results <- c(dir.reg.results.1, dir.reg.results.2)
 
   regs <- list(urban.ruralurban = "Residence (Urban)",

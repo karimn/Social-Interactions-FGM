@@ -1,6 +1,6 @@
-\SweaveOpts{keep.source=TRUE, strip.white=FALSE}
+%\SweaveOpts{keep.source=TRUE, strip.white=FALSE}
 
-<<label=init, echo=FALSE, results=hide>>=
+<<med-help-interact-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -20,7 +20,7 @@ load("exog.endog.effects.fe.RData")
     \cmidrule{2-3}
     & Rural & Urban \\
     \cmidrule{2-3}
-<<echo=FALSE,results=tex>>=
+<<med-help-interact, echo=FALSE,results='asis'>>=
 print.interact.table(main.reg.results.17, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)
 # cat("\\midrule\n")
 # print.interact.table(main.reg.results.17.6, "spat.grpavg.med.circum.10", "med.help.distance.facbig problem", "urban.ruralurban", c("Medical Help Distance (No Problem)", "Medical Help Distance (Problem)"), cutpoints, symbols)

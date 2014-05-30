@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<sumstat-table-init, include=FALSE>>=
 source("table.global.R")
 
 load("regress.data.RData")
@@ -17,7 +17,7 @@ fgm <- regress.data$spatial.data@data
   & \multicolumn{1}{c}{N} \\
   \cmidrule{2-5}
 
-<<label=sumstat, echo=FALSE, results=tex>>=
+<<sumstat, echo=FALSE, results='asis'>>=
 fgm.circum <- subset(fgm, circum == 1)
 fgm.med <- subset(fgm.circum, med.circum == 1)
 
@@ -109,6 +109,7 @@ cat(sprintf("\\\\\nBy Religion (Muslim) & %.2f\\%% & %.2f\\%% & %.2f\\%% & %i \\
             nrow(fgm.circum[fgm.circum$religion == "muslim",])/nrow(fgm.mus)*100,
             nrow(fgm.med[fgm.med$religion == "muslim",])/nrow(fgm.circum[fgm.circum$religion == "muslim",])*100,
             nrow(fgm.mus)))
+
 @
   \bottomrule
 \end{tabular}

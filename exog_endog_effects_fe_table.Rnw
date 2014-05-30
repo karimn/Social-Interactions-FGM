@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<exog-endog-fe-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -13,7 +13,7 @@ load("exog.endog.effects.fe.RData")
 \centering
 \begin{threeparttable}
 \caption{FGM Endogenous Effects Regression (Household Fixed Effects)}\label{tab:exog_endog_effects_fe}
-<<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
+<<fgmendogen-fe, echo=FALSE, results='asis'>>=
   results <- c(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2, main.reg.results.14.5, main.reg.results.17, main.reg.results.17.4) #, main.reg.results.17.6, main.reg.results.17.5) 
 
   grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",

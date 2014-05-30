@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<governsum-table-init, include=FALSE>>=
 source("table.global.R")
 
 load("regress.data.RData")
@@ -30,7 +30,7 @@ fgm <- regress.data$spatial.data@data
 & N \\
 \cmidrule{2-16}
 
-<<label=governsumstat, echo=FALSE, results=tex>>=
+<<governsumstat, echo=FALSE, results='asis'>>=
 govern.names <- levels(fgm$ADM1NAME)
 
 cat(sprintf("All & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f\\%% & %.1f (%.1f) & %.1f (%.1f) & %i \\\\*\n",

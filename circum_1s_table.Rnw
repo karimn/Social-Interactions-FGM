@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<-circum-1s-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -12,7 +12,7 @@ load("circum.1s.RData")
 \centering
 \begin{threeparttable}
 \caption{FGM Endogenous Social Effect First Stage Regression}\label{tab:circum_1s}
-<<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
+<<fgmdirect, echo=FALSE, results='asis'>>=
   results <- c(relv.results.10.1, relv.results.10.5)
 
 #   regs <- list(wealth.index.2rich = "Wealth (Rich)",

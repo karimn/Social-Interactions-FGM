@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<exog-endog-effects-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -15,7 +15,7 @@ load("exog.endog.effects.RData")
 \centering
 \begin{threeparttable}
 \caption{FGM Endogenous Effects Regression (Pooled)}\label{tab:exog_endog_effects}
-<<keep.source=TRUE, label=fgmendogen, echo=FALSE, results=tex>>=
+<<fgmendogen, echo=FALSE, results='asis'>>=
   results <- c(main.reg.results.1, main.reg.results.2, main.reg.results.2.3, main.reg.results.6, main.reg.results.6.2, main.reg.results.7, main.reg.results.7.2, main.reg.results.8, main.reg.results.8.2, main.reg.results.8.5) 
 
   regs <- list(urban.ruralurban = "Residence (Urban)",

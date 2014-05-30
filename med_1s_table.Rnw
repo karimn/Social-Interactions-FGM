@@ -1,4 +1,4 @@
-<<label=init, echo=FALSE, results=hide>>=
+<<med-1s-table-init, include=FALSE>>=
 source("RegressionResults.R")
 source("print.results.R")
 
@@ -12,7 +12,7 @@ load("med.1s.RData")
 \centering
 \begin{threeparttable}
 \caption{Medicalization Endogenous Social Effect First Stage Regression}\label{tab:med_1s}
-<<keep.source=TRUE, label=fgmdirect, echo=FALSE, results=tex>>=
+<<med-direct, echo=FALSE, results='asis'>>=
   results <- c(relv.med.results.10.1, relv.med.results.10.3)
 
 #   regs <- list(wealth.index.2rich = "Wealth (Rich)",
