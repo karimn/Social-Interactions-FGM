@@ -33,7 +33,7 @@ load("exog.endog.effects.fe.RData")
                       #                       "spat.grpavg.med.circum.10:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times$ Discussed FGM",
                       #                       "spat.grpavg.med.circum.10:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times$ Received Info on FGM")
 
-  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols) 
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols, column.labels=rep_len("2SLS + FE", length(results))) 
                       # other.fac = list(birth.order.fac.info), 
 @
 \begin{tablenotes}

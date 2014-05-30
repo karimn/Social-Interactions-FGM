@@ -7,6 +7,7 @@ source("table.global.R")
 library(AER)
 
 load("exog.endog.effects.RData")
+load("exog.endog.effects.fe.RData")
 @
 
 \begin{landscape}
@@ -48,6 +49,45 @@ load("exog.endog.effects.RData")
 \begin{tablenotes}
   \item[a] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
   \item[b] Other regressors not shown: residence, mother's marital age, mother's FGM status, religion, whether the head of household is female, difficulty in accessing medical help due to distance or cost, whether there is discussion of FGM with peers, whether household received information on FGM, governorate fixed effects, cohort (year of birth) fixed effects, order of birth fixed effects, number of daughters, `modernization' proxy variables, and peer group means of exogenous household characteristics (exogenous social effects).
+  \item[c] Only 8-10 use instruments for both $\overline{fgm}$ and $\overline{med}$.  Other columns use instruments only for $\overline{fgm}$.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{landscape}
+
+\begin{landscape}
+\begin{table}
+\scriptsize
+\centering
+\begin{threeparttable}
+\caption{FGM Endogenous Effects Regression (Household Fixed Effects)}\label{tab:exog_endog_effects_fe}
+<<fgmendogen-fe, echo=FALSE, results='asis'>>=
+  results <- c(main.reg.results.9.2, main.reg.results.9.3, main.reg.results.9, main.reg.results.14, main.reg.results.14.2, main.reg.results.14.5, main.reg.results.17, main.reg.results.17.4) #, main.reg.results.17.6, main.reg.results.17.5) 
+
+  grpavg.regs <- list(spat.grpavg.circum.10 = "$\\overline{fgm}_{jt}$",
+                      "I(spat.grpavg.circum.10^2)" = "$(\\overline{fgm}_{jt})^2$",
+                      #                       "I(spat.grpavg.circum.10^3)" = "$(\\overline{fgm}_{jt})^3$",
+                      spat.grpavg.med.circum.10 = "$\\overline{med}_{jt}$",
+                      "I(spat.grpavg.med.circum.10^2)" = "$(\\overline{med}_{jt})^2$",
+                      #                       "spat.grpavg.circum.10:urban.ruralurban" = "$\\overline{fgm}_{jt} \\times$ Urban",
+                      #                       "spat.grpavg.circum.10:med.help.distance.facbig problem" = "$\\overline{fgm}_{jt} \\times$ Medical Help Distance",
+                      #                       "spat.grpavg.circum.10:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{fgm}_{jt} \\times$ Urban $\\times$ Medical Help Distance",
+                      "spat.grpavg.circum.10:spat.grpavg.med.circum.10" = "$\\overline{fgm}_{jt} \\times \\overline{med}_{jt}$",
+                      "spat.grpavg.med.circum.10:urban.ruralurban" = "$\\overline{med}_{jt} \\times$ Urban",
+                      "spat.grpavg.med.circum.10:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Medical Help Distance",
+                      "spat.grpavg.med.circum.10:urban.ruralurban:med.help.distance.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Medical Help Distance",
+                      "spat.grpavg.med.circum.10:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times$ Medical Help Cost",
+                      "spat.grpavg.med.circum.10:urban.ruralurban:med.help.money.facbig problem" = "$\\overline{med}_{jt} \\times$ Urban $\\times$ Medical Help Cost")
+                      #                       "spat.grpavg.med.circum.10:discuss.circum.facyes" = "$\\overline{med}_{jt} \\times$ Discussed FGM",
+                      #                       "spat.grpavg.med.circum.10:received.info.circum.facyes" = "$\\overline{med}_{jt} \\times$ Received Info on FGM")
+
+  print.results.table(results, NULL, NULL, NULL, grpavg.regs, cutpoints, symbols, column.labels=rep_len("2SLS + FE", length(results))) 
+                      # other.fac = list(birth.order.fac.info), 
+@
+\begin{tablenotes}
+  \item[a] Asterisks indicate significance levels: `$\cdot$' is 10 percent, `*' is 5 percent, `**' is 1 percent, and `***' is 0.1 percent.
+  \item[b] Other regressors not shown: governorate fixed effects, cohort (year of birth) fixed effects, order of birth fixed effects, `modernization' proxy variables, and peer group means of exogenous household characteristics (exogenous social effects).
+  \item[c] Columns 1-4 use instruments for $\overline{fgm}$ only, while the remaining use instruments for both $\overline{fgm}$ and $\overline{med}$.
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
