@@ -5,8 +5,8 @@
 %\usepackage{endnotes}
 %\usepackage{url}
 %\usepackage{enumerate}
-%\usepackage[utf8x]{inputenc}
 %\usepackage{verbatim}
+%\usepackage[utf8x]{inputenc}
 
 \usepackage{fullpage}
 \usepackage{threeparttable}
@@ -20,8 +20,9 @@
 \usepackage{multirow}
 \usepackage{comment}
 %\usepackage{Sweave}
-\usepackage{authblk}
+%\usepackage{authblk}
 \usepackage[maxbibnames=99, citestyle=authoryear, url=false, citetracker=true, maxcitenames=1, autopunct=true]{biblatex}
+\usepackage[]{nomencl}
 
 \AtEveryCitekey{\ifciteseen{}{\defcounter{maxnames}{99}}}
 

@@ -117,7 +117,7 @@ print(med.plot, vp = viewport(layout.pos.row = 2, layout.pos.col = 1))
 % Governorate Summary
 
 %\begin{landscape}
-<<governsum-table, child="governsum_table.Rnw">>=
+<<governsum-table, child="governsum_table.Rnw", eval=FALSE>>=
 @
 %\end{landscape}
 

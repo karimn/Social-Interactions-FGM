@@ -24,9 +24,9 @@ RegressionResults$methods(initialize = function(...) {
 
 RegressionResults$methods(summary = function(vcov.fun, ...) {
     if (!missing(vcov.fun)) {
-        coeftest(results, vcov. = if (!is.null(vcov.fun)) vcov.fun(results, ...) else NULL)
+        lmtest::coeftest(results, vcov. = if (!is.null(vcov.fun)) vcov.fun(results, ...) else NULL)
     } else {
-        coeftest(results, vcov. = if (all(vcov == c(0, 0))) NULL else vcov)
+        lmtest::coeftest(results, vcov. = if (all(vcov == c(0, 0))) NULL else vcov)
     }
   })
 
